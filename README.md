@@ -1,113 +1,96 @@
-# Human-in-the-Loop System for Reviewing Legal Document Changes with Explainable AI
+# Group 4 — Legal Document Change Detection
 
 ## 1. Giới thiệu dự án
 
-**Học phần:** Tương tác người máy (HCI)  
-**Nhóm:** 2627I_INT2041_1 Nhóm 6
-
-Dự án xây dựng hệ thống hỗ trợ đối chiếu văn bản pháp luật gốc với văn bản sửa đổi, trình bày thay đổi cùng giải thích và bằng chứng để người dùng kiểm tra. Trọng tâm HCI là giúp người dùng tìm đúng nội dung, hiểu kết quả và ghi nhận xét trong quá trình rà soát.
+Dự án hỗ trợ rà soát thay đổi trong văn bản quy phạm pháp luật tiếng Việt, hướng tới luật sư, người làm pháp chế và người nghiên cứu luật. Mục tiêu là giúp người dùng nhận biết thay đổi về nội dung quy định, phân biệt với thay đổi diễn đạt và đối chiếu kết quả với bằng chứng nguồn.
 
 ## 2. Chức năng và phạm vi
 
-Các chức năng mục tiêu:
+Đầu vào gồm văn bản ban đầu **V1**, văn bản sửa đổi **S** và tài liệu tham chiếu nếu cần. S chứa chỉ dẫn sửa đổi, không phải bản đầy đủ sau sửa đổi V2.
 
-- Nhận văn bản gốc **V1**, văn bản sửa đổi **S** và tài liệu tham chiếu khi cần. S chứa chỉ dẫn sửa đổi V1, không phải bản V2 đầy đủ.
-- Xác định vị trí và thao tác sửa đổi; trình bày nội dung trước–sau tại phần bị tác động.
-- Phân tích các loại thay đổi có thể kiểm chứng như thời hạn, giá trị định lượng, điều kiện, chủ thể và quyền/nghĩa vụ; hiển thị giải thích, bằng chứng và phần chưa chắc chắn.
-- Hỗ trợ xem nguồn, lọc kết quả, ghi nhận xét và rà soát lại sau khi bổ sung tài liệu.
-- Trả kết quả ban đầu kèm danh sách tài liệu còn thiếu nếu chưa đủ căn cứ phân tích.
+Hệ thống được thiết kế để:
 
-**Dữ liệu đầu vào:** DOCX hoặc PDF có lớp chữ. PDF được chuyển thành file DOCX; các module tiếp theo làm việc với DOCX. PDF scan chưa được hỗ trợ. Bộ chuyển đổi hoạt động chỉ với PDF, không yêu cầu có sẵn DOCX đối chiếu.
+- Nhận diện yêu cầu sửa đổi, bổ sung hoặc bãi bỏ trong S và tìm nội dung đích trong V1.
+- Đối chiếu nội dung trước/sau cục bộ, phân tích thay đổi nghĩa và mức tác động.
+- Cung cấp bằng chứng, thông tin hiệu lực/chuyển tiếp được nêu trong nguồn và cảnh báo khi thiếu căn cứ.
+- Hỗ trợ DOCX và PDF có lớp chữ; bổ sung truy xuất ngữ cảnh bằng LightRAG.
 
-Hệ thống hỗ trợ người dùng kiểm chứng; không đặt mục tiêu tự hiểu toàn bộ ý nghĩa pháp lý hoặc tự kết luận mọi thay đổi đều đã được phân tích đầy đủ.
+Phiên bản đầu không hỗ trợ OCR/PDF scan, không bắt buộc dựng V2 đầy đủ và không tự xác minh hiệu lực pháp lý thực tế. Kết quả phục vụ rà soát, cần được người dùng kiểm chứng.
 
-## 3. Cấu trúc thư mục
+## 3. Trạng thái hiện tại
 
-Các đường dẫn dùng để tổ chức mã nguồn, tài liệu và chạy thử:
+Dự án đang phát triển. Đã có công cụ PDF → DOCX và Parser cấu trúc văn bản. Bản API nền hỗ trợ upload và đọc/parse; luồng phân tích thay đổi đầu-cuối, giao diện và tích hợp LightRAG chưa hoàn thiện.
 
-| Đường dẫn | Mục đích |
-| --- | --- |
-| `README.md` | Giới thiệu và hướng dẫn bắt đầu; đặt tại thư mục gốc repository |
-| `docs/` | BRD, SRS, Architecture, Implementation Plan và các tài liệu chuyên trách |
-| `backend/app/document_processing/pdf_to_docx.py` | Bộ chuyển đổi PDF có lớp chữ sang DOCX |
-| `data/test_pdf_to_docx/case_01/` | Dữ liệu và kết quả chạy thử bộ chuyển đổi |
+Phương án tích hợp tạm chọn là chạy LightRAG Server riêng và gọi qua HTTP. Dịch vụ có thể chạy trên cùng máy; nhu cầu Internet phụ thuộc cấu hình LLM/embedding.
 
-`frontend/` dành cho giao diện và `tests/` dành cho kiểm thử tự động sẽ được bổ sung khi triển khai các phần tương ứng. Cấu trúc module chi tiết được mô tả trong [Architecture](docs/architecture.md).
+## 4. Cài đặt và chạy nhanh
 
-## 4. Cài đặt và chạy thử
+Yêu cầu Python 3.11 trở lên; khuyến nghị Python 3.12 theo môi trường đã kiểm tra. Các lệnh dưới áp dụng cho bản API nền hỗ trợ upload, chạy từ thư mục gốc dự án.
 
-Hướng dẫn hiện tại dành cho bộ chuyển đổi PDF → DOCX. Mở terminal tại thư mục gốc repository và bảo đảm file Python đã nằm đúng đường dẫn ở mục 3.
+Tạo môi trường Python:
 
-### 4.1. Chuẩn bị môi trường
-
-Sử dụng Python 3.12 và môi trường ảo riêng. Trên Windows PowerShell:
-
-```powershell
+```bash
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install pdf2docx python-docx "pymupdf>=1.24.2"
 ```
 
-Các lệnh dưới đây gọi trực tiếp Python trong môi trường ảo, không cần kích hoạt `.venv`. Bộ chuyển đổi không yêu cầu API key hoặc dịch vụ AI.
-
-### 4.2. Chuẩn bị dữ liệu và chuyển đổi
-
-Đặt PDF có lớp chữ tại `data/test_pdf_to_docx/case_01/input.pdf`, rồi chạy:
+Kích hoạt trên Windows PowerShell:
 
 ```powershell
-.\.venv\Scripts\python.exe backend/app/document_processing/pdf_to_docx.py "data/test_pdf_to_docx/case_01/input.pdf" "data/test_pdf_to_docx/case_01/converted.docx"
+.venv\Scripts\Activate.ps1
 ```
 
-Với văn bản sửa đổi S hoặc tài liệu tham chiếu, thêm `--kind other` để không áp dụng bước tách nhãn và nối đoạn dành cho V1:
+Hoặc trên Linux/macOS:
 
-```powershell
-.\.venv\Scripts\python.exe backend/app/document_processing/pdf_to_docx.py "data/test_pdf_to_docx/case_01/input.pdf" "data/test_pdf_to_docx/case_01/converted_other.docx" --kind other
+```bash
+source .venv/bin/activate
 ```
 
-Mỗi lần chạy thành công tạo **hai file**:
+Cài thư viện và khởi động backend:
 
-- `converted.docx`: văn bản sau chuyển đổi và chuẩn hóa.
-- `converted.report.json`: các thay đổi đã áp dụng, vị trí liên quan và nội dung cần kiểm tra.
+```bash
+python -m pip install -r requirements.txt
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+```
 
-File trung gian được tạo tạm và tự xóa khi kết thúc; không xuất file `converted.raw.docx`. Chương trình không ghi đè kết quả đã có: khi chạy lại, chọn tên mới như `converted_v2.docx`.
+Mở [API Docs](http://127.0.0.1:8000/docs), chọn `POST /api/compare` và gửi `doc_v1`, `doc_s`, cùng `reference_files` nếu có.
 
-Sau khi chạy, kiểm tra DOCX và các mục `warnings`, `pdf_alignment.needs_review` trong report. Tạo được file chưa đồng nghĩa mọi nội dung và bố cục đều chính xác. DOCX đối chiếu, nếu có trong bộ thử nghiệm, chỉ phục vụ đánh giá bên ngoài bộ chuyển đổi.
+Bản nền hiện báo chưa cấu hình phân tích sau bước đọc/parse; chưa trả báo cáo thay đổi hoàn chỉnh. LightRAG được cài/chạy riêng và chưa được nối vào API này.
 
-## 5. Tình trạng triển khai và giới hạn
+## 5. Cấu trúc thư mục tổng quan — mục tiêu
 
-| Thành phần | Tình trạng |
+```text
+backend/
+frontend/
+data/
+tests/
+docs/
+deploy/
+runtime/
+requirements.txt
+.env.example
+.gitignore
+```
+
+## 6. Tài liệu dự án
+
+| Tài liệu | Nội dung |
 | --- | --- |
-| Bộ chuyển đổi PDF → DOCX | Đã có mã nguồn và chạy thử trên case 01; xử lý khoảng trắng theo PDF, số trang thừa, đoạn tiếp diễn qua trang và bố cục đầu văn bản của mẫu đã kiểm tra |
-| Reader DOCX và tách cấu trúc V1 | Đang trong giai đoạn triển khai nền tảng; chưa xác nhận hoàn tất bàn giao |
-| Xử lý chỉ dẫn S, diff/AI, API/Pipeline và frontend | Theo kế hoạch triển khai; chưa công bố bản tích hợp đầu-cuối đã nghiệm thu |
-| Đánh giá người dùng | Chưa thực hiện trên sản phẩm hoàn chỉnh; kế hoạch và hạn bàn giao nằm trong Implementation Plan |
+| [BRD](brd.md) | Nhu cầu, người dùng và phạm vi nghiệp vụ |
+| [SRS](srs.md) | Yêu cầu, hợp đồng dữ liệu và hành vi hệ thống |
+| [Architecture](architecture.md) | Thiết kế module, cây thư mục chi tiết và phương án tích hợp |
+| [Implementation Plan](implementation-plan.md) | Công việc, phân công, phụ thuộc và mốc bàn giao |
+| [Data Annotation Guide](data-annotation-guide.md) | Chuẩn bị dữ liệu, bằng chứng và gán nhãn |
 
-Giới hạn hiện tại:
+Tài liệu cần bổ sung: `api-contract.md`, `development-guide.md` và `test-evaluation-plan.md`.
 
-- Kết quả tốt trên case 01 chưa chứng minh chất lượng trên mọi PDF; cần mở rộng mẫu có cấu trúc, bảng và bố cục khác nhau.
-- Chưa bảo đảm giữ nguyên toàn bộ bố cục, thứ tự nhiều cột, dấu và chữ ký đồ họa. Phần nơi nhận/chữ ký của case 01 còn hạn chế về thứ tự đọc.
-- Các vùng ngoài thân bài đã có đánh dấu hỗ trợ, nhưng Reader/Parser vẫn cần xử lý chúng đúng cách để không lẫn vào Điều/Khoản/Điểm.
-- Việc tách paragraph trong bộ chuyển đổi chưa thay thế module tạo cấu trúc V1 và vị trí nguồn cho Pipeline.
+## 7. Nhóm thực hiện
 
-Hướng dẫn chạy backend/frontend và cấu hình AI sẽ được bổ sung khi có phiên bản tích hợp chạy được.
+**Học phần và nhóm:** 2627I_INT2041_1 — Nhóm 6 (HCI)  
+**Nhóm trưởng:** Bạch Công Dũng
 
-## 6. Tài liệu và thành viên
-
-### 6.1. Tài liệu dự án
-
-| Tài liệu | Nội dung chính |
+| Thành viên | Phụ trách chính |
 | --- | --- |
-| [BRD](docs/brd.md) | Mục tiêu, người dùng và phạm vi nghiệp vụ |
-| [SRS](docs/srs.md) | Yêu cầu chức năng và điều kiện nghiệm thu |
-| [Architecture](docs/architecture.md) | Thiết kế module, luồng xử lý và giao diện bàn giao |
-| [Implementation Plan](docs/implementation-plan.md) | Phân công, phụ thuộc, lịch tuần 6–14 và hạn bàn giao |
-| [User Research](docs/user-research.md) | Kết quả nghiên cứu người dùng làm căn cứ thiết kế |
-| [Data Annotation Guide](docs/data-annotation-guide.md) | Quy tắc chuẩn bị dữ liệu, gán nhãn và kiểm tra đáp án |
-
-### 6.2. Thành viên
-
-| Thành viên | Vai trò chính |
-| --- | --- |
-| **Bạch Công Dũng — Nhóm trưởng** | Chuẩn bị tài liệu, dữ liệu và xử lý đầu vào; tổ chức đánh giá sản phẩm với người dùng |
-| **Dương Đức Anh** | Xây dựng backend, xử lý chỉ dẫn sửa đổi và tích hợp luồng phân tích |
-| **Lê Tùng Dương** | Thiết kế tương tác và frontend, hỗ trợ đối chiếu và ghi nhận xét trong phiên |
-| **Vương Thành Nam** | Xây dựng diff, phân tích AI, mức tác động và đánh giá chất lượng phân tích |
+| Bạch Công Dũng | Điều phối, tài liệu và dữ liệu; xử lý đầu vào, nghiên cứu và đánh giá người dùng |
+| Dương Đức Anh | Backend, schema và Pipeline; chỉ dẫn sửa đổi, liên kết, ngữ cảnh và tích hợp |
+| Lê Tùng Dương | Thiết kế tương tác, prototype và frontend; đối chiếu, kiểm chứng và nhận xét trong phiên |
+| Vương Thành Nam | Text Diff, Semantic Diff, AI Adapter và Scorer; đánh giá kỹ thuật chất lượng phân tích |

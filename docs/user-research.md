@@ -76,3 +76,11 @@ Các thành viên có thể dùng bảng tại mục 3.2 làm đầu vào thiế
 Những nội dung chưa có kết quả gồm: bước nào gây khó khăn nhất; cách xác minh phiên bản tài liệu; cách hiểu các nhãn chưa chắc chắn; hành vi khi kết quả phân tích lại thay đổi; và hiệu quả thực tế của các thao tác kiểm chứng. Không xem các nội dung này là nhu cầu đã được xác nhận hoặc vấn đề đã xảy ra với cả hai người. Các giả định về chuyển đổi tài liệu gây mất thời gian, nhầm trạng thái hoặc hiệu quả của việc đặt bằng chứng cạnh AI chưa có dữ liệu đủ để kết luận.
 
 Bản hiện tại là tổng hợp định tính ban đầu, chưa phải báo cáo thử nghiệm usability hoặc đánh giá độ chính xác AI. Không suy rộng kết quả của hai người thành đặc điểm chung của toàn bộ sinh viên Luật.
+
+## 6. Liên kết với baseline HCI và việc owner cần đề xuất
+
+Bổ sung ngày 03/11/2026 chỉ để đồng bộ tài liệu; phần nghiên cứu ở mục 1–5 và ngày thu/tổng hợp trước đó được giữ nguyên. Chưa có phỏng vấn, mẫu người dùng hoặc số đo usability mới.
+
+Các phát hiện được dùng để định hướng [BRD](brd.md), [SRS](srs.md) và [Architecture](architecture.md), không để xác nhận công nghệ. LightRAG là lựa chọn kỹ thuật tạm thời, không là nhu cầu đã được hai người tham gia nêu hoặc bằng chứng cải thiện trải nghiệm.
+
+D-07/D-08 trong [Module Owner Decisions](module-owner-decisions-hci.md) cần đề xuất UI và đối chiếu phiên; D-12 cần kế hoạch dùng thử, tác vụ, đáp án và phép đo. Các phương án đó phải gắn với RQ-01–04 và khoảng trống đã ghi, không sửa kết quả nghiên cứu để hợp thức hóa thiết kế. Dũng tổng hợp nghiên cứu/đánh giá người dùng, Tùng Dương đề xuất tương tác; kết quả AI kỹ thuật do Nam đánh giá riêng.

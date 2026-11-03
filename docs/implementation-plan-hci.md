@@ -4,12 +4,20 @@
 **Đề tài:** Hệ thống hỗ trợ đối chiếu thay đổi văn bản pháp luật với AI có giải thích và có sự kiểm chứng của người dùng  
 **Nhóm trưởng:** Bạch Công Dũng  
 **Thành viên:** Bạch Công Dũng, Dương Đức Anh, Lê Tùng Dương, Vương Thành Nam  
-**Phiên bản:** HCI 1.1.0  
-**Ngày cập nhật:** 17/10/2026  
+**Phiên bản:** HCI 1.2.0  
+**Ngày cập nhật:** 03/11/2026  
 **Thời gian:** Tuần 6–14 của học phần; hoàn thành nội bộ cuối tuần 13, tuần 14 dành cho dự phòng và bàn giao theo lịch học phần.  
-**Tài liệu liên quan:** [BRD](brd.md), [SRS](srs.md), [Architecture](architecture.md), [Nghiên cứu người dùng](user-research.md), [Hướng dẫn dữ liệu và gán nhãn](data-annotation-guide.md).
+**Tài liệu liên quan:** [BRD](brd.md), [SRS](srs.md), [Architecture](architecture.md), [Nghiên cứu người dùng](user-research.md), [Hướng dẫn dữ liệu và gán nhãn](data-annotation-guide-hci.md).
 
 Kế hoạch xác định người chịu trách nhiệm, thứ tự triển khai, đầu ra và điểm bàn giao. Mỗi thành viên dùng tài liệu chuyên trách để triển khai yêu cầu; các mốc dưới đây là kế hoạch, không xác nhận chức năng đã hoàn thành.
+
+### Baseline cập nhật 03/11/2026
+
+Đợt này thống nhất tài liệu HCI, không sửa code hoặc công bố đã hoàn thành G1/G2. ZIP đã có converter/Parser và ba file API/pipeline/requirements nền; chưa có schema HCI, adapter, linker, context/LightRAG, phân tích, UI/nhận xét hoặc evaluator hoàn chỉnh. API/report nền còn lệch contract HCI. Kế hoạch tuần 6–14 dưới đây là baseline học phần, không là tiến độ thực tế đã đạt; chưa tự suy tuần hiện tại hoặc thay lịch nộp.
+
+Các thống nhất làm việc: V1–S; sinh viên Luật là người dùng chính; bốn mã HCI theo SRS; ReviewItem/ReviewRecord riêng; bộ nguồn PDF → DOCX → Parser trước mắt; tạm chọn B cho retrieval, không giao framework quyết định kết quả nghiệp vụ. Giữ test/ theo cây ZIP. Các lựa chọn triển khai của từng owner chưa được chốt thay.
+
+[Module Owner Decisions](module-owner-decisions-hci.md) là danh sách duy nhất quản lý việc cần chốt. Trình tự: owner đề xuất trên mẫu → tự kiểm tra → bên nhận/reviewer chạy fixture → ghi quyết định → cập nhật tài liệu sở hữu → tích hợp. Review chung và một người kiểm thử không thay trách nhiệm tự kiểm tra của owner.
 
 ## 1. Phân công thành viên
 
@@ -74,6 +82,8 @@ Sau khi thống nhất hợp đồng và fixture, các thành viên có thể ph
 
 ### 2.2. Kế hoạch theo tuần
 
+**Lưu ý tái lập tiến độ:** bảng là lịch mục tiêu ban đầu. Dũng thu trạng thái thực tế và thời gian owner dự kiến sau khi nhận đề xuất, rồi cập nhật mốc bị ảnh hưởng; chưa chuyển các tuần trước thành “đã xong”.
+
 Tuần được tính theo lịch học phần. Hạn hoàn thành nội bộ là **cuối tuần 13**, bao gồm sản phẩm, đánh giá người dùng, cải tiến và hồ sơ bàn giao. **Tuần 14 là thời gian dự phòng**, không phải thời điểm bắt đầu đánh giá người dùng; lịch nộp và bảo vệ thực hiện theo thông báo của giảng viên.
 
 | Tuần | Mốc | Công việc và người phụ trách | Đầu ra cần bàn giao |
@@ -113,11 +123,22 @@ Mỗi task có một người chủ trì. Phụ thuộc là điều kiện dùng
 | HCI-15 | Cải tiến và kiểm tra lại | Dũng | Danh sách cải tiến được giao, minh chứng sửa và kết quả kiểm tra lại | HCI-14; mỗi chủ module thực hiện phần được giao | G4 | Cuối tuần 12 |
 | HCI-16 | Hoàn thiện sản phẩm bàn giao | Dũng | Bộ sản phẩm, báo cáo và minh chứng đóng góp | HCI-15; từng thành viên bàn giao phần mình, Đức Anh đóng gói bản chạy | G5 | Cuối tuần 13 |
 
+### 3.1. Thứ tự tiếp nhận quyết định và tích hợp tiếp theo
+
+| Đợt | Công việc | Owner chính theo phân công | Đầu ra kiểm tra |
+| --- | --- | --- | --- |
+| A — điểm bàn giao | D-01/D-02: contract và nguồn; rà dữ liệu mẫu D-10 | Đức Anh / Dũng theo từng quyết định | Một fixture HCI dùng được cho Nam và Tùng Dương; liệt kê delta với code nền |
+| B — phần có thể thử riêng | D-03/D-04: linker/context/Server; D-05/D-06: AI và mapping/rubric; D-07: UI | Đức Anh / Nam / Tùng Dương theo module | Mỗi owner có mẫu thật hoặc fixture, giới hạn và kết quả tự kiểm tra; không cần đợi mọi module xong |
+| C — tích hợp phiên | D-08/D-09/D-13: nhận xét sau phân tích lại, giới hạn và môi trường | Tùng Dương / Đức Anh | Hai lượt report, giữ/đánh dấu lại nhận xét đúng; lỗi và lifecycle được kiểm tra |
+| D — chốt phép đo trước đánh giá | D-11/D-12: kỹ thuật và người dùng | Nam / Dũng | Kế hoạch đo, đáp án/nguồn, phiên bản và quy tắc đã cố định trước thu kết quả |
+
+Một hàng có nhiều module, không có nghĩa một issue có hai owner. Mỗi D-ID trong register có đúng một người tổng hợp đề xuất và người review xác định. Chưa tự đặt deadline ngày cụ thể; hạn phụ thuộc được ghi để nhóm yêu cầu owner ước lượng và gắn lịch học. Không cần chốt mọi tham số nội bộ trước khi làm bằng fixture.
+
 ## 4. Phối hợp và bàn giao
 
 | Điểm phối hợp | Thành viên | Quyết định cần thống nhất | Minh chứng bàn giao |
 | --- | --- | --- | --- |
-| DOCX và vị trí nguồn | Dũng + Đức Anh | Hợp đồng đầu ra Reader; cách giữ đoạn/bảng, nhận diện file gốc/file chuyển đổi và truy nguồn; khi nào phải dừng vì chuyển đổi không bảo đảm | Cả PDF và DOCX đi qua cùng luồng DOCX; vị trí nguồn mở đúng; lỗi không trở thành nội dung rỗng thành công |
+| DOCX và vị trí nguồn | Dũng + Đức Anh | Hợp đồng đầu ra Reader; cách giữ đoạn/bảng, nhận diện file gốc/file chuyển đổi và truy nguồn; khi nào phải dừng vì chuyển đổi không bảo đảm | Cả PDF và DOCX đi qua luồng DOCX hiện có; nguồn block/quote đúng, ghi rõ khi chưa mapping PDF; lỗi không trở thành nội dung rỗng thành công |
 | Cấu trúc V1 và chỉ dẫn S | Dũng + Đức Anh | Dũng tách V1; Đức Anh xử lý chỉ dẫn S. Thống nhất cấu trúc lồng nhau, nhãn đặc biệt, phần chưa rõ và truy xuất nội dung | Một mẫu cấu trúc V1 cùng chỉ dẫn sửa đổi được Đức Anh dùng xác định đúng đích |
 | Đầu vào ngữ nghĩa | Đức Anh + Nam | Phạm vi trước–sau, nội dung trích/suy ra, ngữ cảnh cần dùng, tham chiếu còn thiếu và cảnh báo | Nam chạy được fixture và mẫu thật; không phải suy đoán trường còn thiếu |
 | Nhãn và đáp án | Dũng + Nam | Ranh giới nhận định/khía cạnh, bằng chứng, rubric và cách ghi chưa đủ căn cứ; ánh xạ nhãn sang kết quả trình bày | Bộ nhãn có review, ca ranh giới và đáp án phù hợp bộ căn cứ được cung cấp |
@@ -141,3 +162,9 @@ Thống nhất cụ thể cách truy bằng chứng từ PDF gốc sau chuyển 
 **Thay đổi hợp đồng hoặc kế hoạch:** bên cung cấp và bên nhận thử trên một mẫu cụ thể, ghi quyết định, người sửa và ảnh hưởng. Đức Anh quản lý schema/fixture chung; Dũng cập nhật phạm vi, phân công và mốc với người liên quan. Đổi nội bộ do chủ module quyết định và kiểm tra; đổi giao diện bàn giao phải cập nhật tài liệu và bên nhận trước tích hợp. Quy tắc nhãn thay đổi phải rà lại mẫu chịu ảnh hưởng cùng Nam.
 
 **Bàn giao cuối:** mã nguồn, cấu hình/dependency, hướng dẫn chạy, dữ liệu mẫu có nguồn, tài liệu thiết kế, kết quả kiểm thử/đánh giá, báo cáo, slide và minh chứng đóng góp thực tế. Đức Anh chuẩn bị gói chạy; Tùng Dương bàn giao thiết kế và minh chứng giao diện; Nam bàn giao phương pháp/kết quả kỹ thuật; Dũng tổng hợp dữ liệu, nghiên cứu người dùng và báo cáo chung. Bộ sản phẩm phải chạy lại được và truy được số liệu về đúng phiên bản.
+
+## 6. Tài liệu còn phải hoàn thiện sau đề xuất owner
+
+`api-contract.md`, `development-guide.md`, `test-evaluation-plan.md` chưa có trong gói hiện tại. D-01 giao Đức Anh tổng hợp API với bên nhận; D-13 giao Đức Anh tổng hợp cách chạy và yêu cầu module; D-11/D-12 giao Nam/Dũng cung cấp hai phần kỹ thuật/usability cho một kế hoạch đánh giá chung. Không tạo các file trống rồi báo là đã có tài liệu hoàn chỉnh.
+
+Lựa chọn đã chốt được ghi tại register cùng bằng chứng, người review và tài liệu đã cập nhật. Bản đổi contract phải có schema + fixture + bên nhận; thay mô hình không tự làm thay đổi nhãn gold hoặc dữ liệu nghiên cứu người dùng.

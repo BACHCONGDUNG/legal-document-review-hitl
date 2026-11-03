@@ -2,8 +2,8 @@
 
 **Học phần và nhóm:** 2627I_INT2041_1 Nhóm 6  
 **Dự án:** Legal Document Change Detection  
-**Phiên bản:** HCI 1.0.0  
-**Ngày cập nhật:** 15/10/2026  
+**Phiên bản:** HCI 1.1.0  
+**Ngày cập nhật:** 03/11/2026  
 **Tài liệu nền:** [BRD](brd.md), [Nghiên cứu người dùng](user-research.md)
 
 ## 1. Phạm vi đặc tả
@@ -12,7 +12,15 @@ SRS quy định chức năng có thể kiểm tra, dữ liệu bàn giao cho gia
 
 Bản đầu xử lý một cặp V1–S và tài liệu tham chiếu do người dùng cung cấp. Mỗi lượt phân tích dùng request đồng bộ; nhận xét được quản lý trong phiên ở frontend. Bốn nhóm phân tích theo BRD là thời hạn; giá trị định lượng; điều kiện/ngoại lệ; chủ thể và quyền/nghĩa vụ.
 
-Tên trường và mã trạng thái trong SRS này là hợp đồng đầu ra HCI. Có thể tái sử dụng module PoCS thông qua bước chuyển đổi dữ liệu; không yêu cầu module nội bộ phải thay toàn bộ schema theo giao diện. Khi đổi hợp đồng, bên cung cấp và bên nhận phải cập nhật cùng fixture và ca kiểm thử.
+Tên trường và mã trạng thái trong SRS này là hợp đồng đầu ra HCI. Module nội bộ có thể dùng cấu trúc xử lý riêng nhưng phải chuyển kết quả sang contract HCI trước khi trả cho giao diện. Khi đổi hợp đồng, bên cung cấp và bên nhận phải cập nhật cùng fixture và ca kiểm thử.
+
+### 1.1. Baseline tài liệu và tình trạng hiện thực
+
+SRS này là nguồn thống nhất contract HCI, không phải mô tả code đã hoàn thành. Baseline dùng `base_file`, `amendment_file`, `reference_files` và ComparisonReport/ReviewItem ở mục 3. Nếu owner muốn đổi tên/trường, bên giao và bên nhận phải review fixture và cập nhật đồng bộ; không tự suy rằng schema code nền là chuẩn HCI.
+
+ZIP hiện có converter, Parser và ba file API/pipeline/requirements nền. API nền còn dùng `doc_v1`/`doc_s`; báo cáo nền còn `base_document`, `amendment_document`, `reference_documents`, `results`. Các trường này chưa là response HCI. Chưa có adapter, linker, retrieval, phân tích và quản lý nhận xét đầy đủ. Đọc/parse thành công nhưng chưa gắn runner hiện trả 501/FAILED/ANALYSIS_NOT_CONFIGURED, không phải kết quả phân tích HCI.
+
+Tạm chọn B: backend gọi LightRAG Server riêng để hỗ trợ ngữ cảnh. Mô hình, release, API nhập/query/xóa, prompt, chunking, cấu hình và giới hạn kỹ thuật còn chờ owner đề xuất tại [Module Owner Decisions](module-owner-decisions-hci.md). Không coi tạm chọn framework là chốt các chi tiết đó hoặc giao LightRAG sinh báo cáo nghiệp vụ cuối.
 
 ## 2. Yêu cầu chức năng
 
@@ -31,6 +39,8 @@ Tên trường và mã trạng thái trong SRS này là hợp đồng đầu ra 
 | FR-11 | Bổ sung và phân tích lại | Gửi lại V1/S cùng bộ tham chiếu hiện có và tài liệu bổ sung. Không tự gửi lại khi timeout. Khi thành công, chỉ rõ mục cập nhật, đối chiếu nhận xét theo quy tắc mục 4; khi thất bại giữ báo cáo và nhận xét trước đó. |
 | FR-12 | Thông tin hiệu lực và chuyển tiếp | Giữ nội dung, phạm vi và bằng chứng xác định được trong S; chưa rõ thì cảnh báo. Không coi trích ngày hiệu lực là xác minh hiệu lực thực tế. |
 
+Yêu cầu bổ sung của phương án B: kết quả truy xuất phải ánh xạ được về nguồn V1/S/tham chiếu của đúng lần so sánh. Dịch vụ lỗi hoặc truy xuất rỗng không tự chứng minh tài liệu thiếu hay không có thay đổi. Đây là yêu cầu của FR-02/05/10/11, không thay các chức năng kiểm chứng của HCI.
+
 ## 3. Dữ liệu đầu vào và báo cáo
 
 ### 3.1. Đầu vào mỗi lượt
@@ -40,6 +50,8 @@ Tên trường và mã trạng thái trong SRS này là hợp đồng đầu ra 
 | base_file | File | Bắt buộc, vai trò V1 |
 | amendment_file | File | Bắt buộc, vai trò S |
 | reference_files | File[] | Có thể rỗng; mỗi tệp có định danh riêng |
+
+Đây là baseline hợp đồng HCI, chưa phải chữ ký endpoint của code nền. Đức Anh cùng Tùng Dương xác nhận fixture và kế hoạch chuyển đổi theo D-01; không mặc định hỗ trợ song song alias cũ/mới nếu chưa thiết kế.
 
 Giới hạn dung lượng, số tệp và thời gian xử lý quản lý trong cấu hình/API contract, hiển thị trước khi gửi. Giữ lựa chọn file trong phiên để gửi lại; nếu trình duyệt đã mất quyền truy cập file thì yêu cầu chọn lại. Tên file không được dùng để tự xác nhận số hiệu, vai trò pháp lý hoặc hiệu lực.
 
@@ -57,6 +69,10 @@ Các trường dưới đây là dữ liệu JSON; `null` nghĩa là chưa có g
 | ComparisonReport | comparison_id, documents, status, general_context, general_context_evidence, items, reference_requirements, effect_info, warnings, errors | Một báo cáo của một lần phân tích; comparison_id mới mỗi lần |
 
 `ComparisonReport.status`: SUCCESS / PARTIAL / FAILED theo mục 5. `general_context` là thông tin tổng quát V1; có thể null nếu chưa tạo được, kèm cảnh báo. Nhận xét người dùng không nằm trong đầu ra AI của backend.
+
+`documents` là danh sách DocumentIdentity, có đúng một BASE, một AMENDMENT và các REFERENCE nếu có; quy ước nội bộ v1/s/ref_N được giữ nhất quán trong lượt. `items`, `reference_requirements`, `effect_info`, `warnings`, `errors` là các danh sách theo bảng. Mọi affected_item_ids phải trỏ đúng items của cùng báo cáo; danh sách rỗng ở ProcessingIssue nghĩa ảnh hưởng toàn báo cáo, không có nghĩa không lỗi. Cách gửi nguồn bổ sung và fixture JSON được owner chốt ở D-01/D-02, nhưng EvidenceRef phải đọc/đối chiếu được sau khi backend dọn file.
+
+Bốn mã HCI dưới đây là baseline thống nhất cho API, gold và fixture. Không bổ sung trường hoặc mã ngoài contract như yêu cầu bắt buộc của giao diện. Khi module dùng cấu trúc xử lý riêng, adapter phải chuyển đổi có kiểm tra trước khi tạo ReviewItem.
 
 ### 3.3. Mục kết quả và các khía cạnh
 
@@ -95,7 +111,11 @@ Một mục có nhiều khía cạnh, không ép về một nhãn chính rồi b
 
 **TextChange:** `type` (INSERT / DELETE / REPLACE), `old_start`, `old_end`, `new_start`, `new_end`. Vị trí ký tự bắt đầu từ 0, khoảng [start, end), khớp chính xác before_text/after_text đã trả. Phía ABSENT được dùng chuỗi rỗng khi tính vị trí; phía UNRESOLVED không được thay bằng chuỗi rỗng để chạy diff.
 
-**Quy tắc nguồn:** document_id + source_ref xác định nguồn duy nhất trong lượt phân tích. PDF hiển thị trang tính từ 1; DOCX dùng đoạn/bảng có chỉ số theo quy ước Reader đã thống nhất, không suy ra trang Word. Mỗi trích dẫn phải truy được nội dung tương ứng để giao diện hiển thị; có thể trả thêm danh sách SourceBlock (document_id, source_ref, text) hoặc cơ chế truy xuất tương đương trong cùng phiên. Khi nguồn chỉ định vị tới Điều hoặc trang, phải ghi đúng mức chính xác đó, không giả định đã định vị tới từng ký tự.
+**Quy tắc nguồn:** document_id + source_ref xác định nguồn trong lượt phân tích. Parser hiện dùng `block:N` theo thứ tự paragraph/bảng trong DOCX; N không phải số trang hoặc chỉ số paragraph/bảng riêng. Hiển thị “Khối N” và loại khối khi có, không đổi nhãn bằng suy đoán. Segment là khoảng ký tự Python [start,end) trên text của source_blocks; TextChange phải khớp before_text/after_text, owner thống nhất chuyển chỉ số cho frontend nếu dùng UTF-16 (D-02/D-07).
+
+Luồng đầu vào trước mắt là PDF có lớp chữ → converter hiện có → DOCX → Parser hiện có; DOCX đi thẳng vào Parser. Giữ file gốc và report chuyển đổi. Khi chưa xác minh mapping PDF, evidence phải nói rõ nguồn DOCX chuyển đổi, không hiển thị số trang PDF như đã chính xác. Muốn đáp ứng mở đúng trang PDF cần mapping đã kiểm chứng; chưa có thì ghi giới hạn. Dũng đề xuất adapter/provenance theo D-02; chưa buộc refactor Parser thành Reader/Parser tách biệt.
+
+Mỗi trích dẫn phải đọc được trong giao diện sau khi backend dọn file; có thể gửi SourceBlock cùng response hoặc cơ chế tương đương đáp ứng vòng đời phiên. Hình thức cụ thể do D-01/D-02 chốt trước nối frontend. Mức nguồn chỉ tới Điều/block/trang phải được hiển thị đúng, không giả định tọa độ từng ký tự. source_id/chunk_id/reference của LightRAG không tự là source_ref; mô tả entity/edge không là quote nguyên văn.
 
 ### 3.4. Dữ liệu nhận xét trong phiên
 
@@ -110,6 +130,12 @@ Frontend quản lý `ReviewRecord` gồm:
 | previous_record | Bản nhận xét và comparison_id trước đó khi cần giữ để kiểm tra lại; null nếu không có |
 
 Không dùng số Điều hoặc thứ tự dòng làm khóa nhận xét. Không coi item_id của hai lần phân tích là cùng một mục chỉ vì chuỗi giống nhau. Mục chưa xác định liên quan V1 vẫn có thể được ghi nhận chưa đủ căn cứ; mục OTHER_DOCUMENT không nằm trong tổng số rà soát V1. Đếm theo ReviewItem, ghi rõ đây là số mục rà soát, không gọi là số Điều hoặc số chỉ dẫn.
+
+### 3.5. Trách nhiệm dữ liệu và chuyển đổi
+
+- Dữ liệu nội bộ có thể giữ cây Parser, chỉ dẫn sửa đổi và nhận định trung gian; bộ tổng hợp phải xuất đúng ReviewItem. Không coi dict của Parser hay response LightRAG là ComparisonReport.
+- Phân nhóm theo nội dung và phạm vi: hạn thực hiện dùng TIME_LIMIT; giá trị/ngưỡng dùng QUANTITATIVE; điều kiện/ngoại lệ dùng CONDITIONS_EXCEPTIONS; chủ thể/quyền/nghĩa vụ dùng SUBJECT_RIGHTS_DUTIES. Nội dung ngoài phạm vi không được ép vào bốn mã bằng đổi tên; giữ chỉ dẫn, bằng chứng và OUT_OF_SCOPE/UNRESOLVED thích hợp. Ca ranh giới và fixture do D-06 review.
+- Các mảng trống/null giữ nghĩa ở từng trường. Không đổi needs_review hoặc significance từ ReviewRecord.decision; không dùng nhận xét làm nhãn huấn luyện/gold tự động.
 
 ## 4. Trạng thái và vòng đời nhận xét
 
@@ -129,7 +155,7 @@ Không dùng số Điều hoặc thứ tự dòng làm khóa nhận xét. Không
 
 ### 4.2. Sau khi bổ sung tài liệu
 
-- Lượt mới thành công nhận comparison_id mới. Giữ bản nhận xét cũ trong phiên để đối chiếu.
+- Lượt mới trả SUCCESS hoặc PARTIAL có kết quả dùng được nhận comparison_id mới và được đối chiếu. Giữ bản nhận xét cũ trong phiên; FAILED/timeout không thay báo cáo và nhận xét đang có.
 - Chỉ chuyển tiếp REVIEWED khi xác định được cùng mục và toàn bộ nội dung phục vụ kiểm chứng không đổi: chỉ dẫn/đích, nội dung trước–sau, giải thích/khía cạnh, bằng chứng, mức tác động và cảnh báo. So sánh nội dung nguồn, không chỉ document_id hoặc vị trí trong danh sách.
 - Nếu cùng mục nhưng nội dung liên quan đổi, chuyển RECHECK_REQUIRED, decision hiện tại = null; giữ nhận xét cũ riêng trong previous_record để người dùng đọc và quyết định lại.
 - Mục mới là UNREVIEWED. Không ghép chắc chắn được sau chia/gộp hoặc thay đổi định danh thì không chuyển xác nhận cũ; giữ nhận xét cũ trong danh sách “Nhận xét chưa đối chiếu được”, nêu rõ chúng thuộc báo cáo trước.
@@ -164,6 +190,8 @@ Thiếu tài liệu cần thiết để phân tích tác động → PARTIAL. Kh
 | OUT_OF_SCOPE | Loại nội dung chưa hỗ trợ | Giữ chỉ dẫn và thông tin phạm vi, không báo đã phân tích đầy đủ |
 | TIMEOUT | Hết thời gian chờ | Báo chưa nhận được kết quả; cho chủ động thử lại, không tự gửi lại |
 
+Lỗi kết nối/lập chỉ mục/truy xuất LightRAG là lỗi bước ngữ cảnh, không là REFERENCE_MISSING chỉ từ retrieval rỗng. Giữ phần dùng được, PARTIAL/FAILED theo mục 5.1. Mã chi tiết dịch vụ, HTTP status/error body và mapping mã code nền phải được Đức Anh đề xuất trong API contract (D-01/D-04), chưa tự thêm endpoint hoặc enum chưa kiểm chứng vào response HCI.
+
 Có chỉ dẫn mà chưa phân tích được vẫn phải hiển thị chỉ dẫn. Chỉ thông báo không tìm thấy yêu cầu tác động V1 khi SUCCESS, đã xử lý hết S trong phạm vi và không còn đối tượng/phần chưa xác định. Text Diff rỗng hoặc aspects rỗng không đủ để kết luận này.
 
 ## 6. Yêu cầu sử dụng và vận hành
@@ -171,7 +199,9 @@ Có chỉ dẫn mà chưa phân tích được vẫn phải hiển thị chỉ d
 - Trạng thái, loại thay đổi và cảnh báo phải có chữ/ký hiệu dễ hiểu, không chỉ dùng màu. Các thao tác chính dùng được bằng bàn phím và có nhãn nhận diện.
 - Không bắt người dùng đọc lỗi kỹ thuật nội bộ. Mỗi lỗi có hướng tiếp tục: chọn lại file, bổ sung căn cứ, thử lại hoặc xem kết quả còn dùng được.
 - Nhận xét tồn tại khi điều hướng/lọc trong cùng phiên; không cam kết giữ sau đóng tab/tải lại. Thông báo rõ giới hạn trước khi người dùng bắt đầu lưu nhận xét.
-- File tạm backend xóa sau request kể cả lỗi; nội dung nguồn cần cho báo cáo phải được trả về trước khi xóa. Frontend giữ dữ liệu/file cần gửi lại trong phiên, không yêu cầu tài khoản hoặc kho lịch sử.
+- File tạm và dữ liệu chỉ mục phục vụ từng comparison phải được dọn sau khi mọi tác vụ sử dụng đã kết thúc, kể cả lỗi. Nội dung nguồn cần cho báo cáo phải tới frontend trước khi dọn. Không xóa nguồn khi converter/Server còn chạy chỉ vì HTTP hết thời gian. Frontend giữ dữ liệu/file cần gửi lại trong phiên; không yêu cầu tài khoản hoặc kho lịch sử.
+- Backend nghiệp vụ giữ request đồng bộ và không có job/polling cho người dùng. Nếu Server nhập dữ liệu nền, client theo dõi hoàn tất nội bộ trong deadline; cách làm cụ thể ở D-04/D-09. Không mặc định nhập xong là index sẵn sàng hoặc comparison_id tự cách ly dữ liệu.
+- HTTP localhost không bắt buộc Internet; chưa chọn mô hình/embedding nên chưa cam kết offline toàn hệ thống. LLM/embedding, nơi chạy và chi phí là quyết định D-05/D-13; không đổi phạm vi HCI vì mặc định framework.
 - Không ghi toàn văn tài liệu/ghi chú vào log; log phục vụ chẩn đoán có comparison_id, bước, mã lỗi và thời gian. Không trả đường dẫn nội bộ hoặc khóa API cho frontend.
 - Nếu dùng API AI ngoài, khóa đặt ở backend; nội dung gửi ra ngoài và cấu hình mô hình phải được nhóm chốt, ghi rõ trong hướng dẫn vận hành. Cấu hình phải đủ để tái lập thử nghiệm.
 - Dung lượng/số file/timeout được công bố và kiểm tra cả hai phía. Chưa cam kết tốc độ bằng số trước khi đo trên mẫu và môi trường cụ thể; ghi nhận thời gian xử lý theo kích thước đầu vào.
@@ -194,5 +224,11 @@ Mỗi ca dùng fixture có đáp án, nguồn và đầu ra mong đợi. Đây l
 | AT-09 | Chia/gộp mục giữa hai lượt, không ghép chắc chắn | Không gắn nhầm nhận xét; nhận xét cũ vẫn đọc được và không nằm trong tổng mục hiện tại |
 | AT-10 | Lỗi AI, timeout hoặc phân tích lại thất bại | Giữ nguồn/kết quả có ích; giữ báo cáo và nhận xét cũ; không tự gửi lặp |
 | AT-11 | Nội dung ngoài phạm vi, hiệu lực/chuyển tiếp | Báo rõ phạm vi và bằng chứng; không hiển thị như kết luận không thay đổi |
+| AT-12 | Truy xuất ngữ cảnh, index chưa sẵn sàng và lỗi dịch vụ | Đợi hoàn tất có giới hạn; nguồn đối chiếu được; lỗi không thành kết luận thiếu tài liệu hoặc không đổi |
+| AT-13 | Hai bộ tài liệu và kết thúc xử lý | Không tìm lẫn nguồn; dọn đúng bộ khi tác vụ kết thúc, không làm hỏng bộ khác |
 
 Trước tích hợp, nhóm cần chốt fixture JSON, quy tắc nhận diện mục qua các lần chạy, rubric mức tác động, các giới hạn cấu hình và tên file tài liệu trong kho mã. Không đổi trường bàn giao mà không cập nhật bên nhận. Phương pháp đo, ngưỡng chất lượng kỹ thuật, tác vụ usability và SUS được quản lý ở kế hoạch đánh giá, không lặp lại BRD trong SRS.
+
+## 8. Các lựa chọn chờ module owner
+
+Danh sách duy nhất để theo dõi là [Module Owner Decisions](module-owner-decisions-hci.md): D-01/D-02 cho contract và nguồn, D-03/D-04 cho linker/context/LightRAG, D-05/D-06 cho phân tích và nhãn, D-07/D-08 cho frontend/đối chiếu lượt, D-09/D-13 cho vận hành, D-10/D-11/D-12 cho dữ liệu và đánh giá. Đó là việc cần đề xuất và review, không phải các lựa chọn đã được owner xác nhận.
