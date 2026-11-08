@@ -1,10 +1,9 @@
 # Nghiên cứu người dùng
 
-**Học phần và nhóm:** 2627I_INT2041_1 Nhóm 6  
-**Đề tài:** Hệ thống hỗ trợ đối chiếu thay đổi văn bản pháp luật với AI có giải thích và có sự kiểm chứng của người dùng  
-**Thành viên:** Bạch Công Dũng, Dương Đức Anh, Lê Tùng Dương, Vương Thành Nam  
-**Phiên bản:** 0.3  
-**Ngày cập nhật:** 15/10/2026  
+**Học phần và nhóm:** 2627I_INT2041_1 Nhóm 6
+**Đề tài:** Hệ thống hỗ trợ đối chiếu thay đổi văn bản pháp luật với AI có giải thích và có sự kiểm chứng của người dùng
+**Thành viên:** Bạch Công Dũng, Dương Đức Anh, Lê Tùng Dương, Vương Thành Nam
+**Phiên bản:** 0.3
 **Cơ sở cập nhật:** Kết quả trao đổi với hai sinh viên vừa vào năm 3.
 
 ## 1. Mục đích và ranh giới tài liệu
@@ -79,7 +78,7 @@ Bản hiện tại là tổng hợp định tính ban đầu, chưa phải báo 
 
 ## 6. Liên kết với baseline HCI và việc owner cần đề xuất
 
-Bổ sung ngày 03/11/2026 chỉ để đồng bộ tài liệu; phần nghiên cứu ở mục 1–5 và ngày thu/tổng hợp trước đó được giữ nguyên. Chưa có phỏng vấn, mẫu người dùng hoặc số đo usability mới.
+Phần bổ sung này chỉ đồng bộ tài liệu; nội dung nghiên cứu ở mục 1–5 và thông tin thu/tổng hợp trước đó được giữ nguyên. Chưa có phỏng vấn, mẫu người dùng hoặc số đo usability mới.
 
 Các phát hiện được dùng để định hướng [BRD](brd.md), [SRS](srs.md) và [Architecture](architecture.md), không để xác nhận công nghệ. LightRAG là lựa chọn kỹ thuật tạm thời, không là nhu cầu đã được hai người tham gia nêu hoặc bằng chứng cải thiện trải nghiệm.
 

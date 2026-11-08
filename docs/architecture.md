@@ -1,11 +1,10 @@
 # Architecture — Kiến trúc hệ thống HCI
 
-**Học phần và nhóm:** 2627I_INT2041_1 — Nhóm 6  
-**Dự án:** Hệ thống hỗ trợ đối chiếu thay đổi văn bản pháp luật với AI có giải thích và có sự kiểm chứng của người dùng  
-**Nhóm trưởng:** Bạch Công Dũng  
-**Thành viên:** Bạch Công Dũng, Dương Đức Anh, Lê Tùng Dương, Vương Thành Nam  
-**Phiên bản:** HCI 1.1.0  
-**Ngày cập nhật:** 03/11/2026  
+**Học phần và nhóm:** 2627I_INT2041_1 — Nhóm 6
+**Dự án:** Hệ thống hỗ trợ đối chiếu thay đổi văn bản pháp luật với AI có giải thích và có sự kiểm chứng của người dùng
+**Nhóm trưởng:** Bạch Công Dũng
+**Thành viên:** Bạch Công Dũng, Dương Đức Anh, Lê Tùng Dương, Vương Thành Nam
+**Phiên bản:** HCI 1.1.0
 **Tài liệu liên quan:** [BRD](brd.md), [SRS](srs.md), [User Research](user-research.md), [Implementation Plan](implementation-plan-hci.md), [Owner Decisions](module-owner-decisions-hci.md)
 
 ## 1. Lựa chọn kiến trúc và hiện trạng
@@ -25,6 +24,15 @@ Frontend và backend nghiệp vụ được tách; backend xử lý trong cùng 
 | Test | Thư mục khung tên test/ | Giữ tên test/; owner bổ sung kiểm thử, không đổi tests/ riêng trong docs |
 
 Ba file nền main/pipeline/requirements đã có trong ZIP, nhưng chưa đáp ứng schema HCI và thiếu runner phân tích. Đọc/parse hợp lệ hiện báo FAILED/ANALYSIS_NOT_CONFIGURED (HTTP 501). /health chỉ báo API và runner, chưa kiểm tra LightRAG. Chọn công nghệ hoặc có hook không chứng minh đã tích hợp hoặc nghiệm thu.
+
+### Căn cứ hiện trạng mã nguồn
+
+Đối chiếu mã [main tại commit 01b98ce](https://github.com/BACHCONGDUNG/legal-document-review-hitl/tree/01b98ced882787d5be63d14ca44b91c6aa795a59), chưa chạy kiểm thử trong đợt sửa tài liệu này:
+
+- Converter, Parser và API/Pipeline nền có implementation; route upload và /health hiện ở backend/main.py. api/compare.py còn trống.
+- contracts.py, config.py, adapter/linker, các file context/change_analysis và evaluator.py còn trống; frontend/test chủ yếu là khung. Có tên file không chứng minh chức năng hoàn thành.
+- API nền còn doc_v1/doc_s/reference_files và report base_document/amendment_document/reference_documents/results; chưa là contract HCI mục tiêu.
+- Mặc định chưa có analysis_runner; đọc/parse hợp lệ vẫn trả FAILED/ANALYSIS_NOT_CONFIGURED, API ánh xạ HTTP 501. requirements.txt có dependency; giới hạn mặc định trong code là cấu hình phát triển, chưa là số đo nghiệm thu.
 
 ## 2. Thành phần và ranh giới trách nhiệm
 
@@ -147,7 +155,7 @@ Không xóa vùng dùng chung của Server để giả lập xóa một comparis
 
 ## 5. API, lỗi và contract
 
-API nghiệp vụ mục tiêu: POST /api/compare, multipart base_file/amendment_file/reference_files, trả ComparisonReport HCI và nguồn. Chưa có API lưu nhận xét/job. Mã HTTP/error body, kích thước, cơ chế nguồn và alias nếu muốn hỗ trợ do D-01/D-02 chốt trong api-contract.md (chưa có). Không ghi URL/payload LightRAG chưa kiểm chứng như API chính thức của dự án.
+API nghiệp vụ mục tiêu: POST /api/compare, multipart base_file/amendment_file/reference_files, trả ComparisonReport HCI và nguồn. Chưa có API lưu nhận xét/job. Mã HTTP/error body, kích thước và alias nếu muốn hỗ trợ được phối hợp theo D-01/D-02 trong api-contract.md (Dũng + Đức Anh cùng biên soạn, chưa có trong gói). Cơ chế giữ/đọc bằng chứng do Tùng Dương quyết định theo D-07, phối hợp Đức Anh về API và Dũng về nguồn; thay contract hoặc vòng đời cần các bên liên quan review. Không ghi URL/payload LightRAG chưa kiểm chứng như API chính thức của dự án.
 
 Code nền vẫn dùng doc_v1/doc_s và cấu trúc báo cáo chưa đúng SRS; việc tài liệu thống nhất không tự sửa code. Bộ tổng hợp chuyển đổi nội bộ sang HCI; thiếu module hiện trả 501/ANALYSIS_NOT_CONFIGURED. Mã này là trạng thái phát triển, không phải kết luận “không có thay đổi”. SUCCESS/PARTIAL/FAILED, needs_review và ReviewRecord là ba tầng khác nhau.
 
@@ -162,6 +170,6 @@ Với lỗi từng bước, giữ chỉ dẫn/căn cứ đã có và chỉ PARTI
 | Lê Tùng Dương | Tương tác, frontend và session/nhận xét | D-07, D-08 |
 | Vương Thành Nam | Diff, AI Adapter, Scorer và đánh giá kỹ thuật | D-05, D-06, D-11 |
 
-[Module Owner Decisions](module-owner-decisions-hci.md) là nơi duy nhất theo dõi phương án và trạng thái. Hiện chưa ghi quyết định thay owner. Đổi thuật toán nội bộ do owner đề xuất và tự kiểm tra; đổi contract phải được bên giao/nhận review fixture. Sau chốt, cập nhật SRS/Architecture/hướng dẫn tương ứng, không giữ nhiều bảng quyết định mâu thuẫn.
+[Module Owner Decisions](module-owner-decisions-hci.md) là nơi duy nhất theo dõi phương án và trạng thái, chia thành phần owner và phần cần nhiều bên thống nhất theo cùng D-ID. Nam quyết định chính D-05; Đức Anh quyết định chính D-04/D-13; Tùng Dương quyết định cơ chế đọc bằng chứng D-07. Dũng + Đức Anh cùng biên soạn api-contract.md/development-guide.md; Dũng tổng hợp kế hoạch và báo cáo đánh giá chung. Các phương án kỹ thuật vẫn chờ owner lựa chọn và review theo phạm vi ảnh hưởng. Đổi thuật toán nội bộ do owner đề xuất và tự kiểm tra; đổi contract phải được bên giao/nhận review fixture. Sau chốt, cập nhật SRS/Architecture/hướng dẫn tương ứng, không giữ nhiều bảng quyết định mâu thuẫn.
 
 Không triển khai thêm database lịch sử, account, cộng tác, job/queue hoặc học lại từ nhận xét ở đợt này. Đánh giá kỹ thuật do Nam chủ trì; Dũng chủ trì usability; không lấy chất lượng mô hình làm bằng chứng giao diện hiệu quả hoặc ngược lại. React/TypeScript là định hướng đã ghi trong bản cũ, D-07 xác nhận môi trường và thư viện; giới hạn, mô hình và ngân sách chưa là cam kết.

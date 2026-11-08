@@ -1,16 +1,14 @@
 # Hướng dẫn dữ liệu và gán nhãn
 
-**Học phần và nhóm:** 2627I_INT2041_1 Nhóm 6  
-**Dự án:** Legal Document Change Detection  
-**Phiên bản:** HCI 1.2.0  
-**Trạng thái:** Bản đề xuất để nhóm review  
-**Ngày cập nhật:** 03/11/2026  
+**Học phần và nhóm:** 2627I_INT2041_1 Nhóm 6
+**Dự án:** Legal Document Change Detection
+**Phiên bản:** HCI 1.2.0
+**Trạng thái:** Bản đề xuất để nhóm review
 **Tài liệu liên quan:** [BRD](brd.md), [SRS](srs.md), [Architecture HCI](architecture.md), [Owner Decisions](module-owner-decisions-hci.md)
 
 ## 1. Phạm vi dữ liệu và đầu ra gán nhãn
 
 Tài liệu hướng dẫn chuẩn bị mẫu V1–S, lập đáp án tham chiếu có bằng chứng và chuẩn bị dữ liệu kiểm thử tương tác. Phạm vi nghiệp vụ theo BRD HCI. Baseline gold/fixture HCI dùng ReviewItem, ChangeAspect và bốn mã của SRS HCI. Đầu ra phân tích và nhãn phải được kiểm tra theo cùng hợp đồng trước khi đưa vào giao diện hoặc đánh giá. Không định nghĩa lại schema API, tác vụ usability hoặc công thức chỉ số đánh giá.
-
 
 
 Mỗi mẫu xác định rõ V1, S và bộ tài liệu tham chiếu thực sự cung cấp. Gán nhãn từng chỉ dẫn liên quan và từng nhận định thay đổi có thể kiểm tra riêng; không gán một bản ghi cho mọi Điều không thay đổi và không bắt buộc dựng V2 đầy đủ.

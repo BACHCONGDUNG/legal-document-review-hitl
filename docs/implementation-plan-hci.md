@@ -1,17 +1,16 @@
 # Kế hoạch triển khai dự án HCI
 
-**Học phần và nhóm:** 2627I_INT2041_1 Nhóm 6  
-**Đề tài:** Hệ thống hỗ trợ đối chiếu thay đổi văn bản pháp luật với AI có giải thích và có sự kiểm chứng của người dùng  
-**Nhóm trưởng:** Bạch Công Dũng  
-**Thành viên:** Bạch Công Dũng, Dương Đức Anh, Lê Tùng Dương, Vương Thành Nam  
-**Phiên bản:** HCI 1.2.0  
-**Ngày cập nhật:** 03/11/2026  
-**Thời gian:** Tuần 6–14 của học phần; hoàn thành nội bộ cuối tuần 13, tuần 14 dành cho dự phòng và bàn giao theo lịch học phần.  
+**Học phần và nhóm:** 2627I_INT2041_1 Nhóm 6
+**Đề tài:** Hệ thống hỗ trợ đối chiếu thay đổi văn bản pháp luật với AI có giải thích và có sự kiểm chứng của người dùng
+**Nhóm trưởng:** Bạch Công Dũng
+**Thành viên:** Bạch Công Dũng, Dương Đức Anh, Lê Tùng Dương, Vương Thành Nam
+**Phiên bản:** HCI 1.2.0
+**Thời gian:** Tuần 6–14 của học phần; hoàn thành nội bộ cuối tuần 13, tuần 14 dành cho dự phòng và bàn giao theo lịch học phần.
 **Tài liệu liên quan:** [BRD](brd.md), [SRS](srs.md), [Architecture](architecture.md), [Nghiên cứu người dùng](user-research.md), [Hướng dẫn dữ liệu và gán nhãn](data-annotation-guide-hci.md).
 
 Kế hoạch xác định người chịu trách nhiệm, thứ tự triển khai, đầu ra và điểm bàn giao. Mỗi thành viên dùng tài liệu chuyên trách để triển khai yêu cầu; các mốc dưới đây là kế hoạch, không xác nhận chức năng đã hoàn thành.
 
-### Baseline cập nhật 03/11/2026
+### Baseline tài liệu
 
 Đợt này thống nhất tài liệu HCI, không sửa code hoặc công bố đã hoàn thành G1/G2. ZIP đã có converter/Parser và ba file API/pipeline/requirements nền; chưa có schema HCI, adapter, linker, context/LightRAG, phân tích, UI/nhận xét hoặc evaluator hoàn chỉnh. API/report nền còn lệch contract HCI. Kế hoạch tuần 6–14 dưới đây là baseline học phần, không là tiến độ thực tế đã đạt; chưa tự suy tuần hiện tại hoặc thay lịch nộp.
 
@@ -165,6 +164,6 @@ Thống nhất cụ thể cách truy bằng chứng từ PDF gốc sau chuyển 
 
 ## 6. Tài liệu còn phải hoàn thiện sau đề xuất owner
 
-`api-contract.md`, `development-guide.md`, `test-evaluation-plan.md` chưa có trong gói hiện tại. D-01 giao Đức Anh tổng hợp API với bên nhận; D-13 giao Đức Anh tổng hợp cách chạy và yêu cầu module; D-11/D-12 giao Nam/Dũng cung cấp hai phần kỹ thuật/usability cho một kế hoạch đánh giá chung. Không tạo các file trống rồi báo là đã có tài liệu hoàn chỉnh.
+`api-contract.md` và `development-guide.md` do Dũng + Đức Anh cùng biên soạn theo D-01/D-13; hai file này chưa có trong gói. [test_evaluation_plan.md](test_evaluation_plan.md) đã có bản khung, đang hoàn thiện; Dũng tổng hợp kế hoạch và báo cáo đánh giá chung, Nam phụ trách kỹ thuật theo D-11, Dũng phụ trách người dùng theo D-12. Đức Anh chủ trì kiểm thử tích hợp. Không coi bản khung là kế hoạch hoặc kết quả đánh giá đã hoàn tất.
 
 Lựa chọn đã chốt được ghi tại register cùng bằng chứng, người review và tài liệu đã cập nhật. Bản đổi contract phải có schema + fixture + bên nhận; thay mô hình không tự làm thay đổi nhãn gold hoặc dữ liệu nghiên cứu người dùng.

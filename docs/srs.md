@@ -1,9 +1,8 @@
 # SRS — Đặc tả yêu cầu phần mềm
 
-**Học phần và nhóm:** 2627I_INT2041_1 Nhóm 6  
-**Dự án:** Legal Document Change Detection  
-**Phiên bản:** HCI 1.1.0  
-**Ngày cập nhật:** 03/11/2026  
+**Học phần và nhóm:** 2627I_INT2041_1 Nhóm 6
+**Dự án:** Legal Document Change Detection
+**Phiên bản:** HCI 1.1.0
 **Tài liệu nền:** [BRD](brd.md), [Nghiên cứu người dùng](user-research.md)
 
 ## 1. Phạm vi đặc tả
@@ -70,7 +69,7 @@ Các trường dưới đây là dữ liệu JSON; `null` nghĩa là chưa có g
 
 `ComparisonReport.status`: SUCCESS / PARTIAL / FAILED theo mục 5. `general_context` là thông tin tổng quát V1; có thể null nếu chưa tạo được, kèm cảnh báo. Nhận xét người dùng không nằm trong đầu ra AI của backend.
 
-`documents` là danh sách DocumentIdentity, có đúng một BASE, một AMENDMENT và các REFERENCE nếu có; quy ước nội bộ v1/s/ref_N được giữ nhất quán trong lượt. `items`, `reference_requirements`, `effect_info`, `warnings`, `errors` là các danh sách theo bảng. Mọi affected_item_ids phải trỏ đúng items của cùng báo cáo; danh sách rỗng ở ProcessingIssue nghĩa ảnh hưởng toàn báo cáo, không có nghĩa không lỗi. Cách gửi nguồn bổ sung và fixture JSON được owner chốt ở D-01/D-02, nhưng EvidenceRef phải đọc/đối chiếu được sau khi backend dọn file.
+`documents` là danh sách DocumentIdentity, có đúng một BASE, một AMENDMENT và các REFERENCE nếu có; quy ước nội bộ v1/s/ref_N được giữ nhất quán trong lượt. `items`, `reference_requirements`, `effect_info`, `warnings`, `errors` là các danh sách theo bảng. Mọi affected_item_ids phải trỏ đúng items của cùng báo cáo; danh sách rỗng ở ProcessingIssue nghĩa ảnh hưởng toàn báo cáo, không có nghĩa không lỗi. Contract/fixture nguồn được phối hợp theo D-01/D-02; cơ chế giữ và đọc bằng chứng sau khi backend dọn file do Tùng Dương quyết định theo D-07, phối hợp Đức Anh về API và Dũng về nguồn. EvidenceRef phải đọc/đối chiếu được sau cleanup; chưa chốt schema hoặc endpoint chỉ bằng việc liệt kê phương án nền.
 
 Bốn mã HCI dưới đây là baseline thống nhất cho API, gold và fixture. Không bổ sung trường hoặc mã ngoài contract như yêu cầu bắt buộc của giao diện. Khi module dùng cấu trúc xử lý riêng, adapter phải chuyển đổi có kiểm tra trước khi tạo ReviewItem.
 

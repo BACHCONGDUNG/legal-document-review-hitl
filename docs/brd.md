@@ -1,10 +1,9 @@
 # BRD — Hệ thống hỗ trợ đối chiếu thay đổi văn bản pháp luật
 
-**Dự án:** Legal Document Change Detection  
-**Học phần và nhóm:** 2627I_INT2041_1 Nhóm 6  
-**Thành viên:** Bạch Công Dũng, Dương Đức Anh, Lê Tùng Dương, Vương Thành Nam  
-**Phiên bản tài liệu:** HCI 1.1.0  
-**Ngày cập nhật:** 03/11/2026   
+**Dự án:** Legal Document Change Detection
+**Học phần và nhóm:** 2627I_INT2041_1 Nhóm 6
+**Thành viên:** Bạch Công Dũng, Dương Đức Anh, Lê Tùng Dương, Vương Thành Nam
+**Phiên bản tài liệu:** HCI 1.1.0
 **Phạm vi phiên bản đầu:** Phân tích văn bản quy phạm pháp luật tiếng Việt ban đầu (V1) và văn bản sửa đổi (S), kèm tài liệu tham chiếu do người dùng cung cấp khi cần.
 
 ## 1. Mục đích tài liệu
