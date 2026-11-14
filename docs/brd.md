@@ -359,7 +359,7 @@ Mỗi chỉ tiêu kỹ thuật phải gắn với bộ dữ liệu, phạm vi nh
 | Hướng dẫn gán nhãn và kế hoạch đánh giá kỹ thuật | Tiêu chí nhãn/mức tác động, đáp án tham chiếu, phương pháp và chỉ số kỹ thuật. |
 | README | Giới thiệu, hiện trạng, cách chạy và chỉ dẫn tài liệu. |
 
-SRS quy định hợp đồng ReviewItem và bốn mã field_group của hệ thống. Các module xử lý nội bộ phải chuyển kết quả sang hợp đồng này, giữ nghĩa, bằng chứng và phần ngoài phạm vi. Chỉ tiêu kỹ thuật và ngưỡng nghiệm thu phải được nhóm xác định từ phạm vi, dữ liệu và phép đo thực tế của dự án.
+SRS dùng AmendmentResult và tám nhóm field_group quy định trong SRS. Bốn nhóm nghiệp vụ ưu tiên của BRD dùng để chọn tác vụ nghiên cứu HCI.
 
 Các file hiện có được gọi thống nhất là [SRS](srs.md), [Architecture](architecture.md), [Implementation Plan HCI](implementation-plan-hci.md), [Data Annotation Guide HCI](data-annotation-guide-hci.md) và [User Research](user-research.md). [Module Owner Decisions](module-owner-decisions-hci.md) tập trung các lựa chọn còn mở; không dùng danh sách quyết định đó để khẳng định đã triển khai hoặc đã có kết quả người dùng.
 

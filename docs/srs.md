@@ -13,13 +13,11 @@ Bản đầu xử lý một cặp V1–S và tài liệu tham chiếu do ngườ
 
 Tên trường và mã trạng thái trong SRS này là hợp đồng đầu ra HCI. Module nội bộ có thể dùng cấu trúc xử lý riêng nhưng phải chuyển kết quả sang contract HCI trước khi trả cho giao diện. Khi đổi hợp đồng, bên cung cấp và bên nhận phải cập nhật cùng fixture và ca kiểm thử.
 
-### 1.1. Baseline tài liệu và tình trạng hiện thực
+### 1.1. Baseline và hiện trạng
 
-SRS này là nguồn thống nhất contract HCI, không phải mô tả code đã hoàn thành. Baseline dùng `base_file`, `amendment_file`, `reference_files` và ComparisonReport/ReviewItem ở mục 3. Nếu owner muốn đổi tên/trường, bên giao và bên nhận phải review fixture và cập nhật đồng bộ; không tự suy rằng schema code nền là chuẩn HCI.
+POST `/api/compare` nhận multipart `doc_v1`, `doc_s` và `reference_files` tùy chọn. `ComparisonReport` gồm `comparison_id`, `base_document`, `amendment_document`, `reference_documents`, `status`, `results`, `warnings` và `errors`. Mỗi phần tử `results` là một `AmendmentResult`.
 
-ZIP hiện có converter, Parser và ba file API/pipeline/requirements nền. API nền còn dùng `doc_v1`/`doc_s`; báo cáo nền còn `base_document`, `amendment_document`, `reference_documents`, `results`. Các trường này chưa là response HCI. Chưa có adapter, linker, retrieval, phân tích và quản lý nhận xét đầy đủ. Đọc/parse thành công nhưng chưa gắn runner hiện trả 501/FAILED/ANALYSIS_NOT_CONFIGURED, không phải kết quả phân tích HCI.
-
-Tạm chọn B: backend gọi LightRAG Server riêng để hỗ trợ ngữ cảnh. Mô hình, release, API nhập/query/xóa, prompt, chunking, cấu hình và giới hạn kỹ thuật còn chờ owner đề xuất tại [Module Owner Decisions](module-owner-decisions-hci.md). Không coi tạm chọn framework là chốt các chi tiết đó hoặc giao LightRAG sinh báo cáo nghiệp vụ cuối.
+`backend.demo:app` gắn runner xử lý DOCX bằng quy tắc cục bộ và cung cấp giao diện. Client LightRAG HTTP đã có kiểm thử mô phỏng. Nhận xét trong phiên, đọc thêm nguồn và kiểm tra lại thuộc phần mở rộng HCI.
 
 ## 2. Yêu cầu chức năng
 
@@ -44,77 +42,15 @@ Yêu cầu bổ sung của phương án B: kết quả truy xuất phải ánh x
 
 ### 3.1. Đầu vào mỗi lượt
 
-| Trường | Kiểu | Quy định |
-| --- | --- | --- |
-| base_file | File | Bắt buộc, vai trò V1 |
-| amendment_file | File | Bắt buộc, vai trò S |
-| reference_files | File[] | Có thể rỗng; mỗi tệp có định danh riêng |
+POST `/api/compare` nhận multipart `doc_v1`, `doc_s` và `reference_files` tùy chọn. `ComparisonReport` gồm `comparison_id`, `base_document`, `amendment_document`, `reference_documents`, `status`, `results`, `warnings` và `errors`. Mỗi phần tử `results` là một `AmendmentResult`.
 
-Đây là baseline hợp đồng HCI, chưa phải chữ ký endpoint của code nền. Đức Anh cùng Tùng Dương xác nhận fixture và kế hoạch chuyển đổi theo D-01; không mặc định hỗ trợ song song alias cũ/mới nếu chưa thiết kế.
+### 3.2. Hợp đồng đầu ra
 
-Giới hạn dung lượng, số tệp và thời gian xử lý quản lý trong cấu hình/API contract, hiển thị trước khi gửi. Giữ lựa chọn file trong phiên để gửi lại; nếu trình duyệt đã mất quyền truy cập file thì yêu cầu chọn lại. Tên file không được dùng để tự xác nhận số hiệu, vai trò pháp lý hoặc hiệu lực.
+Nguồn chuẩn là [contracts.py](../backend/app/schemas/contracts.py), [validator](../backend/app/schemas/report_validation.py) và [fixture báo cáo](../test/fixtures/reports/common_contract.json). Mỗi `AmendmentResult` giữ chỉ dẫn `amendment`, ngữ cảnh, `text_diff`, `semantic_diff`, `scoring` và cảnh báo/lỗi theo schema. `semantic_diff.changes` chứa từng nhận định và các `aspects`. `scoring` nối với nhận định bằng `change_id` trong chỉ dẫn tương ứng.
 
-### 3.2. Hợp đồng đầu ra tối thiểu
+### 3.3. Nhóm phân tích và bằng chứng
 
-Các trường dưới đây là dữ liệu JSON; `null` nghĩa là chưa có giá trị theo quy tắc của từng trường. Mảng rỗng không được dùng để che lỗi hoặc bước chưa thực hiện.
-
-| Đối tượng | Trường bắt buộc | Ý nghĩa |
-| --- | --- | --- |
-| DocumentIdentity | document_id, role, filename | role: BASE / AMENDMENT / REFERENCE; không trả đường dẫn nội bộ |
-| EvidenceRef | document_id, source_refs, quote | Trích nguyên văn, gắn với đúng file và vị trí |
-| ReferenceRequirement | reference_id, document_label, target_locator, reason, status, affected_item_ids | status: AVAILABLE / MISSING / UNRESOLVED; tên/vị trí chưa xác định cho phép null và phải giải thích |
-| ProcessingIssue | code, message, affected_item_ids | Lỗi/cảnh báo dễ hiểu, chỉ ra phần bị ảnh hưởng; [] nếu ảnh hưởng toàn báo cáo |
-| EffectInfo | text, applies_to, evidence, needs_review, review_reason | Nội dung hiệu lực/chuyển tiếp và căn cứ; phạm vi chưa rõ cho phép null |
-| ComparisonReport | comparison_id, documents, status, general_context, general_context_evidence, items, reference_requirements, effect_info, warnings, errors | Một báo cáo của một lần phân tích; comparison_id mới mỗi lần |
-
-`ComparisonReport.status`: SUCCESS / PARTIAL / FAILED theo mục 5. `general_context` là thông tin tổng quát V1; có thể null nếu chưa tạo được, kèm cảnh báo. Nhận xét người dùng không nằm trong đầu ra AI của backend.
-
-`documents` là danh sách DocumentIdentity, có đúng một BASE, một AMENDMENT và các REFERENCE nếu có; quy ước nội bộ v1/s/ref_N được giữ nhất quán trong lượt. `items`, `reference_requirements`, `effect_info`, `warnings`, `errors` là các danh sách theo bảng. Mọi affected_item_ids phải trỏ đúng items của cùng báo cáo; danh sách rỗng ở ProcessingIssue nghĩa ảnh hưởng toàn báo cáo, không có nghĩa không lỗi. Contract/fixture nguồn được phối hợp theo D-01/D-02; cơ chế giữ và đọc bằng chứng sau khi backend dọn file do Tùng Dương quyết định theo D-07, phối hợp Đức Anh về API và Dũng về nguồn. EvidenceRef phải đọc/đối chiếu được sau cleanup; chưa chốt schema hoặc endpoint chỉ bằng việc liệt kê phương án nền.
-
-Bốn mã HCI dưới đây là baseline thống nhất cho API, gold và fixture. Không bổ sung trường hoặc mã ngoài contract như yêu cầu bắt buộc của giao diện. Khi module dùng cấu trúc xử lý riêng, adapter phải chuyển đổi có kiểm tra trước khi tạo ReviewItem.
-
-### 3.3. Mục kết quả và các khía cạnh
-
-Đơn vị người dùng rà soát là `ReviewItem`: một nhận định thay đổi cụ thể có thể kiểm tra riêng, gắn với chỉ dẫn sửa đổi. Nếu chưa tạo được nhận định vì liên kết/lỗi phân tích, vẫn trả một mục thể hiện chỉ dẫn và vấn đề. Không làm mất chỉ dẫn chỉ vì AI không trả kết quả.
-
-| Trường ReviewItem | Kiểu/giá trị | Quy định |
-| --- | --- | --- |
-| item_id | string | Duy nhất trong báo cáo; dùng để ghi nhận và đếm mục rà soát |
-| amendment_id | string | Nhiều mục có thể thuộc một chỉ dẫn sửa đổi |
-| instruction | EvidenceRef | Chỉ dẫn từ S |
-| target_document, target_locator | string hoặc null | Văn bản và vị trí bị tác động; chưa rõ phải cảnh báo |
-| applicability | APPLIES / OTHER_DOCUMENT / UNRESOLVED | OTHER_DOCUMENT giữ trong danh sách phạm vi, không tính vào mục rà soát V1 |
-| operation | AMEND / ADD / REPEAL / UNRESOLVED | Đổi số/gộp–tách được mô tả trong chỉ dẫn và giải thích, không ép thành thêm/xóa |
-| before_text, after_text | string hoặc null | Nội dung cục bộ; phân biệt không tồn tại do thêm/bãi bỏ với chưa xác định |
-| before_status | PRESENT / ABSENT / UNRESOLVED | ABSENT chỉ khi xác nhận không có nội dung cũ, chẳng hạn bổ sung mới |
-| after_basis | QUOTED / DERIVED / ABSENT / UNRESOLVED | DERIVED là nội dung suy ra cục bộ, không phải trích nguyên văn hoặc V2 chính thức |
-| text_changes | TextChange[] hoặc null | null khi chưa đủ căn cứ/chưa xử lý; [] khi đã so sánh nhưng không có khác biệt chữ |
-| is_meaningful_change | boolean hoặc null | true: đổi nội dung; false: tương đương có căn cứ; null: chưa xác định |
-| explanation | string hoặc null | Nhận định tổng thể; không tạo được thì null và ghi lý do |
-| aspects | ChangeAspect[] | Giữ các khía cạnh đã xác định; [] không tự có nghĩa không đổi nghĩa |
-| evidence | EvidenceRef[] | Nguồn hỗ trợ nhận định tổng thể và ngữ cảnh |
-| significance | LOW / MEDIUM / HIGH / CRITICAL hoặc null | Có giá trị phải có significance_reason và bằng chứng; dùng rubric đã chốt |
-| significance_reason | string hoặc null | null khi chưa chấm được, lý do thiếu ở review_reason |
-| needs_review, review_reason | boolean, string | Bất định của hệ thống, độc lập với nhận xét người dùng; false thì lý do rỗng |
-
-**ChangeAspect:** `aspect_id`, `field_group`, `old_value`, `new_value`, `interpretation`, `evidence`, `needs_review`, `review_reason`. Giá trị trước/sau cho phép null khi không tồn tại hoặc chưa xác định; diễn giải phải nói rõ trường hợp nào. Nội dung diễn giải không được đưa vào `EvidenceRef.quote` như trích nguyên văn.
-
-| field_group HCI | Nhóm theo BRD |
-| --- | --- |
-| TIME_LIMIT | Thời hạn thực hiện; không dùng cho ngày hiệu lực văn bản |
-| QUANTITATIVE | Giá trị định lượng, giữ đủ đơn vị và điều kiện |
-| CONDITIONS_EXCEPTIONS | Điều kiện và ngoại lệ |
-| SUBJECT_RIGHTS_DUTIES | Chủ thể và quyền/nghĩa vụ; diễn giải phải chỉ rõ thành phần thay đổi |
-
-Một mục có nhiều khía cạnh, không ép về một nhãn chính rồi bỏ phần còn lại. Chỉ đổi diễn đạt có thể có aspects = []; vẫn giữ giải thích và bằng chứng. Nếu ngoài phạm vi hoặc chưa phân nhóm được thì giữ chỉ dẫn, dùng cảnh báo tương ứng và không khẳng định đã phân tích đầy đủ. Trường hợp chỉ đổi dẫn chiếu, nêu thay đổi trực tiếp và tài liệu thiếu; không ép thành một khía cạnh đổi nghĩa thuộc bốn nhóm khi chưa đủ căn cứ.
-
-**TextChange:** `type` (INSERT / DELETE / REPLACE), `old_start`, `old_end`, `new_start`, `new_end`. Vị trí ký tự bắt đầu từ 0, khoảng [start, end), khớp chính xác before_text/after_text đã trả. Phía ABSENT được dùng chuỗi rỗng khi tính vị trí; phía UNRESOLVED không được thay bằng chuỗi rỗng để chạy diff.
-
-**Quy tắc nguồn:** document_id + source_ref xác định nguồn trong lượt phân tích. Parser hiện dùng `block:N` theo thứ tự paragraph/bảng trong DOCX; N không phải số trang hoặc chỉ số paragraph/bảng riêng. Hiển thị “Khối N” và loại khối khi có, không đổi nhãn bằng suy đoán. Segment là khoảng ký tự Python [start,end) trên text của source_blocks; TextChange phải khớp before_text/after_text, owner thống nhất chuyển chỉ số cho frontend nếu dùng UTF-16 (D-02/D-07).
-
-Luồng đầu vào trước mắt là PDF có lớp chữ → converter hiện có → DOCX → Parser hiện có; DOCX đi thẳng vào Parser. Giữ file gốc và report chuyển đổi. Khi chưa xác minh mapping PDF, evidence phải nói rõ nguồn DOCX chuyển đổi, không hiển thị số trang PDF như đã chính xác. Muốn đáp ứng mở đúng trang PDF cần mapping đã kiểm chứng; chưa có thì ghi giới hạn. Dũng đề xuất adapter/provenance theo D-02; chưa buộc refactor Parser thành Reader/Parser tách biệt.
-
-Mỗi trích dẫn phải đọc được trong giao diện sau khi backend dọn file; có thể gửi SourceBlock cùng response hoặc cơ chế tương đương đáp ứng vòng đời phiên. Hình thức cụ thể do D-01/D-02 chốt trước nối frontend. Mức nguồn chỉ tới Điều/block/trang phải được hiển thị đúng, không giả định tọa độ từng ký tự. source_id/chunk_id/reference của LightRAG không tự là source_ref; mô tả entity/edge không là quote nguyên văn.
+Tám nhóm `field_group` là SUBJECT_OBJECT, RIGHTS_DUTIES_ACTIONS, CONDITIONS_EXCEPTIONS, TIME_QUANTITY, PROCEDURE_AUTHORITY, CONSEQUENCES_SANCTIONS, DEFINITIONS_REFERENCES và SCOPE_EFFECT_TRANSITION. `category`, `significance`, `is_critical`, `needs_review` và `review_reason` tuân theo validator. Một thay đổi chỉ về diễn đạt dùng `WORDING_ONLY` và `LOW`; mức chưa xác định giữ `significance` và `is_critical` ở null cùng lý do review. Giao diện demo đọc trích dẫn và vị trí từ bằng chứng trong báo cáo. Cơ chế mở thêm nguồn sau khi dọn file thuộc D-07.
 
 ### 3.4. Dữ liệu nhận xét trong phiên
 
@@ -122,19 +58,17 @@ Frontend quản lý `ReviewRecord` gồm:
 
 | Trường | Quy định |
 | --- | --- |
-| comparison_id, item_id | Gắn với đúng phiên bản kết quả đang hiển thị |
+| comparison_id, amendment_id, change_id (nếu rà soát theo nhận định) | Khóa dự kiến gắn với đúng kết quả đang hiển thị; D-08 chốt đơn vị nhận xét |
 | decision | AGREE / DISAGREE / INSUFFICIENT_BASIS hoặc null |
 | note | Chuỗi ghi chú; mặc định rỗng |
 | review_status | UNREVIEWED / REVIEWED / RECHECK_REQUIRED |
 | previous_record | Bản nhận xét và comparison_id trước đó khi cần giữ để kiểm tra lại; null nếu không có |
 
-Không dùng số Điều hoặc thứ tự dòng làm khóa nhận xét. Không coi item_id của hai lần phân tích là cùng một mục chỉ vì chuỗi giống nhau. Mục chưa xác định liên quan V1 vẫn có thể được ghi nhận chưa đủ căn cứ; mục OTHER_DOCUMENT không nằm trong tổng số rà soát V1. Đếm theo ReviewItem, ghi rõ đây là số mục rà soát, không gọi là số Điều hoặc số chỉ dẫn.
+Khóa nhận xét dự kiến gắn với báo cáo và mục đang hiển thị. Khi phân tích lại, D-08 quyết định cách đối chiếu và đánh dấu nhận xét cần xem lại.
 
-### 3.5. Trách nhiệm dữ liệu và chuyển đổi
+### 3.5. Trách nhiệm dữ liệu
 
-- Dữ liệu nội bộ có thể giữ cây Parser, chỉ dẫn sửa đổi và nhận định trung gian; bộ tổng hợp phải xuất đúng ReviewItem. Không coi dict của Parser hay response LightRAG là ComparisonReport.
-- Phân nhóm theo nội dung và phạm vi: hạn thực hiện dùng TIME_LIMIT; giá trị/ngưỡng dùng QUANTITATIVE; điều kiện/ngoại lệ dùng CONDITIONS_EXCEPTIONS; chủ thể/quyền/nghĩa vụ dùng SUBJECT_RIGHTS_DUTIES. Nội dung ngoài phạm vi không được ép vào bốn mã bằng đổi tên; giữ chỉ dẫn, bằng chứng và OUT_OF_SCOPE/UNRESOLVED thích hợp. Ca ranh giới và fixture do D-06 review.
-- Các mảng trống/null giữ nghĩa ở từng trường. Không đổi needs_review hoặc significance từ ReviewRecord.decision; không dùng nhận xét làm nhãn huấn luyện/gold tự động.
+Pipeline tổng hợp kết quả theo schema HCI và kiểm tra bằng validator. D-06 tiếp tục review ví dụ, cách chia/gộp nhận định và rubric. D-07 và D-08 phụ trách nguồn mở rộng và nhận xét trong phiên.
 
 ## 4. Trạng thái và vòng đời nhận xét
 
@@ -175,23 +109,9 @@ Cơ chế nhận diện cùng mục và so sánh phiên bản cần được bac
 
 Thiếu tài liệu cần thiết để phân tích tác động → PARTIAL. Không chắc một liên kết nhưng đã giữ chỉ dẫn và trạng thái chưa xác định không tự đồng nghĩa request thất bại; nếu vì thế không phân tích được một phần yêu cầu thì PARTIAL. SUCCESS không có nghĩa AI chắc chắn đúng.
 
-### 5.2. Mã lỗi và cảnh báo tối thiểu
+### 5.2. Lỗi API và báo cáo
 
-| Mã | Trường hợp | Hành vi |
-| --- | --- | --- |
-| INVALID_INPUT | Thiếu file chính, định dạng/giới hạn không hợp lệ | Không chạy pipeline; chỉ rõ cần sửa gì |
-| UNREADABLE_DOCUMENT | File hỏng/mật khẩu/không có chữ đọc được | Chỉ rõ file; file chính lỗi thì không tạo báo cáo hợp lệ; tham chiếu lỗi không che kết quả khác nếu vẫn phân tích được |
-| STRUCTURE_UNRESOLVED | Không nhận diện cấu trúc cần thiết trong V1/S | FAILED nếu không thể tiếp tục; PARTIAL nếu chỉ ảnh hưởng một phần có thể chỉ ra |
-| LINK_UNCERTAIN | Đích sửa đổi chưa rõ | Giữ chỉ dẫn, ứng viên nếu có và lý do; không tự chốt thêm/bãi bỏ |
-| REFERENCE_MISSING | Thiếu tài liệu cần thiết | PARTIAL và ReferenceRequirement tương ứng |
-| REFERENCE_UNRESOLVED | Có tệp nhưng chưa tìm/kiểm tra được nội dung cần thiết | Giữ yêu cầu bổ sung/làm rõ và cảnh báo phần bị giới hạn |
-| ANALYSIS_UNRESOLVED | AI lỗi, phản hồi sai cấu trúc hoặc chưa đủ căn cứ | Giữ dữ liệu nguồn và nhận định đã xác định; phần chưa có trả null kèm lý do |
-| OUT_OF_SCOPE | Loại nội dung chưa hỗ trợ | Giữ chỉ dẫn và thông tin phạm vi, không báo đã phân tích đầy đủ |
-| TIMEOUT | Hết thời gian chờ | Báo chưa nhận được kết quả; cho chủ động thử lại, không tự gửi lại |
-
-Lỗi kết nối/lập chỉ mục/truy xuất LightRAG là lỗi bước ngữ cảnh, không là REFERENCE_MISSING chỉ từ retrieval rỗng. Giữ phần dùng được, PARTIAL/FAILED theo mục 5.1. Mã chi tiết dịch vụ, HTTP status/error body và mapping mã code nền phải được Đức Anh đề xuất trong API contract (D-01/D-04), chưa tự thêm endpoint hoặc enum chưa kiểm chứng vào response HCI.
-
-Có chỉ dẫn mà chưa phân tích được vẫn phải hiển thị chỉ dẫn. Chỉ thông báo không tìm thấy yêu cầu tác động V1 khi SUCCESS, đã xử lý hết S trong phạm vi và không còn đối tượng/phần chưa xác định. Text Diff rỗng hoặc aspects rỗng không đủ để kết luận này.
+Route `POST /api/compare` dùng xử lý lỗi trong [backend/main.py](../backend/main.py). Lỗi upload hoặc vận hành có thể trả HTTP ngoài 2xx. Một request HTTP 200 vẫn có thể chứa `report.status = FAILED`; UI đọc trạng thái, lỗi và cảnh báo trong báo cáo trước khi hiển thị kết luận. `backend.main:app` mặc định trả HTTP 501 và `ANALYSIS_NOT_CONFIGURED` khi đầu vào hợp lệ và runner chưa được gắn. Giao diện demo dùng `backend.demo:app`.
 
 ## 6. Yêu cầu sử dụng và vận hành
 

@@ -11,28 +11,18 @@
 
 HCI tập trung vào người dùng sinh viên Luật: hiểu thay đổi, đọc bằng chứng, nhận biết giới hạn, ghi nhận nhận xét và kiểm tra lại sau bổ sung. Lõi xử lý V1–S cung cấp dữ liệu cho báo cáo, giao diện và đánh giá theo contract HCI. Chỉ tiêu chất lượng được xác định theo phạm vi và phép đo của hệ thống.
 
-Frontend và backend nghiệp vụ được tách; backend xử lý trong cùng request, frontend giữ file, báo cáo và nhận xét trong phiên. Tạm chọn B: LightRAG Server riêng qua HTTP, có thể cùng máy localhost. Internet chỉ cần theo nơi chạy mô hình/tài nguyên; chưa cam kết offline toàn hệ thống. Phạm vi đầu tiên là retrieval, chưa giao LightRAG sinh ReviewItem hoàn chỉnh hoặc thay linker/scorer.
+Frontend và backend nghiệp vụ được tách; backend xử lý trong cùng request, frontend giữ file, báo cáo và nhận xét trong phiên. Tạm chọn B: LightRAG Server riêng qua HTTP, có thể cùng máy localhost. Internet chỉ cần theo nơi chạy mô hình/tài nguyên; chưa cam kết offline toàn hệ thống. Phạm vi đầu tiên là retrieval, chưa giao LightRAG sinh báo cáo hoàn chỉnh hoặc thay linker/scorer.
 
-| Thành phần | Hiện trạng ZIP | Hướng mục tiêu / việc chờ owner |
-| --- | --- | --- |
-| PDF → DOCX, Parser | Có implementation xử lý đầu vào | Giữ code trước, thêm adapter nguồn; D-02 |
-| API nền | Nhận doc_v1/doc_s/reference_files | Contract HCI baseline base_file/amendment_file/reference_files; D-01 |
-| Pipeline nền | Đọc/parse, khung báo cáo hiện tại chưa đúng SRS HCI, điểm nối runner | Tổng hợp documents/items theo SRS HCI; validation lồng nhau chưa có |
-| Context, schemas, change_analysis, evaluation | Thư mục khung | Bổ sung theo owner và fixture; chưa coi hoàn thành |
-| Frontend | Khung, chưa có ứng dụng chạy hoàn chỉnh | React/TypeScript là định hướng tài liệu cũ, chi tiết D-07 |
-| LightRAG | Chưa có client, chưa thử service trong ZIP | Release/API/model/index lifecycle theo D-04/D-05/D-13 |
-| Test | Thư mục khung tên test/ | Giữ tên test/; owner bổ sung kiểm thử, không đổi tests/ riêng trong docs |
+| Thành phần | Bản nền đang dùng |
+| --- | --- |
+| Đầu vào | Parser DOCX, bộ chuyển PDF và adapter nguồn |
+| API và pipeline | `backend.demo:app` gắn runner, giữ contract và validator |
+| Phân tích | Linker, Text Diff, Context, Semantic Diff và Scorer theo quy tắc cục bộ của demo |
+| Giao diện | HTML, CSS và JavaScript trong `frontend/`; nhận xét và mở thêm nguồn thuộc kế hoạch HCI |
+| LightRAG | Client HTTP với kiểm thử mô phỏng; mặc định tắt |
+| Kiểm thử | Các bộ Schema, Context, Demo và Handoff trong `test/` |
 
-Ba file nền main/pipeline/requirements đã có trong ZIP, nhưng chưa đáp ứng schema HCI và thiếu runner phân tích. Đọc/parse hợp lệ hiện báo FAILED/ANALYSIS_NOT_CONFIGURED (HTTP 501). /health chỉ báo API và runner, chưa kiểm tra LightRAG. Chọn công nghệ hoặc có hook không chứng minh đã tích hợp hoặc nghiệm thu.
-
-### Căn cứ hiện trạng mã nguồn
-
-Đối chiếu mã [main tại commit 01b98ce](https://github.com/BACHCONGDUNG/legal-document-review-hitl/tree/01b98ced882787d5be63d14ca44b91c6aa795a59), chưa chạy kiểm thử trong đợt sửa tài liệu này:
-
-- Converter, Parser và API/Pipeline nền có implementation; route upload và /health hiện ở backend/main.py. api/compare.py còn trống.
-- contracts.py, config.py, adapter/linker, các file context/change_analysis và evaluator.py còn trống; frontend/test chủ yếu là khung. Có tên file không chứng minh chức năng hoàn thành.
-- API nền còn doc_v1/doc_s/reference_files và report base_document/amendment_document/reference_documents/results; chưa là contract HCI mục tiêu.
-- Mặc định chưa có analysis_runner; đọc/parse hợp lệ vẫn trả FAILED/ANALYSIS_NOT_CONFIGURED, API ánh xạ HTTP 501. requirements.txt có dependency; giới hạn mặc định trong code là cấu hình phát triển, chưa là số đo nghiệm thu.
+POST `/api/compare` nhận multipart `doc_v1`, `doc_s` và `reference_files` tùy chọn. `ComparisonReport` gồm `comparison_id`, `base_document`, `amendment_document`, `reference_documents`, `status`, `results`, `warnings` và `errors`. Mỗi phần tử `results` là một `AmendmentResult`.
 
 ## 2. Thành phần và ranh giới trách nhiệm
 
@@ -61,8 +51,8 @@ Các module nghiệp vụ gọi nhau bằng hàm/contract; HTTP LightRAG đượ
 | LightRAG client | Nhập, theo dõi sẵn sàng, query, lỗi và dọn dữ liệu | Ứng viên retrieval và trạng thái; API cụ thể D-04 |
 | Context builder | Tìm căn cứ theo chỉ dẫn, kiểm tra quote và tài liệu | Ngữ cảnh, ReferenceRequirement, EffectInfo; nguồn vẫn thuộc V1/S/tham chiếu |
 | Text Diff | Khác biệt chữ của trước/sau đủ căn cứ | TextChange khớp chuỗi trả frontend |
-| Semantic Diff / Scorer / AI Adapter | Nhận định bốn nhóm, giải thích, mức tác động; kiểm tra cấu trúc và quote | Dữ liệu chuyển sang ReviewItem theo SRS, không dùng điểm retrieval làm significance |
-| Bộ tổng hợp HCI | Giữ cả chỉ dẫn chưa phân tích được, mapping nội bộ và lỗi | ComparisonReport có documents/items và nguồn dùng được |
+| Semantic Diff / Scorer / AI Adapter | Nhận định, khía cạnh và mức tác động | SemanticDiffResult và ScoringResult; điểm retrieval dành cho truy xuất |
+| Bộ tổng hợp | Giữ chỉ dẫn, kết quả theo module và lỗi | ComparisonReport.results gồm AmendmentResult |
 | Frontend/session | Hiển thị, lọc, ReviewRecord, đối chiếu sau phân tích lại | Dữ liệu người dùng riêng, không ghi đè AI hoặc tự thành gold |
 
 ## 3. Cấu trúc mã nguồn và dữ liệu
@@ -125,11 +115,11 @@ Chunk nội bộ dự kiến có comparison_id, document_id, role, unit_path, no
 
 ### 4.1. Một lượt phân tích
 
-1. Frontend gửi base_file/amendment_file/reference_files theo baseline SRS; API nền phải được chuyển đổi trước tích hợp HCI.
+1. Frontend gửi `doc_v1`, `doc_s` và `reference_files` tùy chọn.
 2. Backend cấp comparison_id mới, kiểm tra/lưu file tạm và chạy pipeline. Chuẩn bị nguồn/cây bằng converter/Parser hiện có, adapter theo D-02.
 3. Linker trích yêu cầu và đích; chuẩn bị chỉ mục một lần cho bộ tài liệu trong comparison, chờ nhập hoàn tất rồi mới query.
 4. Context builder truy vấn theo yêu cầu, kiểm tra nguồn, ghi căn cứ thiếu/chưa rõ và EffectInfo. Retrieval score hoặc mô tả entity không thay severity/quote.
-5. Text Diff chạy khi đủ trước/sau. Semantic Diff/Scorer tạo dữ liệu có căn cứ; bộ tổng hợp chuyển thành ReviewItem, bốn mã HCI và ComparisonReport theo SRS.
+5. Text Diff chạy khi đủ trước/sau. Pipeline tổng hợp Text Diff, Semantic Diff và Scoring theo từng AmendmentResult rồi kiểm tra ComparisonReport.
 6. Trả nguồn đủ cho frontend đọc bằng chứng sau khi backend dọn tài nguyên. Chưa tạo được nhận định vẫn giữ mục chỉ dẫn và lý do; không che lỗi bằng mảng rỗng.
 7. Frontend khởi tạo UNREVIEWED, cho người dùng kiểm chứng và lưu decision/note. Nhận xét không đi ngược thành đáp án AI tự động.
 
@@ -155,11 +145,11 @@ Không xóa vùng dùng chung của Server để giả lập xóa một comparis
 
 ## 5. API, lỗi và contract
 
-API nghiệp vụ mục tiêu: POST /api/compare, multipart base_file/amendment_file/reference_files, trả ComparisonReport HCI và nguồn. Chưa có API lưu nhận xét/job. Mã HTTP/error body, kích thước và alias nếu muốn hỗ trợ được phối hợp theo D-01/D-02 trong api-contract.md (Dũng + Đức Anh cùng biên soạn, chưa có trong gói). Cơ chế giữ/đọc bằng chứng do Tùng Dương quyết định theo D-07, phối hợp Đức Anh về API và Dũng về nguồn; thay contract hoặc vòng đời cần các bên liên quan review. Không ghi URL/payload LightRAG chưa kiểm chứng như API chính thức của dự án.
+POST `/api/compare` nhận multipart `doc_v1`, `doc_s` và `reference_files` tùy chọn. `ComparisonReport` gồm `comparison_id`, `base_document`, `amendment_document`, `reference_documents`, `status`, `results`, `warnings` và `errors`. Mỗi phần tử `results` là một `AmendmentResult`. D-07 quyết định cơ chế đọc thêm bằng chứng. Nhận xét trong phiên thuộc frontend.
 
-Code nền vẫn dùng doc_v1/doc_s và cấu trúc báo cáo chưa đúng SRS; việc tài liệu thống nhất không tự sửa code. Bộ tổng hợp chuyển đổi nội bộ sang HCI; thiếu module hiện trả 501/ANALYSIS_NOT_CONFIGURED. Mã này là trạng thái phát triển, không phải kết luận “không có thay đổi”. SUCCESS/PARTIAL/FAILED, needs_review và ReviewRecord là ba tầng khác nhau.
+`backend.main:app` mặc định trả HTTP 501/`ANALYSIS_NOT_CONFIGURED` khi chưa gắn runner. Demo dùng `backend.demo:app`.
 
-Với lỗi từng bước, giữ chỉ dẫn/căn cứ đã có và chỉ PARTIAL khi có kết quả dùng được; không có thì FAILED. Lỗi retrieval không tạo REFERENCE_MISSING chỉ vì query rỗng. Có file nhưng chưa tìm đúng đoạn là UNRESOLVED. Ngoài bốn nhóm giữ nguồn, nêu OUT_OF_SCOPE, không ép nhãn hoặc false/LOW.
+Pipeline giữ chỉ dẫn, bằng chứng và kết quả dùng được cùng cảnh báo. Giao diện đọc `SUCCESS`, `PARTIAL` hoặc `FAILED` trong báo cáo, kể cả khi HTTP trả 200.
 
 ## 6. Chủ trì và lựa chọn còn mở
 

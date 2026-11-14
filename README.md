@@ -1,4 +1,4 @@
-# Group 4 — Legal Document Change Detection
+# HCI — Hệ thống hỗ trợ rà soát thay đổi văn bản pháp luật
 
 ## 1. Giới thiệu dự án
 
@@ -17,71 +17,47 @@ Hệ thống được thiết kế để:
 
 Phiên bản đầu không hỗ trợ OCR/PDF scan, không bắt buộc dựng V2 đầy đủ và không tự xác minh hiệu lực pháp lý thực tế. Kết quả phục vụ rà soát, cần được người dùng kiểm chứng.
 
-## 3. Trạng thái hiện tại
+## 3. Bản demo hiện tại
 
-Dự án đang phát triển. Đã có công cụ PDF → DOCX và Parser cấu trúc văn bản. Bản API nền hỗ trợ upload và đọc/parse; luồng phân tích thay đổi đầu-cuối, giao diện và tích hợp LightRAG chưa hoàn thiện.
+POST `/api/compare` nhận multipart `doc_v1`, `doc_s` và `reference_files` tùy chọn. `ComparisonReport` gồm `comparison_id`, `base_document`, `amendment_document`, `reference_documents`, `status`, `results`, `warnings` và `errors`. Mỗi phần tử `results` là một `AmendmentResult`.
 
-Phương án tích hợp tạm chọn là chạy LightRAG Server riêng và gọi qua HTTP. Dịch vụ có thể chạy trên cùng máy; nhu cầu Internet phụ thuộc cấu hình LLM/embedding.
+Demo xử lý DOCX bằng quy tắc cục bộ. Kết quả còn thiếu căn cứ được hiển thị cùng cảnh báo và lý do. PDF có lớp chữ đi qua bộ chuyển PDF → DOCX và cần kiểm chứng xuyên luồng. Nhận xét trong phiên và kiểm tra lại là phần mở rộng HCI.
 
-## 4. Cài đặt và chạy nhanh
+## 4. Cài đặt và chạy
 
-Yêu cầu Python 3.11 trở lên; khuyến nghị Python 3.12 theo môi trường đã kiểm tra. Các lệnh dưới áp dụng cho bản API nền hỗ trợ upload, chạy từ thư mục gốc dự án.
-
-Tạo môi trường Python:
-
-```bash
-python -m venv .venv
-```
-
-Kích hoạt trên Windows PowerShell:
+Chạy từ thư mục gốc bằng Python 3.11 trở lên. Khuyến nghị Python 3.12.
 
 ```powershell
-.venv\Scripts\Activate.ps1
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-demo.txt
+.\.venv\Scripts\python.exe -m pip check
+.\.venv\Scripts\python.exe -m uvicorn backend.demo:app --host 127.0.0.1 --port 8001
 ```
 
-Hoặc trên Linux/macOS:
+Mở [giao diện demo](http://127.0.0.1:8001) để tải V1, S và tài liệu tham chiếu hoặc chọn bộ DOCX mẫu. [OpenAPI](http://127.0.0.1:8001/docs) mô tả API đang chạy. `backend.main:app` là điểm vào API nền, mặc định trả HTTP 501 với `ANALYSIS_NOT_CONFIGURED` khi chưa gắn runner.
 
-```bash
-source .venv/bin/activate
+Chạy bốn bộ kiểm thử bằng PowerShell.
+
+```powershell
+foreach ($suite in 'schema_suite', 'context_suite', 'demo_suite', 'handoff_suite') {
+    .\.venv\Scripts\python.exe -m unittest discover -s "test/$suite" -p "test_*.py" -v
+    if ($LASTEXITCODE -ne 0) { break }
+}
 ```
 
-Cài thư viện và khởi động backend:
+LightRAG và model mặc định tắt. Cấu hình mẫu dùng Compose project `hci-lightrag`, cổng host `9622` và workspace `hci_comparison_a`. Compose tạo volume theo tên project. Backend dùng biến `HCI_LIGHTRAG_*` theo mẫu trong repo.
 
-```bash
-python -m pip install -r requirements.txt
-python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
-```
+## 5. Tài liệu dự án
 
-Mở [API Docs](http://127.0.0.1:8000/docs), chọn `POST /api/compare` và gửi `doc_v1`, `doc_s`, cùng `reference_files` nếu có.
-
-Bản nền hiện báo chưa cấu hình phân tích sau bước đọc/parse; chưa trả báo cáo thay đổi hoàn chỉnh. LightRAG được cài/chạy riêng và chưa được nối vào API này.
-
-## 5. Cấu trúc thư mục tổng quan — mục tiêu
-
-```text
-backend/
-frontend/
-data/
-tests/
-docs/
-deploy/
-runtime/
-requirements.txt
-.env.example
-.gitignore
-```
-
-## 6. Tài liệu dự án
-
-| Tài liệu | Nội dung |
-| --- | --- |
-| [BRD](brd.md) | Nhu cầu, người dùng và phạm vi nghiệp vụ |
-| [SRS](srs.md) | Yêu cầu, hợp đồng dữ liệu và hành vi hệ thống |
-| [Architecture](architecture.md) | Thiết kế module, cây thư mục chi tiết và phương án tích hợp |
-| [Implementation Plan](implementation-plan.md) | Công việc, phân công, phụ thuộc và mốc bàn giao |
-| [Data Annotation Guide](data-annotation-guide.md) | Chuẩn bị dữ liệu, bằng chứng và gán nhãn |
-
-Tài liệu cần bổ sung: `api-contract.md`, `development-guide.md` và `test-evaluation-plan.md`.
+- [BRD](docs/brd.md)
+- [SRS và hợp đồng API](docs/srs.md)
+- [Kiến trúc](docs/architecture.md)
+- [Phân công theo module](docs/module.md)
+- [Kế hoạch triển khai](docs/implementation-plan-hci.md)
+- [Quyết định của module owner](docs/module-owner-decisions-hci.md)
+- [Hướng dẫn gán nhãn](docs/data-annotation-guide-hci.md)
+- [Fixture bàn giao](data/module_handoff_fixtures/README.md)
+- [Kế hoạch kiểm thử và đánh giá](docs/test_evaluation_plan.md)
 
 ## 7. Nhóm thực hiện
 

@@ -14,8 +14,8 @@ Bản tài liệu đồng bộ dùng baseline sau để các bên cùng trao đ�
 
 - Sinh viên Luật là người dùng chính; bài toán V1–S cùng tham chiếu đã cung cấp; không bắt buộc dựng V2.
 - HCI tập trung hiểu, kiểm chứng, nhận xét và kiểm tra lại; chất lượng AI và usability là hai phép đánh giá khác nhau.
-- Contract HCI theo SRS: upload base_file/amendment_file/reference_files; báo cáo documents/items; ReviewItem và ReviewRecord tách biệt; bốn field_group TIME_LIMIT, QUANTITATIVE, CONDITIONS_EXCEPTIONS, SUBJECT_RIGHTS_DUTIES.
-- Các module có thể dùng cấu trúc xử lý nội bộ, nhưng phải xuất đúng contract HCI trước khi tích hợp. Bản code nền trong ZIP còn lệch contract, chưa được sửa trong gói docs này.
+- POST `/api/compare` nhận multipart `doc_v1`, `doc_s` và `reference_files` tùy chọn. `ComparisonReport` gồm `comparison_id`, `base_document`, `amendment_document`, `reference_documents`, `status`, `results`, `warnings` và `errors`. Mỗi phần tử `results` là một `AmendmentResult`.
+- Schema, validator và fixture dùng tám nhóm field_group theo SRS. ReviewRecord là dữ liệu riêng của frontend HCI.
 - Giữ converter và Parser hiện có, qua adapter; PDF → DOCX → Parser trước mắt. Nguồn block:N/DOCX chuyển đổi không được tự coi là trang PDF.
 - Tạm chọn B cho retrieval: LightRAG Server riêng được gọi HTTP. Có thể cùng máy localhost; chưa chọn model, release/API, prompt, chunk, ngưỡng hoặc cam kết offline.
 - Nhận xét lưu trong phiên frontend, không tự thành gold/nhãn huấn luyện. Giữ request đồng bộ, không bổ sung account/kho lịch sử/job người dùng ở đợt này.
@@ -43,26 +43,15 @@ Owner lựa chọn cách hiện thực trong baseline và tự kiểm tra. Hai p
 
 ### D-01 — Contract API schema và báo cáo — Phần A
 
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
+**Trạng thái:** Đã chốt hợp đồng API cho bản nền HCI. Còn bước kiểm tra và bàn giao.
 
 **Chủ trì:** Dương Đức Anh
 
 **Phần owner tự quyết định:** Đức Anh chọn cách tổ chức router, schema/validator và adapter nội bộ, miễn giữ đúng baseline và hợp đồng đã thống nhất.
 
-**Vấn đề cần chốt:** Hiện thực schema HCI, fixture, HTTP status/error body; chuyển doc_v1/doc_s và khung báo cáo hiện tại sang contract HCI thế nào? Có cần alias tạm và cơ chế trả nguồn nào?
+**Quyết định tích hợp:** Dùng API, schema, validator và fixture nêu trong SRS.
 
-**Hai phương án nền để cân nhắc:**
-
-1. **Chuyển trực tiếp API sang contract HCI.** Dùng base_file/amendment_file/reference_files và documents/items làm giao diện duy nhất; code nền được sửa cùng schema và fixture. Ít lớp chuyển đổi, nhưng frontend và backend phải cập nhật theo cùng đợt.
-2. **Giữ lõi xử lý nền và thêm lớp chuyển đổi HCI.** Router nhận contract HCI; adapter chuyển vào biểu diễn nội bộ rồi chuyển kết quả về ComparisonReport HCI, có validator và fixture hai chiều. Dễ giữ code đang có, nhưng phải kiểm tra mapping; không xuất thêm một API chính thức với contract cũ.
-
-**Phương án owner đề xuất:** [Chọn, điều chỉnh hoặc đề xuất phương án khác.]
-
-**Lý do và đánh đổi:** [Điền lý do, chi phí/giới hạn và ví dụ kiểm chứng.]
-
-**Kết luận hiện có:** Chưa chốt phương án kỹ thuật; giữ baseline và trách nhiệm đã xác nhận. Hai phương án nền chưa là quyết định của owner.
-
-**Phần phối hợp liên quan:** Xem D-01 ở phần B; không dùng lựa chọn nội bộ để tự đổi contract hoặc điều kiện chung.
+**Việc tiếp theo:** Đức Anh phối hợp Dũng và Tùng Dương kiểm tra upload, báo cáo, lỗi HTTP và lỗi trong báo cáo. Các thay đổi sau baseline được review theo phần B.
 
 ### D-02 — Đầu vào Parser adapter và truy nguồn — Phần A
 
@@ -164,12 +153,12 @@ Owner lựa chọn cách hiện thực trong baseline và tự kiểm tra. Hai p
 
 **Phần owner tự quyết định:** Nam chọn cách hiện thực phân nhóm, tổ chức nhận định/aspects và áp rubric bên trong module sau khi định nghĩa nghiệp vụ đã thống nhất.
 
-**Vấn đề cần chốt:** Ranh giới bốn mã HCI, chia/gộp ReviewItem, giá trị/đơn vị, rubric pilot và ca ngoài phạm vi
+**Vấn đề cần chốt:** Ranh giới tám nhóm phân tích, chia/gộp nhận định trong semantic_diff.changes, giá trị/đơn vị, rubric pilot và ca ngoài phạm vi
 
 **Hai phương án nền để cân nhắc:**
 
-1. **Tách theo từng nhận định pháp lý độc lập.** Mỗi nhận định kiểm chứng độc lập thành một ReviewItem; khía cạnh liên quan đặt trong aspects. Dễ gắn bằng chứng/nhận xét và đối chiếu đáp án; cần quy tắc chống tách vụn, trùng hoặc làm mất quan hệ điều kiện.
-2. **Nhóm các khía cạnh gắn chặt trong cùng nhận định.** Một ReviewItem giữ các thay đổi cùng chủ thể/hành vi/điều kiện cần đọc chung; các nghĩa vụ độc lập vẫn tách. Giữ ngữ cảnh dễ đọc hơn nhưng cần tiêu chí nhóm rõ để không che một khía cạnh sai hoặc bỏ sót. Cả hai dùng bốn mã hiện có và rubric được review, không tự thêm nhãn.
+1. **Tách theo từng nhận định pháp lý độc lập.** Mỗi nhận định kiểm chứng độc lập thành một nhận định trong semantic_diff.changes; khía cạnh liên quan đặt trong aspects. Dễ gắn bằng chứng/nhận xét và đối chiếu đáp án; cần quy tắc chống tách vụn, trùng hoặc làm mất quan hệ điều kiện.
+2. **Nhóm các khía cạnh gắn chặt trong cùng nhận định.** Một nhận định trong semantic_diff.changes giữ các thay đổi cùng chủ thể/hành vi/điều kiện cần đọc chung; các nghĩa vụ độc lập vẫn tách. Giữ ngữ cảnh dễ đọc hơn nhưng cần tiêu chí nhóm rõ để không che một khía cạnh sai hoặc bỏ sót. Cả hai dùng tám nhóm hiện có và rubric được review, không tự thêm nhãn.
 
 **Phương án owner đề xuất:** [Chọn, điều chỉnh hoặc đề xuất phương án khác.]
 
@@ -279,7 +268,7 @@ Owner lựa chọn cách hiện thực trong baseline và tự kiểm tra. Hai p
 
 **Phần owner tự quyết định:** Nam chọn cách hiện thực công cụ đo, tổ chức script và phân tích lỗi theo quy tắc đánh giá đã được thống nhất.
 
-**Vấn đề cần chốt:** Matching ReviewItem/aspects, metric, ca null/không mẫu, lỗi nguồn/linker/retrieval; ngưỡng nào có căn cứ?
+**Vấn đề cần chốt:** Matching SemanticChange/aspects, metric, ca null/không mẫu, lỗi nguồn/linker/retrieval; ngưỡng nào có căn cứ?
 
 **Hai phương án nền để cân nhắc:**
 
@@ -346,13 +335,13 @@ Bên cung cấp và bên nhận thống nhất hợp đồng/fixture và những
 
 ### D-01 — Contract API schema và báo cáo — Phần B
 
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
+**Trạng thái:** Đã chốt hợp đồng API cho bản nền HCI. Còn bước kiểm tra và bàn giao.
 
 **Chủ trì:** Dương Đức Anh
 
 **Bên cần thống nhất hoặc review:** Dũng + Đức Anh cùng biên soạn api-contract.md; Tùng Dương nhận API; Nam review dữ liệu
 
-**Phần cần nhiều bên thống nhất:** Đức Anh, Dũng, Tùng Dương và Nam theo phần sử dụng thống nhất request/response, tên/kiểu/ý nghĩa trường, lỗi HTTP, chuyển đổi contract và fixture bàn giao. Dũng + Đức Anh cùng biên soạn api-contract.md; đổi nguồn phối hợp D-02/D-07.
+**Phần cần nhiều bên thống nhất:** Đức Anh, Dũng, Tùng Dương và Nam theo phần sử dụng thống nhất request/response, tên/kiểu/ý nghĩa trường, lỗi HTTP, fixture bàn giao và các thay đổi đối với hợp đồng API. Dũng + Đức Anh cùng biên soạn api-contract.md; đổi nguồn phối hợp D-02/D-07.
 
 **Đầu vào cần thống nhất:** V1/S/tham chiếu, baseline SRS, report nền và dữ liệu module cần tổng hợp.
 
@@ -522,11 +511,11 @@ Bên cung cấp và bên nhận thống nhất hợp đồng/fixture và những
 
 **Bên cần thống nhất hoặc review:** Dũng review nhãn; Đức Anh/Tùng Dương nhận report
 
-**Phần cần nhiều bên thống nhất:** Nam và Dũng thống nhất ranh giới nhãn, cách chia/gộp, rubric và ví dụ chuẩn; Đức Anh/Tùng Dương review cấu trúc kết quả họ nhận. Không tự đổi bốn mã SRS, đơn vị đếm, gold hoặc nội dung giao diện bằng một lựa chọn nội bộ.
+**Phần cần nhiều bên thống nhất:** Nam và Dũng thống nhất ranh giới nhãn, cách chia/gộp, rubric và ví dụ chuẩn; Đức Anh/Tùng Dương review cấu trúc kết quả họ nhận. Không tự đổi tám nhóm trong SRS, đơn vị đếm, gold hoặc nội dung giao diện bằng một lựa chọn nội bộ.
 
 **Đầu vào cần thống nhất:** Bốn mã HCI trong SRS, chỉ dẫn và nội dung trước–sau, bằng chứng, ví dụ/nhãn pilot.
 
-**Đầu ra cần thống nhất:** Quy tắc chia/gộp ReviewItem, chọn aspects/nhóm và chấm mức tác động, cùng fixture ranh giới và ngoài phạm vi.
+**Đầu ra cần thống nhất:** Quy tắc chia/gộp nhận định trong semantic_diff.changes, chọn aspects/nhóm và chấm mức tác động, cùng fixture ranh giới và ngoài phạm vi.
 
 **Chi tiết hợp đồng cần điền khi có điểm nối:**
 
@@ -694,7 +683,7 @@ Bên cung cấp và bên nhận thống nhất hợp đồng/fixture và những
 
 **Phần cần nhiều bên thống nhất:** Nam và Dũng thống nhất gold, đơn vị đánh giá, matching/aspects, công thức, cách xử lý chưa xác định và ngưỡng có căn cứ; Đức Anh/Tùng Dương phối hợp dữ liệu đầu ra và khả năng tái lập. Những thay đổi làm đổi cách diễn giải hoặc so sánh số liệu phải được bên dùng kết quả review trước đo.
 
-**Đầu vào cần thống nhất:** Dự đoán và gold theo ReviewItem/aspects trên cùng bộ căn cứ, cùng quy tắc nhãn đã review.
+**Đầu vào cần thống nhất:** Dự đoán và gold theo SemanticChange/aspects trên cùng bộ căn cứ, cùng quy tắc nhãn đã review.
 
 **Đầu ra cần thống nhất:** Quy tắc đối chiếu, công thức/cách tổng hợp, ca tính tay, cách xử lý null/không mẫu, ngưỡng có căn cứ và lệnh/cấu hình đo.
 

@@ -111,7 +111,7 @@ Với tác vụ người dùng, bổ sung nhóm người tham gia, tác vụ/câ
 
 Dũng chủ trì D-10; Nam review đáp án/nhãn. Giữ manifest, nguồn/hash, vai trò, lineage, bộ tham chiếu và giới hạn theo Data Guide. Các biến thể cùng nguồn/chuỗi sửa đổi ở cùng split; mẫu giả định/biến đổi có đánh dấu và không đại diện tự động cho mẫu thực tế.
 
-Gold theo ReviewItem/ChangeAspect và bốn mã SRS; không coi nhận xét AGREE/DISAGREE/INSUFFICIENT_BASIS là đáp án đúng tự động. Tách V2 đối chiếu, gold, gợi ý sai kiểm soát và dữ liệu người dùng khỏi index/phép đo AI theo D-10. Quy mô cuối, split, nhãn và fixture còn chờ review.
+Gold dùng các nhận định và ChangeAspect theo tám nhóm phân tích trong SRS. Dữ liệu nhận xét HCI, V2 đối chiếu và gợi ý sai có kiểm soát được lưu riêng khỏi đầu vào đánh giá AI theo D-10.
 
 Nghiên cứu hiện có mới tổng hợp trao đổi với hai sinh viên vừa vào năm 3; chưa là thử nghiệm sản phẩm. Những khoảng trống về bước khó nhất, cách kiểm tra phiên bản, hiểu cảnh báo và hành vi sau phân tích lại vẫn giữ đúng giới hạn trong User Research.
 
@@ -119,7 +119,7 @@ Nghiên cứu hiện có mới tổng hợp trao đổi với hai sinh viên v�
 
 | Phạm vi | Căn cứ đã có | Nội dung chưa quyết định | Chủ trì đề xuất |
 | --- | --- | --- | --- |
-| Chất lượng kỹ thuật | BRD mục 10.2; D-11 | Metric/công thức, matching ReviewItem/aspects, ca thiếu/sai aspect, nguồn sai, null/không mẫu và ngưỡng | Nam; Dũng review gold |
+| Chất lượng kỹ thuật | BRD mục 10.2; D-11 | Metric/công thức, matching SemanticChange/aspects, ca thiếu/sai aspect, nguồn sai, null/không mẫu và ngưỡng | Nam; Dũng review gold |
 | Nhãn/mức tác động | SRS/Data Guide; D-06 | Rubric pilot, ca ranh giới, chia/gộp item, dữ liệu/đáp án cuối | Nam; Dũng review |
 | Đúng tác vụ người dùng | BRD BG-01–BG-07; D-12 | Tác vụ, đáp án, cách chấm hoàn thành đúng và lỗi diễn giải | Dũng; Nam/Tùng Dương phối hợp |
 | Thời gian và phản hồi | BRD mục 10.1; D-12 | Cách ghi thời gian, SUS, biểu mẫu/phản hồi và cách tổng hợp | Dũng |

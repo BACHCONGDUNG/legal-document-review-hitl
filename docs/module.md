@@ -25,7 +25,7 @@ Tài liệu tập hợp nhiệm vụ, trách nhiệm, file mục tiêu, điểm 
 
 | Module | Owner theo tài liệu hiện có | Phối hợp và review | Trạng thái đặc tả |
 | --- | --- | --- | --- |
-| api/ | Dương Đức Anh | Tùng Dương nhận API; Dũng/Nam review dữ liệu | Contract HCI có baseline; chuyển đổi API nền và fixture chờ D-01 |
+| api/ | Dương Đức Anh | Tùng Dương nhận API; Dũng/Nam review dữ liệu | Contract HCI; route demo ở backend/demo.py và handler ở backend/main.py |
 | schemas/ | Dương Đức Anh | Các bên cung cấp và nhận dữ liệu | Schema/fixture và validation còn chờ D-01/D-02 |
 | document_processing/ | Owner chung: chưa quyết định. Dũng phụ trách đầu vào/adapter; Đức Anh phụ trách linker | Nam nhận trước–sau; Tùng Dương dùng nguồn | Chi tiết ranh giới theo D-02/D-03 |
 | context/ | Dương Đức Anh | Dũng review nguồn; Nam nhận context; Tùng Dương đọc bằng chứng | Chờ D-04, phối hợp D-05/D-09/D-13 |
@@ -57,7 +57,7 @@ Tài liệu tập hợp nhiệm vụ, trách nhiệm, file mục tiêu, điểm 
 | --- | --- |
 | compare.py | API so sánh V1–S và tham chiếu; request/response và lỗi theo contract HCI sau khi D-01 được review |
 
-**Đầu vào:** base_file, amendment_file, reference_files theo SRS. API nền doc_v1/doc_s chưa được coi tương đương nếu chưa chuyển đổi/kiểm tra.
+**Đầu vào:** multipart doc_v1, doc_s, reference_files tùy chọn.
 
 **Đầu ra:** ComparisonReport HCI và nguồn đọc được trong giao diện; HTTP status/error body và cơ chế truyền nguồn chờ D-01/D-02.
 
@@ -77,11 +77,11 @@ Tài liệu tập hợp nhiệm vụ, trách nhiệm, file mục tiêu, điểm 
 
 | File mục tiêu | Trách nhiệm |
 | --- | --- |
-| contracts.py | DocumentIdentity, bằng chứng, ReviewItem, ComparisonReport và các kiểu liên quan theo SRS; chi tiết hiện thực chờ D-01 |
+| contracts.py | DocumentIdentity, bằng chứng, AmendmentResult, ComparisonReport và các kiểu dữ liệu liên quan |
 
 **Đầu vào:** SRS cùng mẫu nguồn/đầu ra được bên giao và bên nhận review.
 
-**Đầu ra:** Schema và fixture có thể validate; quan hệ document_id/source_ref/item_id và ý nghĩa null/rỗng được thống nhất.
+**Đầu ra:** Schema và fixture có validator; kiểm tra document_id, source_ref, amendment_id và change_id.
 
 **Bên kết nối:** Dũng ở nguồn; Nam ở phân tích; Tùng Dương ở báo cáo/phiên; Đức Anh ở backend.
 
@@ -120,7 +120,7 @@ Tài liệu tập hợp nhiệm vụ, trách nhiệm, file mục tiêu, điểm 
 
 **Owner:** Dương Đức Anh — quyết định chính D-04/D-13 theo phạm vi retrieval và vận hành; phối hợp Nam về lựa chọn mô hình thuộc D-05.
 
-**Nhiệm vụ và ranh giới:** Chuẩn bị ngữ cảnh, dùng phương án retrieval tạm chọn, kiểm tra nguồn và nhu cầu tham chiếu; không giao dịch vụ quyết định kết quả pháp lý hoặc tạo ReviewItem hoàn chỉnh.
+**Nhiệm vụ và ranh giới:** Chuẩn bị ngữ cảnh, dùng phương án retrieval tạm chọn, kiểm tra nguồn và nhu cầu tham chiếu; không giao dịch vụ quyết định kết quả pháp lý hoặc tạo báo cáo hoàn chỉnh.
 
 | File mục tiêu | Trách nhiệm |
 | --- | --- |
@@ -145,7 +145,7 @@ Tài liệu tập hợp nhiệm vụ, trách nhiệm, file mục tiêu, điểm 
 
 **Owner:** Vương Thành Nam, theo HCI-08 và D-05/D-06; Nam có quyền quyết định chính D-05, phối hợp bên liên quan khi thay contract, nguồn lực hoặc môi trường chung.
 
-**Nhiệm vụ và ranh giới:** So sánh chữ, phân tích nghĩa, gọi mô hình qua adapter, tạo giải thích/bằng chứng/mức tác động; đầu ra phải chuyển sang ReviewItem và bốn mã HCI theo SRS.
+**Nhiệm vụ và ranh giới:** So sánh chữ, phân tích nghĩa và chấm tác động theo schema HCI; nhận định và điểm nối bằng change_id.
 
 | File mục tiêu | Trách nhiệm |
 | --- | --- |
@@ -184,7 +184,7 @@ Tài liệu tập hợp nhiệm vụ, trách nhiệm, file mục tiêu, điểm 
 
 **File hỗ trợ:** Chưa quyết định.
 
-**Điều kiện bàn giao:** Có ca tính tay, quy tắc khớp ReviewItem/aspects, xử lý thiếu/sai aspect, nguồn sai, chưa xác định và không có mẫu; có lệnh chạy và cấu hình để kiểm tra lại. Chưa chốt ngưỡng hoặc công thức thay owner.
+**Điều kiện bàn giao:** Có ca tính tay, quy tắc khớp SemanticChange/aspects, xử lý thiếu/sai aspect, nguồn sai, chưa xác định và không có mẫu; có lệnh chạy và cấu hình để kiểm tra lại. Chưa chốt ngưỡng hoặc công thức thay owner.
 
 **Quyết định liên quan:** D-10, D-11; phối hợp D-12 khi dùng đáp án cho tác vụ người dùng.
 
@@ -215,7 +215,7 @@ Task hoàn thành khi có đầu ra, kiểm tra phù hợp, cách chạy, kết 
 
 | Hạng mục | Trạng thái theo tài liệu nguồn | Phần chờ |
 | --- | --- | --- |
-| Phạm vi, bốn mã, ReviewItem/ReviewRecord | Có baseline trong SRS | Fixture và cách hiện thực D-01/D-02/D-06/D-08 |
+| Contract HCI và ReviewRecord frontend | Có baseline trong SRS | Fixture hiện tại và các quyết định D-02/D-06/D-08 |
 | Converter/Parser và API/Pipeline nền | Được mô tả đã có ở bộ code nền trước đó | Đã đối chiếu mã main tại 01b98ce, chưa chạy test trong đợt này; còn lệch contract HCI |
 | Linker/context/phân tích/frontend/evaluation | Chưa có bản hoàn chỉnh được xác nhận | Owner đề xuất/hiện thực theo D-ID liên quan |
 | LightRAG | Phương án B tạm chọn | D-04/D-05/D-09/D-13 |

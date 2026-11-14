@@ -1,18 +1,3 @@
-# Backend only; Python >= 3.11 (verified on Python 3.12 / Linux).
-# Install from repository root: python -m pip install -r requirements.txt
-# Direct dependencies pinned to the versions used in verification.
-# Transitive dependencies are NOT fully locked; validate again on Windows.
-fastapi==0.162.0
-uvicorn==0.54.0
-pydantic==2.14.2
-python-multipart==0.0.33
-httpx==0.28.1
-
-# Existing PDF -> DOCX converter. Parser itself uses the standard library.
-python-docx==1.2.0
-PyMuPDF==1.28.2
-pdf2docx==0.5.8
-
-# Option B: LightRAG Server belongs in a SEPARATE environment.
-# No lightrag-hku dependency is needed merely to send HTTP from this backend.
-# Test dependencies are not runtime requirements.
+# Schema-only dependencies; the existing API/PDF runtime is outside this import.
+pydantic==2.13.4
+typing_extensions==4.16.0

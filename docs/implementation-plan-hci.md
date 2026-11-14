@@ -12,9 +12,9 @@ Kế hoạch xác định người chịu trách nhiệm, thứ tự triển kha
 
 ### Baseline tài liệu
 
-Đợt này thống nhất tài liệu HCI, không sửa code hoặc công bố đã hoàn thành G1/G2. ZIP đã có converter/Parser và ba file API/pipeline/requirements nền; chưa có schema HCI, adapter, linker, context/LightRAG, phân tích, UI/nhận xét hoặc evaluator hoàn chỉnh. API/report nền còn lệch contract HCI. Kế hoạch tuần 6–14 dưới đây là baseline học phần, không là tiến độ thực tế đã đạt; chưa tự suy tuần hiện tại hoặc thay lịch nộp.
+Kế hoạch tuần 6–14 mô tả các mốc học phần.
 
-Các thống nhất làm việc: V1–S; sinh viên Luật là người dùng chính; bốn mã HCI theo SRS; ReviewItem/ReviewRecord riêng; bộ nguồn PDF → DOCX → Parser trước mắt; tạm chọn B cho retrieval, không giao framework quyết định kết quả nghiệp vụ. Giữ test/ theo cây ZIP. Các lựa chọn triển khai của từng owner chưa được chốt thay.
+Dùng V1–S, tám nhóm phân tích theo SRS và ReviewRecord ở frontend. Sinh viên Luật là người dùng chính. Giữ luồng PDF → DOCX → Parser và retrieval qua LightRAG HTTP.
 
 [Module Owner Decisions](module-owner-decisions-hci.md) là danh sách duy nhất quản lý việc cần chốt. Trình tự: owner đề xuất trên mẫu → tự kiểm tra → bên nhận/reviewer chạy fixture → ghi quyết định → cập nhật tài liệu sở hữu → tích hợp. Review chung và một người kiểm thử không thay trách nhiệm tự kiểm tra của owner.
 

@@ -8,7 +8,7 @@
 
 ## 1. Phạm vi dữ liệu và đầu ra gán nhãn
 
-Tài liệu hướng dẫn chuẩn bị mẫu V1–S, lập đáp án tham chiếu có bằng chứng và chuẩn bị dữ liệu kiểm thử tương tác. Phạm vi nghiệp vụ theo BRD HCI. Baseline gold/fixture HCI dùng ReviewItem, ChangeAspect và bốn mã của SRS HCI. Đầu ra phân tích và nhãn phải được kiểm tra theo cùng hợp đồng trước khi đưa vào giao diện hoặc đánh giá. Không định nghĩa lại schema API, tác vụ usability hoặc công thức chỉ số đánh giá.
+Hướng dẫn chuẩn bị mẫu V1–S, đáp án tham chiếu có bằng chứng và dữ liệu thử tương tác. Gold và fixture dùng schema trong SRS HCI.
 
 
 Mỗi mẫu xác định rõ V1, S và bộ tài liệu tham chiếu thực sự cung cấp. Gán nhãn từng chỉ dẫn liên quan và từng nhận định thay đổi có thể kiểm tra riêng; không gán một bản ghi cho mọi Điều không thay đổi và không bắt buộc dựng V2 đầy đủ.
@@ -46,7 +46,7 @@ data/
     <amendment_key>_amendment.docx
     references/
     README.md                  # Nguồn, vai trò, bộ căn cứ và giới hạn
-    gold.json                  # Đáp án ReviewItem/ChangeAspect theo SRS HCI
+    gold.json                  # Đáp án SemanticChange/ChangeAspect theo SRS HCI
     review.md                  # Bất đồng và phiên bản nhãn
   interaction-fixtures/        # Kết quả mẫu và trạng thái tương tác mong đợi
   manifest.csv
@@ -71,7 +71,7 @@ Các biến thể cùng văn bản nền/chuỗi sửa đổi giữ chung lineag
 
 1. Rà toàn bộ S, liệt kê chỉ dẫn và văn bản đích; sau đó xác định phần áp dụng V1. Theo chỉ dẫn nguồn, không ghép hai văn bản theo số Điều tương ứng.
 2. Lấy đúng nội dung trước và nội dung sửa đổi, đọc thông tin tổng quát V1 cùng định nghĩa, điều kiện, ngoại lệ cần thiết. Giữ nguồn hiệu lực/chuyển tiếp liên quan theo EffectInfo, không tự xác minh hiệu lực thực tế.
-3. Chia thành các ReviewItem có thể kiểm tra riêng, nối với chỉ dẫn qua amendment_id. Một chỉ dẫn có thể có nhiều item; các khía cạnh của cùng nhận định nằm trong aspects. Hai nghĩa vụ độc lập có thể tách item dù cùng Điều/câu; dùng fixture để review cách chia. Cách chia/gộp item và đối chiếu nhận định được review trên fixture theo D-06.
+3. Nhóm các nhận định theo chỉ dẫn bằng amendment_id. Mỗi nhận định trong semantic_diff.changes dùng change_id và có thể chứa nhiều aspects. Review cách chia/gộp theo D-06.
 4. Ghi kết luận, khía cạnh và mức tác động trong phạm vi bằng chứng; giữ chỉ dẫn và lý do khi không tạo được nhận định.
 
 | Trường hợp | Quy tắc |
@@ -86,28 +86,9 @@ Các biến thể cùng văn bản nền/chuỗi sửa đổi giữ chung lineag
 
 Gán operation theo hành vi được chỉ dẫn và đơn vị bị tác động, không chỉ từ khóa “bổ sung”. Nội dung nguyên văn đặt trong EvidenceRef.quote với document_id và source_refs; diễn giải tổng thể ở explanation, diễn giải từng khía cạnh ở interpretation theo SRS HCI. Chỉ dùng các trường đã định nghĩa trong SRS cho response HCI. Không tự tạo số trang hoặc số đoạn. Nội dung DERIVED không được ghi thành trích nguyên văn hoặc bản hợp nhất chính thức.
 
-### 3.2. Bốn mã phân tích và ranh giới gán nhãn
+### 3.2. Nhóm phân tích và ranh giới gán nhãn
 
-SRS HCI sở hữu field_group đầu ra. Gold/fixture HCI và giao diện dùng cùng bốn mã dưới đây; một ReviewItem có thể có nhiều aspects. Mã nhãn được xác định theo nội dung và bằng chứng; mọi sửa nhãn phải có reviewer, lý do và phiên bản.
-
-| Mã HCI | Cách chọn | Căn cứ cần giữ |
-| --- | --- | --- |
-| TIME_LIMIT | Hạn thực hiện một hành vi/nghĩa vụ | Mốc tính, đơn vị, chủ thể, hoạt động, điều kiện/ngoại lệ; không là ngày hiệu lực |
-| QUANTITATIVE | Số tiền, tỷ lệ, số lượng hoặc ngưỡng trong phạm vi hỗ trợ | Đơn vị, toán tử quá/từ/đến, phạm vi; ngưỡng sự cố theo phút không tự là hạn nộp |
-| CONDITIONS_EXCEPTIONS | Điều kiện áp dụng hoặc ngoại lệ được thêm/bỏ/sửa | Quy tắc bị chi phối, chủ thể/phạm vi và nguồn liên quan |
-| SUBJECT_RIGHTS_DUTIES | Chủ thể, quyền, nghĩa vụ, hành vi được phép/bắt buộc/cấm | Nêu rõ thành phần thay đổi; không tự mở rộng mọi thay đổi thẩm quyền thành nhóm này |
-
-Không ép mọi nội dung pháp lý vào bốn nhóm. Dẫn chiếu/định nghĩa/hiệu lực vẫn được giữ làm căn cứ hoặc thông tin phạm vi; khi ngoài phạm vi phân tích thì giữ chỉ dẫn, evidence và OUT_OF_SCOPE/UNRESOLVED, không báo không thay đổi. Số tiền phạt chỉ được phân tích theo QUANTITATIVE khi phạm vi và đáp án đã review hỗ trợ; không suy rộng từ giá trị số sang toàn bộ ý nghĩa chế tài.
-
-| Ca ranh giới | Cách xử lý |
-| --- | --- |
-| Thời hạn và ngưỡng theo thời gian | Hạn thực hiện một hành vi dùng TIME_LIMIT; ngưỡng sự cố/điều kiện định lượng dùng QUANTITATIVE; giữ mốc tính và đơn vị |
-| Chủ thể cùng quyền/nghĩa vụ | Dùng SUBJECT_RIGHTS_DUTIES, diễn giải rõ thành phần đổi và giữ các aspects độc lập khi cần |
-| Điều kiện có số liệu | Xác định thay đổi là sửa giá trị/ngưỡng hay thêm/bỏ điều kiện; tránh gán trùng cùng biến đổi |
-| Thẩm quyền, thủ tục, chế tài | Review theo nội dung và phạm vi; không tự ép vào nhóm chỉ vì có tên cơ quan hoặc con số |
-| Dẫn chiếu, định nghĩa, hiệu lực | Giữ evidence, ReferenceRequirement và EffectInfo tương ứng; chỉ tạo aspect khi tác động trong phạm vi có căn cứ |
-
-Nam chủ trì D-06 cùng Dũng review mẫu; Đức Anh và Tùng Dương kiểm tra kết quả dùng được. Lưu lý do/phiên bản khi sửa nhãn; không dùng field_group ngoài SRS như thể đã được chấp nhận. Quy tắc ca ranh giới còn chờ owner đề xuất trên mẫu; enum đầu ra thống nhất theo SRS hiện có.
+Gold và fixture dùng các kiểu và validator trong [SRS](srs.md). Tám nhóm `field_group` là SUBJECT_OBJECT, RIGHTS_DUTIES_ACTIONS, CONDITIONS_EXCEPTIONS, TIME_QUANTITY, PROCEDURE_AUTHORITY, CONSEQUENCES_SANCTIONS, DEFINITIONS_REFERENCES và SCOPE_EFFECT_TRANSITION. Phân biệt thay đổi chủ thể với thay đổi quyền/nghĩa vụ; thời hạn, số lượng và ngưỡng dùng TIME_QUANTITY. Giữ giá trị, đơn vị, toán tử, vị trí và trích dẫn khi có. D-06 review cách chia/gộp nhận định và các ca ranh giới trên fixture.
 
 ### 3.3. Kết luận và mức tác động
 
@@ -116,7 +97,7 @@ Nam chủ trì D-06 cùng Dũng review mẫu; Đức Anh và Tùng Dương kiể
 - `null`: chưa đủ căn cứ kết luận; needs_review = true và có review_reason. Một khía cạnh đã rõ không làm phần chưa rõ tự trở thành chắc chắn.
 - Giá trị/nhận định chưa xác định khác phía không tồn tại. Dữ liệu rỗng tự nó không chứng minh không có thay đổi.
 
-Chỉ đổi diễn đạt dùng is_meaningful_change=false, aspects=[] và explanation/evidence. Mức tác động đặt tại significance/significance_reason của ReviewItem; review_reason giải thích bất định. Không tự thêm mã hoặc trường phân loại ngoài SRS để biểu diễn trường hợp này.
+Chỉ đổi diễn đạt dùng is_meaningful_change=false, aspects=[], category=WORDING_ONLY và significance=LOW. ScoringResult nối với nhận định bằng change_id.
 
 **Mức tác động significance**
 
@@ -132,7 +113,7 @@ Các mức dưới đây là rubric pilot tham khảo đã có, chưa là ngư�
 
 MEDIUM/HIGH phân biệt bằng việc đổi cách thực hiện hạn chế hay đổi phạm vi/điều kiện/nội dung nghĩa vụ đáng kể. HIGH/CRITICAL phân biệt bằng sửa đặc điểm quan trọng hay đảo chiều/loại bỏ toàn bộ nội dung cốt lõi theo rubric. Khó phân biệt phải đưa review, không chọn mức theo cảm giác hay tỷ lệ số chữ đổi.
 
-Chỉ đổi nghĩa đã xác định không gán LOW theo rubric hiện tại. Thêm/xóa Điều đánh giá nội dung, không tự CRITICAL. Một ReviewItem có một mức significance; không cộng điểm theo số aspects. significance_reason nêu quy tắc và bằng chứng, không chỉ lặp mức. Khi chưa chấm được, significance/significance_reason để null và review_reason giải thích; không yêu cầu is_critical trong response HCI.
+ScoringResult có significance, significance_reason và is_critical theo validator. Khi mức chưa xác định, significance và is_critical để null, needs_review=true và có review_reason.
 
 
 ### 3.4. Mẫu thiếu căn cứ
@@ -149,7 +130,7 @@ Checklist chính:
 
 - Đúng V1–S, trạng thái nền, bộ tham chiếu, nguồn và hash.
 - Các chỉ dẫn có kết quả hoặc lý do chưa xác định; đúng đích và phần thuộc văn bản khác.
-- Đúng bốn mã của SRS; ca ranh giới được review; không trùng biến đổi hoặc bỏ chủ thể/đơn vị/điều kiện/ngoại lệ cần thiết.
+- Đúng tám nhóm của SRS; ca ranh giới được review; không trùng biến đổi hoặc bỏ chủ thể/đơn vị/điều kiện/ngoại lệ cần thiết.
 - Trích dẫn khớp file; phân biệt QUOTED/DERIVED/ABSENT/UNRESOLVED.
 - Nhãn tác động và mức độ có căn cứ; mẫu thiếu tài liệu không dùng bằng chứng ẩn.
 - Có phiên bản, reviewer, quyết định và ca tương tác liên quan nếu có.
@@ -169,16 +150,16 @@ Các ví dụ dưới đây là giả định, chưa xác nhận đã có file c
 | Mẫu | Nội dung trước → sau | Nhãn và điều cần giữ |
 | --- | --- | --- |
 | EX-01 | “Chậm nhất ngày 12” → “Không muộn hơn ngày 12”, mọi điều kiện giữ nguyên | is_meaningful_change=false, aspects=[], explanation/evidence; LOW theo rubric pilot khi đã xác định tương đương |
-| EX-02 | Hạn nộp từ 30 → 15 ngày | TIME_LIMIT; giữ mốc tính và hoạt động; không tự chốt HIGH |
-| EX-03 | Thêm đơn vị cung cấp dịch vụ vào chủ thể báo cáo; ngưỡng sự cố từ quá 30 → quá 15 phút | Một ReviewItem nếu cùng quy định, aspects SUBJECT_RIGHTS_DUTIES và QUANTITATIVE; review chia item nếu là nghĩa vụ độc lập |
-| EX-04 | “Có thể nộp” → “Phải nộp” | SUBJECT_RIGHTS_DUTIES; kiểm tra điều kiện/ngoại lệ trước khi chấm mức |
+| EX-02 | Hạn nộp từ 30 → 15 ngày | TIME_QUANTITY; giữ mốc tính và hoạt động; không tự chốt HIGH |
+| EX-03 | Thêm đơn vị cung cấp dịch vụ vào chủ thể báo cáo; ngưỡng sự cố từ quá 30 → quá 15 phút | Một nhận định nếu cùng quy định, aspects SUBJECT_OBJECT hoặc RIGHTS_DUTIES_ACTIONS và TIME_QUANTITY; review chia item nếu là nghĩa vụ độc lập |
+| EX-04 | “Có thể nộp” → “Phải nộp” | SUBJECT_OBJECT hoặc RIGHTS_DUTIES_ACTIONS; kiểm tra điều kiện/ngoại lệ trước khi chấm mức |
 | EX-05 | Bổ sung ngoại lệ cho quyền chuyển hạn | CONDITIONS_EXCEPTIONS; giữ quy định gốc làm ngữ cảnh |
 | EX-06 | Dẫn chiếu bảng A → B nhưng chưa cung cấp B | Giữ thay đổi trực tiếp trong chỉ dẫn/explanation, ReferenceRequirement và PARTIAL; tác động chưa rõ để null, không ép field_group hoặc kết luận mức thu tăng/giảm |
-| EX-07 | Ngày hiệu lực được nêu cùng ngoại lệ cho một khoản | EffectInfo đúng phạm vi; không gán ngày hiệu lực thành TIME_LIMIT |
+| EX-07 | Ngày hiệu lực được nêu cùng ngoại lệ cho một khoản | Giữ trích dẫn, phạm vi và ngoại lệ; gán SCOPE_EFFECT_TRANSITION khi có thay đổi về hiệu lực |
 
-Gold HCI dùng ReviewItem/ChangeAspect/EvidenceRef theo SRS, kèm hồ sơ nguồn và trạng thái review nhãn. amendment_id nối về chỉ dẫn, item_id định danh trong báo cáo/fixture. Không cần ID gold trùng ID dự đoán; matching do D-11 chốt trước đo. Gold phải được đóng gói theo hợp đồng HCI; D-06/D-10 chốt ví dụ, cách chia item và kiểm tra nguồn trước khi khóa nhãn.
+Gold dùng AmendmentResult, các nhận định trong semantic_diff.changes và ScoringResult cùng bằng chứng. D-11 chốt cách ghép dự đoán với gold trước khi đo.
 
-Mục chưa tạo được nhận định vẫn giữ instruction và lý do. Không coi item_id là khóa ổn định giữa hai lượt. Các fixture tương tác giữ report HCI và ReviewRecord riêng, không thay nhận xét người dùng bằng kết quả AI.
+Mục chưa tạo được nhận định vẫn giữ instruction và lý do. Không coi amendment_id và change_id là khóa ổn định giữa hai lượt. Các fixture tương tác giữ report HCI và ReviewRecord riêng, không thay nhận xét người dùng bằng kết quả AI.
 
 ### 5.2. Bộ mẫu trước và sau bổ sung tài liệu
 
@@ -194,7 +175,7 @@ Chuẩn bị bộ kết quả hai lượt có cùng lineage_id, mỗi lượt gh
 | IF-06 | Lượt phân tích lại thất bại/timeout | Giữ báo cáo và nhận xét trước, không tự gửi lặp |
 | IF-07 | Lưu INSUFFICIENT_BASIS | review_status = REVIEWED; needs_review của AI không tự đổi theo thao tác này |
 
-Fixture phải bao gồm trước thao tác, thao tác và đầu ra mong đợi. ReviewRecord giữ cấu trúc và các trạng thái tương tác của SRS HCI; ánh xạ item_id về nhãn nguồn được ghi riêng trong fixture. before_status nếu giao diện cần chỉ được suy ra từ thao tác, nội dung và lý do đã kiểm tra, không suy ra từ null đơn lẻ. Không yêu cầu dùng tài liệu pháp luật khác nhau để kiểm tra mọi thao tác frontend: có thể dùng response cố định có nguồn để cô lập lỗi trạng thái.
+Fixture phải bao gồm trước thao tác, thao tác và đầu ra mong đợi. ReviewRecord giữ cấu trúc và các trạng thái tương tác của SRS HCI; ánh xạ amendment_id và change_id về nhãn nguồn được ghi riêng trong fixture. before_status nếu giao diện cần chỉ được suy ra từ thao tác, nội dung và lý do đã kiểm tra, không suy ra từ null đơn lẻ. Không yêu cầu dùng tài liệu pháp luật khác nhau để kiểm tra mọi thao tác frontend: có thể dùng response cố định có nguồn để cô lập lỗi trạng thái.
 
 ### 5.3. Dữ liệu cho tác vụ kiểm chứng AI
 
@@ -210,4 +191,4 @@ Chỉ đưa đúng bộ V1/S/tham chiếu đã cấp cho mẫu vào index. Khôn
 
 Các lựa chọn cần owner trả lời nằm ở [Module Owner Decisions](module-owner-decisions-hci.md): D-02 cho nguồn, D-04 cho chunk/registry, D-06 cho chia item/nhãn/rubric, D-10 cho bộ mẫu/split/hồ sơ, D-11 cho matching/metric, D-12 cho tác vụ người dùng. Chưa chốt threshold, số mẫu cuối hoặc lịch thu thập chỉ vì tài liệu đã đồng bộ.
 
-Bản HCI 1.2.0 thống nhất nhãn, ví dụ và dữ liệu tương tác theo bốn mã trong SRS. Không thay kết quả nguồn hoặc tự xác nhận rubric pilot đã được toàn nhóm nghiệm thu.
+Bản HCI 1.2.0 thống nhất nhãn, ví dụ và dữ liệu tương tác theo tám nhóm trong SRS. Không thay kết quả nguồn hoặc tự xác nhận rubric pilot đã được toàn nhóm nghiệm thu.
