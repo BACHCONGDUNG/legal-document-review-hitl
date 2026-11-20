@@ -3,3 +3,7 @@
 __pycache__/
 *.py[cod]
 .env
+runtime/lightrag/
+deploy/lightrag/.env.*
+!deploy/lightrag/.env.example
+backend/.env.lightrag

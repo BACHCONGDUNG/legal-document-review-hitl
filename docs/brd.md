@@ -1,10 +1,9 @@
 # BRD — Hệ thống hỗ trợ đối chiếu thay đổi văn bản pháp luật
 
-**Dự án:** Legal Document Change Detection  
-**Học phần và nhóm:** 2627I_INT2041_1 Nhóm 6  
-**Thành viên:** Bạch Công Dũng, Dương Đức Anh, Lê Tùng Dương, Vương Thành Nam  
-**Phiên bản tài liệu:** HCI 1.0.0  
-**Ngày cập nhật:** 15/10/2026   
+**Dự án:** Legal Document Change Detection
+**Học phần và nhóm:** 2627I_INT2041_1 Nhóm 6
+**Thành viên:** Bạch Công Dũng, Dương Đức Anh, Lê Tùng Dương, Vương Thành Nam
+**Phiên bản tài liệu:** HCI 1.1.0
 **Phạm vi phiên bản đầu:** Phân tích văn bản quy phạm pháp luật tiếng Việt ban đầu (V1) và văn bản sửa đổi (S), kèm tài liệu tham chiếu do người dùng cung cấp khi cần.
 
 ## 1. Mục đích tài liệu
@@ -360,4 +359,10 @@ Mỗi chỉ tiêu kỹ thuật phải gắn với bộ dữ liệu, phạm vi nh
 | Hướng dẫn gán nhãn và kế hoạch đánh giá kỹ thuật | Tiêu chí nhãn/mức tác động, đáp án tham chiếu, phương pháp và chỉ số kỹ thuật. |
 | README | Giới thiệu, hiện trạng, cách chạy và chỉ dẫn tài liệu. |
 
-Bộ PoCS là nền tham khảo cho xử lý V1–S. Tài liệu HCI phải ghi rõ phần kế thừa và yêu cầu bổ sung; không mặc định rằng mọi chức năng, nhóm nhãn hoặc chỉ tiêu PoCS đều áp dụng nguyên vẹn. Tên file dẫn chiếu cần khớp cấu trúc kho mã khi nhóm đưa tài liệu vào dự án.
+SRS dùng AmendmentResult và tám nhóm field_group quy định trong SRS. Bốn nhóm nghiệp vụ ưu tiên của BRD dùng để chọn tác vụ nghiên cứu HCI.
+
+Các file hiện có được gọi thống nhất là [SRS](srs.md), [Architecture](architecture.md), [Implementation Plan HCI](implementation-plan-hci.md), [Data Annotation Guide HCI](data-annotation-guide-hci.md) và [User Research](user-research.md). [Module Owner Decisions](module-owner-decisions-hci.md) tập trung các lựa chọn còn mở; không dùng danh sách quyết định đó để khẳng định đã triển khai hoặc đã có kết quả người dùng.
+
+Việc tạm chọn LightRAG Server riêng là hướng triển khai trong Architecture, không thay phạm vi người dùng, bốn nhóm ưu tiên hay chức năng kiểm chứng của BRD. HTTP nội bộ không tự tạo yêu cầu Internet; nơi chạy mô hình được chốt ở cấu hình và hướng dẫn vận hành.
+
+Bản cập nhật này chỉ đồng bộ tài liệu. Chưa bổ sung phỏng vấn, kết quả usability, số đo chất lượng AI hoặc thay thời hạn học phần.

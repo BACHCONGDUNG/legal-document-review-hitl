@@ -1,0 +1,10 @@
+-r requirements.txt
+-r requirements-lightrag-client.txt
+fastapi==0.143.0
+uvicorn==0.54.0
+python-multipart==0.0.33
+python-docx==1.2.0
+
+# HCI PDF conversion dependencies.
+PyMuPDF==1.28.2
+pdf2docx==0.5.8
