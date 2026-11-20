@@ -102,7 +102,7 @@ def parse_documents(documents: list[DocumentInput], work_dir: Path,
                 source = destination
             check_deadline(deadline)
             tree = parse_docx(source, document_id=document.document_id)
-        except (zipfile.BadZipFile, ParseError, ValueError) as exc:
+        except (zipfile.BadZipFile, ParseError, ValueError, KeyError) as exc:
             raise PipelineInputError(
                 "UNREADABLE_DOCUMENT", "Khong doc duoc cau truc tai lieu.",
                 document.document_id,
@@ -196,12 +196,21 @@ def run_comparison(documents: list[DocumentInput], comparison_id: str, *,
             report["results"] = outcome.results
             report["warnings"].extend(outcome.warnings)
             report["errors"].extend(outcome.errors)
+            # Validate both structure and provenance at the pipeline boundary,
+            # even when a different runner is injected during integration.
+            from .document_processing.document_adapter import adapt_documents
+            from .schemas.report_validation import validate_report, validate_sources
+            validate_report(report)
+            validate_sources(report, adapt_documents(parsed).documents)
     except PipelineInputError:
         raise
     except TimeoutError:
+        report["status"] = "FAILED"
         report["errors"].append(issue(stage, "PROCESSING_TIMEOUT",
                                       "Vuot ngan sach thoi gian xu ly."))
     except Exception:
+        report["status"] = "FAILED"
+        report["results"] = []
         # Do not log exception text, filenames, paths or document content.
         logger.error("comparison=%s stage=%s failed", comparison_id, stage)
         report["errors"].append(issue(stage, "PROCESSING_FAILED",

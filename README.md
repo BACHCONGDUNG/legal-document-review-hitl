@@ -34,7 +34,9 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m uvicorn backend.demo:app --host 127.0.0.1 --port 8001
 ```
 
-Mở [giao diện demo](http://127.0.0.1:8001) để tải V1, S và tài liệu tham chiếu hoặc chọn bộ DOCX mẫu. [OpenAPI](http://127.0.0.1:8001/docs) mô tả API đang chạy. `backend.main:app` là điểm vào API nền, mặc định trả HTTP 501 với `ANALYSIS_NOT_CONFIGURED` khi chưa gắn runner.
+Mở [giao diện demo](http://127.0.0.1:8001) để tải V1, S và tài liệu tham chiếu hoặc chọn bộ DOCX mẫu. [OpenAPI](http://127.0.0.1:8001/docs) mô tả API đang chạy. `backend.main:app` cũng đã gắn runner DOCX cục bộ của Phiên 1. API nhận thêm `base_file`/`amendment_file` tương ứng với `doc_v1`/`doc_s`; không gửi đồng thời hai tên cho cùng vai trò. Contract báo cáo `results` của baseline được giữ nguyên.
+
+Ngữ cảnh cục bộ gồm nguồn chỉ dẫn, tiêu đề phạm vi và đơn vị chứa đích khi nằm trong giới hạn. Trích dẫn giữ nguyên văn và `block:N`; không suy ra trang Word/PDF. ADD, REPEAL và nhiều đích còn chờ chốt phạm vi, được giữ cùng lý do chưa xử lý. Model và LightRAG không được gọi trong Phiên 1. Báo cáo nghiệp vụ `FAILED` vẫn có thể đi cùng HTTP 200; lỗi vận hành dùng HTTP lỗi. Giao diện giữ báo cáo trước khi lượt gửi lại thất bại.
 
 Chạy bốn bộ kiểm thử bằng PowerShell.
 
@@ -43,6 +45,7 @@ foreach ($suite in 'schema_suite', 'context_suite', 'demo_suite', 'handoff_suite
     .\.venv\Scripts\python.exe -m unittest discover -s "test/$suite" -p "test_*.py" -v
     if ($LASTEXITCODE -ne 0) { break }
 }
+node --test test/frontend_suite/report-retention.test.cjs
 ```
 
 LightRAG và model mặc định tắt. Cấu hình mẫu dùng Compose project `hci-lightrag`, cổng host `9622` và workspace `hci_comparison_a`. Compose tạo volume theo tên project. Backend dùng biến `HCI_LIGHTRAG_*` theo mẫu trong repo.
@@ -61,7 +64,7 @@ LightRAG và model mặc định tắt. Cấu hình mẫu dùng Compose project 
 
 ## 7. Nhóm thực hiện
 
-**Học phần và nhóm:** 2627I_INT2041_1 — Nhóm 6 (HCI)  
+**Học phần và nhóm:** 2627I_INT2041_1 — Nhóm 6 (HCI)
 **Nhóm trưởng:** Bạch Công Dũng
 
 | Thành viên | Phụ trách chính |

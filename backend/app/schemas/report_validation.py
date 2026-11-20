@@ -70,6 +70,7 @@ def validate_report(report: ComparisonReport):
     if any('/' in d['filename'] or '\\' in d['filename'] for d in identities):
         raise ValueError('Filename must not contain a storage path')
     amendment_ids = set()
+    global_change_ids = set()
     for result in report['results']:
         item = result['amendment']
         aid = item['amendment_id']
@@ -94,6 +95,7 @@ def validate_report(report: ComparisonReport):
             if before is None and item['operation'] != 'ADD' or after is None and not (item['operation'] == 'REPEAL' and item['after_basis'] == 'ABSENT'):
                 raise ValueError('Cannot diff unknown content')
             before, after = before or '', after or ''
+            old_cursor = new_cursor = 0
             for change in result['text_diff']['changes']:
                 if change['type'] == 'INSERT' and (change['old_text'] or change['old_start'] != change['old_end']):
                     raise ValueError('INSERT must have an empty old span')
@@ -103,11 +105,21 @@ def validate_report(report: ComparisonReport):
                     start, end = change[side + '_start'], change[side + '_end']
                     if not 0 <= start <= end <= len(text) or text[start:end] != change[side + '_text']:
                         raise ValueError('Text diff offset mismatch')
+                if change['old_start'] < old_cursor or change['new_start'] < new_cursor:
+                    raise ValueError('Text diff spans overlap or are out of order')
+                if before[old_cursor:change['old_start']] != after[new_cursor:change['new_start']]:
+                    raise ValueError('Text diff omits an unchanged-span mismatch')
+                old_cursor, new_cursor = change['old_end'], change['new_end']
+            if before[old_cursor:] != after[new_cursor:]:
+                raise ValueError('Text diff does not reconstruct the complete after text')
         semantic = result['semantic_diff']
         changes = semantic['changes'] if semantic else []
         change_ids = [c['change_id'] for c in changes]
         if len(change_ids) != len(set(change_ids)):
             raise ValueError('Duplicate change_id')
+        if global_change_ids.intersection(change_ids):
+            raise ValueError('Duplicate change_id across report items')
+        global_change_ids.update(change_ids)
         for change in changes:
             aspect_ids = [a['aspect_id'] for a in change['aspects']]
             if len(aspect_ids) != len(set(aspect_ids)):

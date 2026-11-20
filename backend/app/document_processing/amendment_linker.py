@@ -84,15 +84,20 @@ def _operation(text):
 
 def _quoted(blocks, index):
     selected = []
-    for position in range(index + 1, min(index + 81, len(blocks))):
+    # A replacement may start on the same paragraph as its directive.
+    inline = re.search(r':\s*([“\"])', blocks[index]['text'])
+    start_index = index if inline else index + 1
+    for position in range(start_index, min(index + 81, len(blocks))):
         text = blocks[position]['text']
+        if position == index and inline:
+            text = text[inline.start(1):]
         if not text.strip():
             if selected:
                 selected.append(blocks[position])
             continue
         if not selected and not text.lstrip().startswith(('“', '"')):
             return None
-        selected.append(blocks[position])
+        selected.append({**blocks[position], 'text': text})
         joined = '\n'.join(b['text'] for b in selected)
         if len(joined) > 30000:
             return None
@@ -116,6 +121,7 @@ def link_amendments(boundary):
     base_header = '\n'.join(header_blocks)
     items, warnings = [], []
     scope = ''
+    scope_block = None
     consumed = -1
     for index, block in enumerate(blocks):
         raw, text = block['text'], _body(block['text'])
@@ -123,6 +129,7 @@ def link_amendments(boundary):
             continue
         if re.match(r'^\s*Điều\s+\d+[a-zđ]?\s*[.:]', raw, re.I):
             scope = text
+            scope_block = block
         if not ACTION.search(text):
             continue
         # A generic amendment article heading scopes concrete child directives.
@@ -138,12 +145,21 @@ def link_amendments(boundary):
                 'after_basis': 'UNRESOLVED', 'evidence': [instruction], 'effect_info': [],
                 'context': {'general_context': '', 'evidence': [], 'references': []},
                 'needs_review': True, 'review_reason': 'Chưa xác minh đầy đủ ngữ cảnh và hiệu lực pháp lý.'}
+        if scope_block is not None and scope_block is not block:
+            item['evidence'].append({'document_id': 's',
+                                    'source_refs': [scope_block['source_ref']],
+                                    'quote': scope_block['text']})
         quote = None if PHRASE.search(text) else _quoted(blocks, index)
         if quote:
             consumed = quote[2]
-        locators = LOCATOR.findall(text)
-        clauses, points = CLAUSE.findall(text), POINT.findall(text)
-        applicability, document, reason = _target_document(text, scope, base_header)
+        # Quoted payload can itself mention another Article/document. Only the
+        # directive's target establishes identity and locator, never its payload.
+        phrase = PHRASE.search(text)
+        directive = text[:text.index(':')] if re.search(r':\s*[“\"]', text) else text
+        target_text = phrase['locator'] if phrase else directive
+        locators = LOCATOR.findall(target_text)
+        clauses, points = CLAUSE.findall(target_text), POINT.findall(target_text)
+        applicability, document, reason = _target_document(directive, scope, base_header)
         item['target_document'] = document
         item['operation'], supported_operation = _operation(text)
         if applicability != 'APPLIES':
