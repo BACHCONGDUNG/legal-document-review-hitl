@@ -10,9 +10,7 @@ from .document_processing.amendment_linker import link_amendments
 from .change_analysis.text_diff import compute_text_diff
 from .change_analysis.semantic_diff import detect_semantic_changes
 from .change_analysis.scorer import score_changes
-from .context.context_builder import build_context
-from .context.chunk_builder import build_chunks
-from .context.source_registry import SourceRegistry
+from .context.context_builder import build_local_context
 from .context.semantic_bridge import run_semantic_stage
 from .schemas.report_validation import validate_amendment, validate_report, validate_sources
 
@@ -52,17 +50,17 @@ def run_demo_analysis(parsed, comparison_id, deadline):
     warnings.append(issue('semantic', 'LOCAL_BASELINE_ONLY', 'Demo quy tắc cục bộ; model chưa chọn, không tự xác nhận ngữ cảnh hoặc mức tác động.'))
     if any(p.document.role == 'REFERENCE' for p in parsed):
         warnings.append(issue('context', 'REFERENCES_NOT_ANALYZED', 'Đã đọc tài liệu tham chiếu nhưng chưa truy xuất/đối chiếu đầy đủ; không tự xác nhận đủ ngữ cảnh.'))
-    # Version labels here mean uploaded content identity only, not legal effect.
-    versions = {d: 'uploaded-source' for d in boundary.documents}
-    chunks = build_chunks(comparison_id, list(boundary.documents.values()), versions,
-                          max_chunks=5000, max_chars=100000)
-    registry = SourceRegistry(chunks, list(boundary.documents.values()))
+    # Session 1 uses only verified local source units; do not build an unused
+    # retrieval index or let retrieval limits block a DOCX text comparison.
     results = []
     max_chars = int(os.getenv('HCI_DEMO_MAX_UNIT_CHARS', '12000'))
     if max_chars < 1:
         raise ValueError('HCI_DEMO_MAX_UNIT_CHARS must be positive')
     for item in items:
         check_deadline(deadline)
+        local = build_local_context(item, boundary, max_chars=max_chars)
+        item = local.amendment
+        warnings.extend(local.issues)
         if item['applicability'] != 'APPLIES' or item['before_text'] is None or item['after_text'] is None:
             results.append({'amendment': item, 'text_diff': None, 'semantic_diff': None, 'scoring': None})
             continue
@@ -72,15 +70,26 @@ def run_demo_analysis(parsed, comparison_id, deadline):
                              'amendment_id': item['amendment_id']})
             results.append({'amendment': item, 'text_diff': None, 'semantic_diff': None, 'scoring': None})
             continue
-        context, text, semantic = run_semantic_stage(item,
-            context_work=lambda value: build_context(value, registry, None),
-            text_diff=compute_text_diff, semantic_diff=detect_semantic_changes)
-        validate_amendment(context.amendment, boundary.documents, boundary.clauses)
-        score = score_changes(semantic)
-        result = {'amendment': context.amendment, 'text_diff': text, 'semantic_diff': semantic, 'scoring': score}
-        validate_sources(result, boundary.documents)
-        warnings.extend(context.issues)
-        results.append(result)
+        try:
+            context, text, semantic = run_semantic_stage(item,
+                context_work=lambda value: local,
+                text_diff=compute_text_diff, semantic_diff=detect_semantic_changes)
+            check_deadline(deadline)
+            validate_amendment(context.amendment, boundary.documents, boundary.clauses)
+            score = score_changes(semantic)
+            result = {'amendment': context.amendment, 'text_diff': text, 'semantic_diff': semantic, 'scoring': score}
+            validate_sources(result, boundary.documents)
+            results.append(result)
+        except TimeoutError:
+            raise
+        except Exception:
+            # Keep the independently verified instruction/source, not malformed
+            # module output or exception text. Other instructions can continue.
+            item['needs_review'] = True
+            item['review_reason'] = 'Bước phân tích mục này thất bại; giữ chỉ dẫn và nguồn để kiểm tra lại.'
+            warnings.append({'stage': 'analysis', 'code': 'ANALYSIS_UNRESOLVED',
+                             'message': item['review_reason'], 'amendment_id': item['amendment_id']})
+            results.append({'amendment': item, 'text_diff': None, 'semantic_diff': None, 'scoring': None})
     status = classify_demo_results(results)
     if status == 'FAILED':
         warnings.append(issue('analysis', 'NO_USABLE_ANALYSIS',

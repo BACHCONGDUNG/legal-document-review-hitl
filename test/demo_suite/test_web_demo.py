@@ -39,10 +39,10 @@ class WebDemoTests(unittest.TestCase):
         files += [('reference_files',(f'ref_{i}.docx',value)) for i,value in enumerate(references or [])]
         return self.client.post('/api/compare', files=files)
 
-    def test_main_default_not_mutated_by_demo_composition(self):
-        self.assertIsNone(default_app.state.analysis_runner)
+    def test_main_default_has_session_one_runner(self):
+        self.assertIsNotNone(default_app.state.analysis_runner)
         with TestClient(default_app) as client:
-            self.assertFalse(client.get('/health').json()['comparison_ready'])
+            self.assertTrue(client.get('/health').json()['comparison_ready'])
 
     def test_real_raw_cases_and_source_preserving_offsets(self):
         expected = {'case_01':(2,1), 'case_02':(1,1), 'case_03':(13,13)}

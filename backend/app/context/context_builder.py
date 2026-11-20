@@ -17,6 +17,49 @@ class ContextBuild:
     retrieved: dict | None
 
 
+def build_local_context(item, boundary, *, max_chars=12000):
+    """Keep the containing legal unit and amendment scope as literal evidence.
+
+    This is source selection, not a claim that references/effect are complete.
+    Derived after_text is never inserted into a quotation. The smallest parent
+    is used first; oversized parents are reported rather than silently clipped.
+    """
+    if max_chars < 1:
+        raise ValueError('max_chars must be positive')
+    result = deepcopy(item)
+    evidence = list(result['evidence'])
+    issues = []
+    if item['applicability'] == 'APPLIES':
+        for key, targets in boundary.units['v1'].items():
+            if not any(t['unit_id'] in item['target_unit_ids'] for t in targets):
+                continue
+            article, clause, point = key
+            parent_key = ((article, clause, None) if point else
+                          (article, None, None) if clause else None)
+            parents = boundary.units['v1'].get(parent_key, []) if parent_key else []
+            if len(parents) == 1:
+                parent = parents[0]
+                if len(parent['content']) <= max_chars:
+                    evidence.append({'document_id': 'v1', 'source_refs': parent['source_refs'],
+                                     'quote': parent['content']})
+                else:
+                    issues.append({'stage': 'context', 'code': 'LOCAL_CONTEXT_LIMIT',
+                                   'message': 'Đơn vị chứa vượt giới hạn ngữ cảnh cục bộ; giữ bằng chứng đích, chưa xác nhận đủ ngữ cảnh.',
+                                   'amendment_id': item['amendment_id']})
+            break
+    unique = []
+    for ref in evidence:
+        if ref not in unique:
+            unique.append(deepcopy(ref))
+    result['context']['evidence'] = unique
+    result['context']['general_context'] = '\n\n'.join(
+        f"[{ref['document_id']} / {', '.join(ref['source_refs'])}]\n{ref['quote']}"
+        for ref in unique)
+    validate_payload(AmendmentItem, result)
+    validate_sources(result, boundary.documents)
+    return ContextBuild(result, issues, None)
+
+
 def _failure(item, code, retrieved=None):
     result = deepcopy(item)
     result["needs_review"] = True

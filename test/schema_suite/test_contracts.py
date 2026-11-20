@@ -342,10 +342,9 @@ class ContractTests(unittest.TestCase):
         self.rejects()
 
 
-class KnownBaselineGaps(unittest.TestCase):
-    """Expected failures record proposed checks, not changes to the chosen code."""
-    @unittest.expectedFailure
-    def test_global_change_id_uniqueness_not_enforced(self):
+class PipelineValidationRegressions(unittest.TestCase):
+    """Pipeline rejects duplicate identities and incomplete diff coverage."""
+    def test_global_change_id_uniqueness_is_enforced(self):
         c = load_case()
         other = deepcopy(c['report']['results'][0])
         other['amendment']['amendment_id'] = 's:a2'
@@ -355,8 +354,7 @@ class KnownBaselineGaps(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_case(c)
 
-    @unittest.expectedFailure
-    def test_complete_text_reconstruction_not_enforced(self):
+    def test_complete_text_reconstruction_is_enforced(self):
         c = load_case()
         c['report']['results'][0]['text_diff']['changes'] = []
         with self.assertRaises(ValueError):
