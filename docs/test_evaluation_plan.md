@@ -1,167 +1,215 @@
 # Kế hoạch kiểm thử và đánh giá
 
-**Học phần và nhóm:** 2627I_INT2041_1 — Nhóm 6
+**HCI, Nhóm 6 — cập nhật 22/11/2026.** Phạm vi chỉ S, kho dân sự, nhiều đích và tác động gián tiếp là thiết kế mục tiêu. Hiện trạng mã và kết quả kiểm tra HCI được ghi tại [nền HCI](common-baseline.md). Phân công theo [module](module.md). Công việc nghiên cứu ngắn hạn được theo dõi trong tài liệu tiến độ của nhóm.
 
-**Phiên bản:** Bản khung bổ sung
 
-**Trạng thái:** Tập hợp yêu cầu kiểm chứng đã có trong tài liệu HCI; phương pháp, fixture, metric/ngưỡng và cách tổ chức chi tiết còn chờ owner đề xuất.
+**Dự án:** Legal Document Change Detection — HCI, Nhóm 6
+**Phiên bản:** 0.2 — Bổ sung ca Use Case theo ý kiến Dũng–Đức Anh ngày 20/11/2026
+**Ngày tạo:** 08/11/2026
+**Trạng thái:** Khung kế hoạch đang hoàn thiện; Đức Anh điều phối. Hiện xác định cách đánh giá; tạm lấy Change F1 ≥ 90% và Critical Change Recall ≥ 95%. Đây là các ngưỡng dự tính và có thể thay đổi sau khi hoàn thiện test_evaluation_plan.md, chưa phải ngưỡng nghiệm thu chính thức; hợp đồng schema chung đã chốt, adapter/fixture nghiệp vụ và chi tiết phép đo còn chờ hoàn thiện.
 
 ## 1. Mục đích và phạm vi
 
-Tài liệu tập hợp kiểm thử chức năng, kiểm tra module/điểm nối/toàn luồng, đánh giá kỹ thuật và đánh giá người dùng. Căn cứ là [SRS](srs.md) mục 7, [BRD](brd.md) mục 10, [Implementation Plan HCI](implementation-plan-hci.md), [Data Guide](data-annotation-guide-hci.md), [User Research](user-research.md) và [Module Owner Decisions](module-owner-decisions-hci.md).
+Tài liệu quy định cách chuẩn bị và thực hiện kiểm thử module, kiểm tra điểm nối, kiểm tra toàn luồng và đánh giá chất lượng phương pháp. Viết khung từ sớm để yêu cầu kiểm chứng được xem xét khi owner đề xuất cách triển khai, không chờ toàn bộ module.md hoàn thành.
 
-Bài toán dùng V1, S và tham chiếu được cung cấp. S chứa chỉ dẫn sửa đổi; không bắt buộc dựng V2 đầy đủ. Kết quả phải có nguồn, giữ giới hạn, không coi truy xuất rỗng/lỗi AI là không thay đổi.
+Đầu vào mục tiêu là S cùng kho dân sự cố định và nguồn bổ sung nếu có. V1 + S + tham chiếu vẫn là đầu vào của lõi/demo hiện có để kiểm thử hồi quy. S chứa chỉ dẫn sửa đổi, không mặc định là bản V2 đầy đủ. Kế hoạch bao gồm cả xử lý thành công, thiếu căn cứ, chưa xác định và thất bại.
 
-Nam chủ trì đánh giá kỹ thuật theo D-11/HCI-12; Dũng chủ trì đánh giá người dùng theo D-12/HCI-14; Đức Anh chủ trì kiểm thử tích hợp theo HCI-13. Dũng tổng hợp kế hoạch và báo cáo đánh giá chung; Nam phụ trách phần kỹ thuật, Dũng phụ trách phần người dùng, Đức Anh chủ trì kiểm thử tích hợp. Công cụ evaluator trong cây Architecture vẫn là mục tiêu của phần kỹ thuật, chưa xác nhận đã hoàn thiện.
+Đây là kế hoạch của HCI. Việc lấy ý kiến người dùng của HCI được quản lý theo dự án HCI; không mặc định biến thành yêu cầu đánh giá riêng của HCI.
+
+Không triển khai lại một module Evaluator độc lập. Có thể dùng test hoặc script để tính số đo; mỗi phép đo phải có dữ liệu, quy tắc và kết quả kiểm chứng được.
+
+### Cập nhật kiểm chứng cho nghiệp vụ chỉ S — 20/11/2026
+
+Giữ các ca V1–S phía dưới làm kiểm thử lõi/hồi quy. Nghiệm thu mới cần cố định snapshot kho dân sự, nguồn/phiên bản và gold được review độc lập; không nhập đáp án hoặc kết quả mong đợi vào index.
+
+| Lớp đánh giá | Ca cần có và bằng chứng |
+| --- | --- |
+| Truy xuất đích/phiên bản | Chỉ S, nhiều đích, đúng số hiệu nhưng sai phiên bản, nhiều ứng viên, thiếu bản/ngoài kho. Đối chiếu gold đích/phiên bản/điều khoản và lý do cần kiểm tra |
+| Thay đổi trực tiếp | Trước/sau cùng đơn vị, nghĩa/mức độ/nguồn; đo cả khi V1 do hệ thống tìm. Lỗi tìm sai V1 làm mất thay đổi phải tính vào lỗi đầu cuối |
+| Tác động gián tiếp | Có B chịu tác động dù S/V1 không nêu B; B liên quan nhưng không chịu tác động; quan hệ suy ra chưa đủ căn cứ. Review đúng điều khoản B, liên kết về thay đổi gốc, giải thích và trích dẫn |
+| Coverage và lỗi | Phân biệt đã rà soát không thấy với chưa chạy, retrieval rỗng/lỗi hoặc kho thiếu. Một đích lỗi vẫn giữ kết quả đích khác |
+| Nguồn và vòng đời | Hai lượt cùng dùng kho, nguồn tải lên không lẫn, cleanup chỉ dọn tạm và không xóa kho/index chung; quote về đúng phiên bản |
+
+Báo riêng chất lượng truy xuất, thay đổi trực tiếp, tác động gián tiếp và đầu cuối; TP/FP/FN và quy tắc matching gián tiếp cần chốt trên gold trước khi tính. Đo độ trễ, độ ổn định, chi phí và truy vết trên cùng dữ liệu khi bật/tắt retrieval. Không tự đặt ngưỡng nghiệm thu mới. Kiểm thử HTTP mô phỏng và dịch vụ thật phải ghi tách biệt. Bộ mẫu cụ thể, phương pháp gán nhãn tác động, giới hạn quan hệ và ngưỡng vẫn còn mở.
 
 ## 2. Quan hệ với các tài liệu khác
 
 | Tài liệu | Nội dung sở hữu | Cách phối hợp |
 | --- | --- | --- |
-| module-owner-decisions-hci.md | Danh sách duy nhất các lựa chọn, owner, đề xuất và kết luận | D-11 phần kỹ thuật; D-12 phần người dùng; các D-ID khác cung cấp contract/phương án cần kiểm chứng |
-| module.md | Trách nhiệm, file mục tiêu, input/output, điểm nối và bàn giao | Owner cung cấp lệnh/kết quả/giới hạn; bên nhận chạy lại |
-| workflow.md | Quy trình phối hợp, tự kiểm tra, review, tích hợp và quy định Git | Không thay trách nhiệm đánh giá kỹ thuật/người dùng bằng review code |
-| SRS | FR-01–FR-12, contract HCI, trạng thái và AT-01–AT-13 | Fixture và kết quả mong đợi phải phản ánh đúng yêu cầu |
-| Data Guide | Nguồn, gold/nhãn, bằng chứng, review và split | Tách nhãn pháp lý với dữ liệu nghiên cứu và nhận xét người dùng |
-| User Research và BRD | Nhu cầu, RQ/BG, dự kiến tác vụ và giới hạn nghiên cứu | Định hướng thử nghiệm, không coi giả định thiết kế là kết quả đã quan sát |
+| module-owner-decisions-hci.md | Đề xuất, lựa chọn, lý do, đánh đổi và xác nhận của bên liên quan | CN-10 nhận đề xuất tự kiểm chứng của owner; các quyết định CN/LK liên quan xác định contract và phương pháp cần kiểm tra |
+| module.md | Đặc tả đã chốt, trách nhiệm, điểm nối và điều kiện bàn giao | Ghi tiêu chí kiểm chứng tối thiểu tại module và dẫn tới mã kiểm tra trong kế hoạch này |
+| test_evaluation_plan.md | Phạm vi kiểm tra, thiết kế ca, dữ liệu, baseline, phép đo và tổ chức thực hiện | Bổ sung theo từng phần đã chốt; phần chưa chốt phải giữ trạng thái rõ |
+| Hướng dẫn dữ liệu và gán nhãn | Nguồn, quy tắc nhãn, căn cứ và review đáp án | Kế hoạch dẫn tới phiên bản áp dụng, không tạo một bộ quy tắc nhãn thứ hai |
 
-Tên thống nhất là test_evaluation_plan.md; đã có bản khung, đang hoàn thiện. Nội dung được bổ sung theo quyết định của owner và contract/fixture đã review, không tự xác nhận các phép đo hoặc test đã chạy.
+Các đường dẫn tới test, fixture và script cụ thể được bổ sung sau khi kiểm tra cấu trúc repo và thống nhất với owner. Không tự đổi cấu trúc folder chính đã chốt.
 
 ## 3. Cách hoàn thiện theo tiến độ
 
-| Giai đoạn theo kế hoạch HCI | Nội dung cần chuẩn bị/kiểm tra | Điều kiện chuyển bước |
+| Giai đoạn | Việc thực hiện | Điều kiện để sử dụng chính thức |
 | --- | --- | --- |
-| G1 — Nền tảng và fixture | Nguồn/đáp án, contract và dữ liệu mẫu cho các bên | D-01/D-02 đủ rõ để ghép dữ liệu; người nhận chạy được mẫu |
-| G2 — Phát triển và tích hợp | Kiểm tra từng module/điểm nối, luồng file thật và cảnh báo | Đầu ra đúng contract; phần chưa làm hoặc thiếu căn cứ được thể hiện |
-| G3 — Kiểm thử kỹ thuật | Kiểm tra AT trọng tâm, chất lượng phân tích và phiên bản dùng thử | Có kết quả/giới hạn; không còn lỗi chặn tác vụ; Dũng chạy lại được |
-| G4 — Dùng thử và cải tiến | Thu kết quả tác vụ, ý kiến, phân loại vấn đề và kiểm tra lại | Kết quả gắn phiên bản; owner sửa phần mình; tác vụ bị ảnh hưởng được kiểm tra/thử lại |
-| G5 — Bàn giao | Đối chiếu bản chạy, báo cáo, slide, dữ liệu và minh chứng | Chạy lại được; số liệu và giới hạn khớp phiên bản |
+| Chờ đề xuất owner | Liệt kê rủi ro, chuẩn bị mẫu nghiệp vụ và yêu cầu bằng chứng; owner đề xuất cách tự kiểm chứng | Mẫu và đáp án được review; chưa coi cấu trúc dữ liệu dự kiến là contract |
+| Review và chốt quyết định | Kiểm tra phương án có thể đo/kiểm chứng; thống nhất phần ảnh hưởng bên nhận | Quyết định liên quan được xác nhận theo module-owner-decisions-hci.md |
+| Hoàn thiện từng phần module.md | Điền input/output, expected output, ca kiểm tra, người thực hiện và reviewer | Dùng hợp đồng schema chung đã chọn; fixture nghiệp vụ và adapter được hai bên review |
+| Có implementation | Tự kiểm tra module; kiểm tra điểm nối với đầu ra thật; tích hợp sớm | Có kết quả và giới hạn, không chỉ có code test |
+| Chuẩn bị đánh giá chính thức | Cố định phiên bản, cấu hình, dữ liệu, nhãn, matching và phép đo | Các phần phụ thuộc đã rõ; không còn lỗi chặn phép đo |
 
-Lịch tuần 6–14 là lịch mục tiêu trong kế hoạch gốc, không xác nhận tiến độ thực tế. Không suy tuần đã hoàn thành. D-03/D-04/D-05/D-07 có thể thử riêng bằng fixture; D-06/D-10 và D-11/D-12 cần rõ trước đánh giá độc lập hoặc thu dữ liệu người dùng.
+Một phần có thể sẵn sàng trước phần khác. Không cần chờ toàn bộ module-owner-decisions-hci.md hoặc module.md hoàn tất để kiểm tra module có đủ đặc tả. Riêng LK-13 giữ thứ tự chốt đã quy định trong module-owner-decisions-hci.md: có thể khảo sát và chuẩn bị ca kiểm tra, nhưng chỉ chốt chi tiết còn lại sau các quyết định khác.
 
 ## 4. Trách nhiệm và điều phối
 
-| Phạm vi | Chủ trì theo tài liệu HCI | Phối hợp/review |
-| --- | --- | --- |
-| Chuyển đổi, Parser và nguồn/adapter | Dũng | Đức Anh nhận dữ liệu; Nam/Tùng Dương dùng nguồn; D-02 |
-| Linker, context, dịch vụ retrieval và backend | Đức Anh | Dũng review chỉ dẫn/nguồn; Nam nhận trước–sau/context; D-01/D-03/D-04 |
-| Text Diff, Semantic Diff, AI Adapter và Scorer | Nam | Đức Anh cung cấp/tổng hợp; Dũng review nhãn; Tùng Dương kiểm tra hiển thị; D-05/D-06 |
-| Frontend, nhận xét và đối chiếu lượt | Tùng Dương | Đức Anh cung cấp report/ID/nguồn; Dũng/Nam review; D-07/D-08 |
-| Kiểm thử tích hợp và bản dùng thử | Đức Anh | Chủ module sửa lỗi; Dũng tiếp nhận bản chạy; HCI-13 |
-| Nhãn/dữ liệu và đáp án tác vụ | Dũng | Nam review; Đức Anh/Tùng Dương dùng fixture; D-10 |
-| Đánh giá kỹ thuật và công cụ đo | Nam | Dũng review gold; Đức Anh/Tùng Dương cung cấp kết quả; D-11 |
-| Đánh giá người dùng và cải tiến | Dũng | Tùng Dương thiết kế; Nam chuẩn bị đáp án; Đức Anh bàn giao bản chạy; D-12 |
-| Môi trường tái lập và đóng gói | Đức Anh | Mỗi owner cung cấp dependency/lệnh; Dũng xác nhận máy dùng thử; D-13 |
-| Sở hữu/tổng hợp kế hoạch chung | Chưa quyết định | D-11/D-12 đã có chủ trì riêng |
+Phân công chức năng phải theo LK-01 đã chốt, không sao chép các bảng cũ chưa đồng bộ trong module.md.
 
-Người gán và người review nhãn, người thực hiện từng ca, người tham gia thử nghiệm và lịch thực tế còn cần điền theo mẫu đã chốt. Không xem vai trò phối hợp là đã hoàn thành review.
+| Phạm vi | Trách nhiệm hiện có | Trách nhiệm kiểm chứng đề xuất |
+| --- | --- | --- |
+| Xử lý tài liệu, Parser, adapter và linker | Dũng | Tự kiểm tra từ nguồn thật; bên nhận review output và vị trí nguồn |
+| Text Diff | Nam | Tự kiểm tra vùng đổi, offset và khả năng tái tạo khi contract cho phép; bên nhận Semantic Diff review dữ liệu bàn giao |
+| Semantic Diff và Scorer | Nam | Kiểm tra ngữ nghĩa, bằng chứng, ranh giới mức và trạng thái thiếu căn cứ; Dũng review phần dùng để tổng hợp/nghiệp vụ |
+| Tích hợp, Pipeline và API nghiệp vụ | Đức Anh | Kiểm tra tổng hợp, truyền cảnh báo/lỗi và luồng API; phối hợp bên cung cấp và frontend |
+| UI và xử lý lỗi trả về | Tùng Dương | Kiểm tra hiển thị lỗi, cảnh báo, trạng thái và phần kết quả còn dùng được. |
+| AI Adapter | Dũng và Đức Anh | Kiểm tra phản hồi hợp lệ/không hợp lệ, lỗi, giới hạn và việc giữ nguồn; phân chia nội bộ theo CN-08 |
+| Gọi/tích hợp LightRAG | Đức Anh | Phối hợp kiểm tra dịch vụ, tích hợp context/Pipeline và vòng đời dữ liệu |
+| Context và schema | Đức Anh phụ trách schema và context | Hợp đồng dùng chung được bên giao/nhận thống nhất; đồng bộ module.md |
+| Điều phối đánh giá toàn hệ thống | Đức Anh điều phối kế hoạch | Các thành viên đề xuất yêu cầu, thực hiện và review phần liên quan; không đồng nghĩa kiểm thử thay các owner |
+
+Owner tự kiểm tra trước bàn giao. Bên giao và bên nhận kiểm tra chéo tại điểm nối. Khi hai chức năng có cùng owner, vẫn phải kiểm tra ranh giới chức năng và có review phù hợp từ bên sử dụng kết quả. Người review đáp án nghiệp vụ không chỉ xác nhận lại đầu ra AI làm chuẩn.
 
 ## 5. Phân biệt các loại kiểm chứng
 
-| Loại | Nội dung theo tài liệu HCI | Bằng chứng cần bàn giao |
+| Loại | Câu hỏi | Bằng chứng cần có |
 | --- | --- | --- |
-| Module | Kiểm tra đầu vào/nguồn, thuật toán, output và lỗi của phần được giao | Ví dụ, expected/actual, cấu hình/lệnh và giới hạn |
-| Điểm nối | Kiểm tra contract và khả năng bên nhận dùng dữ liệu | Fixture được hai bên thử, schema và dữ liệu nguồn |
-| Toàn luồng | File thật → báo cáo/nguồn → nhận xét, bổ sung và phân tích lại | Phiên bản chạy, AT tương ứng, lỗi và kết quả kiểm tra lại |
-| Kỹ thuật phân tích | Liên kết, nhận định/aspects, bằng chứng, mức tác động và phần chưa xác định | Phép đo theo D-11, gold đã review, ca tính tay và phân tích lỗi |
-| Người dùng | Tìm/hiểu thay đổi, kiểm chứng AI, nhận biết giới hạn, lưu và tiếp tục rà soát | Kết quả tác vụ, thời gian, lỗi, SUS/phản hồi theo D-12 và phiên bản |
+| Kiểm thử module | Implementation có đáp ứng đặc tả của phần này không? | Input, expected output được review, actual output và cách chạy |
+| Kiểm tra điểm nối | Bên giao và bên nhận có hiểu cùng ý nghĩa dữ liệu không? | Fixture theo contract và đầu ra thật được bên nhận sử dụng |
+| Kiểm tra toàn luồng | Từ file tải lên có tạo được báo cáo đúng hoặc lỗi đúng không? | File thật, kết quả cuối và khả năng truy nguồn/trạng thái |
+| Đánh giá phương pháp | Chất lượng, giới hạn và đánh đổi của phương án là gì? | Baseline khi phù hợp, dữ liệu và cấu hình cố định, phép đo và phân tích lỗi |
 
-Chất lượng AI và hiệu quả giao diện là hai phép đánh giá khác nhau. Không suy từ mức hài lòng thành độ đúng pháp lý, hoặc từ output đúng thành người dùng hiểu đúng. Kiểm tra schema/quote cũng không tự chứng minh diễn giải AI đúng.
+Đúng schema hoặc chạy không lỗi chưa chứng minh đúng nghiệp vụ. Kết quả cuối đúng trên một ví dụ chưa chứng minh mọi bước đều đúng; lỗi giữa các bước có thể bù trừ hoặc bị che mất.
 
 ## 6. Danh mục kiểm tra ban đầu
 
-Giữ mã AT hiện có trong SRS; không tạo thêm danh mục yêu cầu thay thế. Bảng chỉ tập hợp phạm vi và bên liên quan; chưa xác nhận test đã chạy hoặc đã đạt.
+Bổ sung ca: index chạy song song Linker/Text Diff; query chờ cả hai nhánh và sử dụng đúng TextDiffResult; lỗi một nhánh không bị che. Kiểm tra quote/document_id/source_refs qua retrieval → Semantic/Scorer → frontend. Sau cleanup, kiểm tra UI vẫn hiện được đoạn trích và vị trí từ báo cáo đã nhận. Kiểm tra rule trước/model khi cần, lỗi model không tạo kết luận giả; owner giao/nhận lỗi cùng bằng chứng. Nhận xét hai loại là backlog giai đoạn sau, không là điều kiện nghiệm thu bản đầu.
 
-| Mã nguồn | Phạm vi kiểm tra | Yêu cầu cốt lõi | Bên liên quan theo chức năng |
+Các mã dưới đây là mã của kế hoạch này, không phải mã quyết định mới. Đây là phạm vi chuẩn bị, chưa xác nhận các test đã được hiện thực hoặc đã đạt.
+
+| Mã | Phạm vi | Tình huống/rủi ro cần kiểm tra | Căn cứ xác định expected output |
 | --- | --- | --- | --- |
-| AT-01 | Đầu vào DOCX/PDF text và lỗi | Định dạng/scan/thiếu file báo đúng; không trả thành công giả | Dũng, Đức Anh, Tùng Dương |
-| AT-02 | S nhiều chỉ dẫn/nhiều văn bản | Giữ chỉ dẫn, đúng đích/phạm vi; không coi phần không nhắc đến bị xóa | Dũng, Đức Anh |
-| AT-03 | Bổ sung/bãi bỏ/chưa rõ | ABSENT khác UNRESOLVED; Text Diff không tô từ dữ liệu thiếu | Đức Anh, Nam |
-| AT-04 | Bốn nhóm và sửa diễn đạt | Đủ aspects/nguồn; không ép false/LOW khi chưa rõ | Nam, Dũng |
-| AT-05 | Đổi số/gộp–tách/đích mơ hồ | Giữ nguồn/cảnh báo; không ép ghép cấu trúc một–một | Đức Anh, Nam |
-| AT-06 | Đọc bằng chứng/cảnh báo | Đúng file/quote/vị trí; cảnh báo có chữ và không mất khi lọc | Dũng, Đức Anh, Tùng Dương |
-| AT-07 | Nhận xét và lọc/đếm | Ba decision, trạng thái độc lập với AI, đếm cùng đơn vị | Tùng Dương, Đức Anh |
-| AT-08 | Thiếu rồi bổ sung tham chiếu | PARTIAL ban đầu, ID lượt mới, nhận xét bị ảnh hưởng cần kiểm tra lại | Đức Anh, Tùng Dương, Nam |
-| AT-09 | Chia/gộp mục giữa hai lượt | Không gắn nhầm; nhận xét cũ giữ riêng, không đếm vào mục hiện tại | Tùng Dương, Đức Anh; Dũng/Nam review |
-| AT-10 | Lỗi AI/timeout/phân tích lại lỗi | Giữ nguồn/kết quả có ích và báo cáo/nhận xét cũ; không gửi lặp | Nam, Đức Anh, Tùng Dương |
-| AT-11 | Ngoài phạm vi/hiệu lực | Giữ phạm vi và căn cứ; không hiển thị thành không thay đổi | Đức Anh, Nam; Dũng review |
-| AT-12 | Retrieval/index/dịch vụ lỗi | Đợi có giới hạn, nguồn đối chiếu được; lỗi không tự là thiếu tài liệu | Đức Anh, Nam; Dũng review nguồn |
-| AT-13 | Hai bộ tài liệu và cleanup | Không lẫn nguồn; dọn đúng bộ khi tác vụ kết thúc | Đức Anh; Dũng/Nam/Tùng Dương phối hợp phần bị ảnh hưởng |
+| TEP-01 | Chuyển đổi và Parser | Mất chữ, sai thứ tự, sai ranh giới Điều/Khoản/Điểm, bỏ bảng hoặc nội dung ngoài Điều | Đọc/review độc lập tài liệu nguồn; không dùng summary tự đếm làm đáp án duy nhất |
+| TEP-02 | Adapter và nguồn | Sai vai trò V1/S/tham chiếu, ID không khớp, quote lệch nội dung, sai vị trí nguồn | Đối chiếu trực tiếp đoạn nguồn và contract đã chốt |
+| TEP-03 | Linker | Sửa toàn đơn vị/cụm từ, bổ sung, bãi bỏ, nhiều thay đổi, sai văn bản đích hoặc đích mơ hồ | Chỉ dẫn trong S cùng nội dung đích V1 được review |
+| TEP-04 | Nội dung trước sau | Mất điều kiện/ngoại lệ; nhầm chưa xác định với không tồn tại; gộp sai nhiều chỉ dẫn | Mẫu cục bộ có giải thích căn cứ và thứ tự áp dụng khi liên quan |
+| TEP-05 | Text Diff | Offset sai chuỗi, thay đổi tiếng Việt/dấu câu, thêm/xóa, null/rỗng | Hai chuỗi đúng phiên bản và quy tắc offset đã chốt |
+| TEP-06 | Context và retrieval | Thiếu ngữ cảnh, truy sai tài liệu, mất liên kết nguồn, nhầm query rỗng với thiếu tài liệu | Bộ ca có nguồn cần thiết được review; không mặc định chỉ có một đoạn đúng |
+| TEP-07 | Semantic Diff | Chỉ đổi diễn đạt, thay đổi nghĩa, nhiều khía cạnh, nhận định không có căn cứ | Nhãn/nhận định tham chiếu và matching được thống nhất |
+| TEP-08 | Scorer | Ranh giới mức tác động, thiếu căn cứ, sai liên kết với nhận định, dùng retrieval score thay mức tác động | Rubric và ví dụ ranh giới được chốt |
+| TEP-09 | AI Adapter | Output sai cấu trúc, trích dẫn không có trong nguồn, timeout hoặc lỗi mô hình | Contract lỗi và quy tắc validation; có thể giả lập lỗi để kiểm tra ổn định |
+| TEP-10 | Tổng hợp/API | Bỏ mất chỉ dẫn chưa phân tích, mất cảnh báo, nhầm lỗi với không có thay đổi | ComparisonReport/results/AmendmentResult theo schema chung và bảng null/rỗng/lỗi/trạng thái |
+| TEP-11 | Toàn luồng | Một ca đủ căn cứ, một ca thiếu căn cứ, một ca lỗi; bổ sung tài liệu khi chức năng đã được chốt | Báo cáo kỳ vọng từ file thật, nguồn và phạm vi xử lý |
+| TEP-12 | LightRAG và vòng đời | Sẵn sàng nhập/query, mapping, cách ly lượt chạy, cleanup và lỗi dịch vụ | Release/API thực tế theo LK-13; chưa chốt payload hoặc cấu hình trong kế hoạch này |
 
-Tại mỗi điểm nối, người nhận đầu ra chạy kiểm tra và thông báo kết quả; owner cung cấp vẫn phải tự kiểm tra và phối hợp review cách sử dụng dữ liệu. Ghi tên người chạy/bên review theo ca cụ thể khi triển khai. Nơi lưu kết quả chung còn chờ thống nhất; không thay trách nhiệm hai bên bằng việc báo đã chạy.
+Mỗi module chọn các ca liên quan; không bắt buộc mọi test gọi mô hình hoặc dịch vụ thật. Kiểm tra dịch vụ thật vẫn cần có khi xác nhận tích hợp thật. Mock/fixture phải được đánh dấu rõ.
 
-Các tác vụ người dùng theo BG-01–BG-07 ở BRD gồm tìm/giải thích thay đổi, kiểm chứng gợi ý AI, hiểu cảnh báo, ghi nhận/tiếp tục rà soát, bổ sung tài liệu và hiểu mức tác động. D-12 cần biến các mục tiêu này thành tác vụ, đáp án, biểu mẫu và tiêu chí cụ thể.
+### Bộ ca bàn giao phiên 1
+
+**Nền merge và kế hoạch mở rộng:** bộ chung hiện có 9 file deadline_reduction, 2 ca chặn query và 6 ca lỗi (17 JSON ca), cùng provenance. Ca chung giữ mức độ null và PARTIAL; expected Semantic là giả định kỹ thuật, chưa là nhãn review hoặc output demo. Các ca bên dưới là kế hoạch sau merge, không đòi 45 JSON trước khi dùng nền DOCX. Các case PDF đã vào main hiện tại; chưa là kho dân sự đã duyệt hoặc bằng chứng PDF xuyên luồng. Test nguồn/contract, module thật và dịch vụ thật được báo riêng theo [nền chung](common-baseline.md).
+
+Một mã ca xuất hiện ở cả 9 thư mục trong [bộ fixture](../data/module_handoff_fixtures/README.md). Mỗi file ghi input và output mong đợi hoặc điều kiện bỏ qua kèm lý do. Danh sách tên ca phải trùng nhau giữa 9 thư mục. Khi đủ bộ dự kiến sẽ có 5 ca × 9 điểm nối = 45 JSON.
+
+| Ca | Nguồn | Điều kiện đạt chính | Trạng thái |
+| --- | --- | --- | --- |
+| `deadline_reduction` | Fixture hiện có | Thay cả đơn vị, giữ hai bản toàn văn, kiểm chứng offset, nhận định và bằng chứng đến UI | Đã có fixture tại 9 điểm nối |
+| Sửa cục bộ | `case_06` | Giữ toàn bộ vị trí thuộc chỉ dẫn được chọn, dựng toàn văn trước/sau từng đơn vị và giữ nguyên văn chỉ dẫn S | Chuẩn bị sau khi hoàn thiện docs |
+| Bổ sung | `case_08` | Giữ vị trí chèn và kiểm tra nội dung được thêm giữa hai trạng thái của cùng đơn vị chứa | Chuẩn bị sau khi hoàn thiện docs |
+| Bãi bỏ | `case_07` | Giữ đầy đủ đích của chỉ dẫn được chọn và đối chiếu phần bị bỏ trong toàn văn đơn vị chứa | Chuẩn bị sau khi hoàn thiện docs |
+| Thiếu đích | Biến thể ca sửa cục bộ | Giữ chỉ dẫn, lý do cần kiểm tra và mục báo cáo. Bỏ qua bước thiếu điều kiện | Chuẩn bị sau khi hoàn thiện docs |
+
+Tách ba kết quả khi báo cáo: fixture qua contract, tích hợp với đầu ra thật, và đánh giá chất lượng trên dữ liệu có nhãn. Điều phối đánh giá do Đức Anh phụ trách. Sau phiên 1, dùng báo cáo từng module để bổ sung ca lỗi và tiêu chí chấm còn mở.
+
+### Ca nghiệm thu theo Use Case sau đối chiếu ngày 20/11/2026
+
+Căn cứ quyết định trong Decision và SRS UI-01–UI-10. Mỗi ca ghi snapshot kho, đầu vào, thao tác người dùng, kết quả quan sát được, nguồn kỳ vọng, trạng thái dự kiến và chất lượng đúng/sai được review độc lập. Các dòng dưới là ca cần triển khai; chưa xác nhận code đã đạt. Mã M/A/E dẫn về khung Use Case, với các nhánh được cập nhật theo ý kiến Dũng–Đức Anh. Những yêu cầu E1/E2/E3/E5 đã có ở docs được kiểm thử trong phạm vi hành vi tương ứng; các chi tiết đề xuất còn lại giữ trạng thái đề xuất.
+
+| Ca | Nhánh và mục ý kiến | Đầu vào/thao tác | Kết quả mong đợi |
+| --- | --- | --- | --- |
+| UC-M01 | M1–M6; mục 1, 7 | Người dùng thuộc nhóm ưu tiên hoặc bổ sung nộp S, kho đủ V1 và nguồn ngữ cảnh/B | Quyền tương tác tương ứng; tìm đúng phiên bản, dựng trước/sau; nguồn có thể có cả hai vai trò; tác động B có quy định và căn cứ kiểm chứng. |
+| UC-M02 | M7–M9; mục 8, 9 | Mở nhiều kết luận và bằng chứng, có ca tác động B và ca thiếu V1 | Phần liên quan được đánh dấu kèm nhãn; xem được chuỗi căn cứ và mắt xích thiếu. Cách tô nền/chữ đậm do UI chọn. |
+| UC-M03 | M9–M11; mục 11, 12 | Xem lại báo cáo sau cleanup, rồi chọn “Kết thúc phiên”; có/không góp ý | Xem được bằng chứng đã trả trước khi kết thúc; kết thúc xóa trạng thái/lựa chọn/báo cáo trên UI. Góp ý không quyết định hoàn tất. |
+| UC-A01 | A1; mục 2 | S có đích dân sự chưa có V1 trong kho; bổ sung V1 đúng | Yêu cầu bổ sung rõ văn bản/phiên bản/điều khoản; kiểm tra nguồn, tạo lượt mới trong cùng UI và phân tích trên V1 bổ sung. |
+| UC-A02 | A1; mục 2 | Cùng ca trên, chọn “Hiện tại không có tài liệu” | Phân tích từ S và nguồn sẵn có, trả nhận định có căn cứ và giới hạn; trước/sau chưa xác định được ghi rõ; giữ kết quả đích khác. |
+| UC-A03 | A2; mục 5 | Gửi V1 không khớp, sau đó thay V1 đúng hoặc chọn chưa có tài liệu | Nêu dấu hiệu không khớp, yêu cầu thay file; kiểm tra lại khi gửi đúng; lựa chọn chưa có tài liệu xử lý như UC-A02. |
+| UC-A04 | A3; mục 3, 4 | So sánh ba ca: dân sự chưa có trong kho, thực sự ngoài phạm vi, phạm vi chưa chắc chắn | Ca thứ nhất cho bổ sung; ca thứ hai báo lý do ngoài phạm vi; ca thứ ba yêu cầu làm rõ. Retrieval rỗng/lỗi không được coi là căn cứ xác định ngoài dân sự. |
+| UC-A05 | M3–M5/A3; mục 4, 6 | S nhiều đích, có đích dân sự và ngoài phạm vi; 8 điều khoản đích mới có nguồn cho 3 | Tiếp tục các đích dân sự đủ căn cứ; nêu 5 điều khoản thiếu và đếm riêng văn bản/yêu cầu/điều khoản. Thử các mức bổ sung 0–5 điều khoản, đối chiếu coverage và nhận định tương ứng. |
+| UC-E01 | E1; kiểm tra đầu vào hiện có | S hoặc V1 bổ sung hỏng, sai định dạng hoặc không đọc được | Báo đúng file và hướng thay file; chỉ xử lý phần có nguồn hợp lệ. Chi tiết khôi phục tương tác bổ sung cần fixture. |
+| UC-E02 | E2; mục 6 | Một văn bản đích có nhiều phiên bản ứng viên, thiếu căn cứ lựa chọn | Giữ ứng viên và yêu cầu làm rõ; chưa gán bừa phiên bản; giữ kết quả các đích khác. |
+| UC-E03 | E3; mục 7, 10 | Thiếu nguồn ngữ cảnh hoặc B; sau đó bổ sung; giả lập lượt mới lỗi | Nêu phần thiếu, phân biệt vai trò nguồn; bổ sung tạo lượt mới trong cùng UI; báo cáo trước vẫn xem được khi lượt mới lỗi. |
+| UC-E04 | E4; mục 14 | Lỗi dịch vụ ở bước xử lý; người dùng thử lại. Chạy hai ca còn dữ liệu hợp lệ và đã cleanup | Thông báo bước lỗi; tiếp tục từ dữ liệu hợp lệ còn lưu hoặc tạo lượt mới khi cần, ghi rõ phần chạy lại. Tránh gửi trùng hoặc hai tác vụ cùng tạo kết quả cuối. |
+| UC-E05 | E5; xem bằng chứng | Giả lập bằng chứng chưa mở được; thử mở lại | Báo phần chưa truy cập được, giữ nguồn thật; khi khôi phục thì cho xem lại. Ghi chưa đạt điều kiện xem bằng chứng nếu lỗi còn tồn tại. |
+| UC-E06 | E6; mục 15 | Đề xuất hủy trước khi có kết quả | Giữ là đề xuất. Nếu nhóm đưa vào bản đầu, bổ sung kỳ vọng dừng bước tiếp theo, trạng thái backend còn chạy và cleanup trước khi dùng làm ca nghiệm thu. |
+| UC-Q01 | Điều kiện thành công/thất bại; mục 12, 13 | Báo cáo chạy SUCCESS nhưng có kết luận sai hoặc trích dẫn sai trong bộ gold | Ghi lỗi chất lượng trong nghiệm thu, đối chiếu trạng thái chạy riêng. Báo cáo thiếu phần có thể là PARTIAL theo SRS; chỉ số chất lượng vẫn tính sai/bỏ sót. |
 
 ## 7. Mẫu hoàn thiện từng ca kiểm tra
 
-Các thông tin cần tập hợp từ yêu cầu bàn giao trong D-ID và kế hoạch HCI:
+Mỗi ca cụ thể cần ghi đủ:
 
-- AT/FR/BG hoặc D-ID được kiểm tra; module/điểm nối và mục đích.
-- Người thực hiện, bên nhận/reviewer; phần chưa quyết định được ghi rõ.
-- File/fixture, nguồn, bộ tham chiếu thực sự cung cấp và đáp án đã review.
-- Phiên bản code, cấu hình, dependency/model khi có và lệnh/bước chạy.
-- Expected/actual; nguồn xác nhận; phần chưa xử lý hoặc chưa đủ căn cứ.
-- Lỗi/giới hạn, người sửa và kết quả kiểm tra lại theo phạm vi ảnh hưởng.
+- Mã ca và mục TEP liên quan; quyết định CN/LK, yêu cầu hoặc phần đặc tả được kiểm tra.
+- Mục đích, rủi ro, người thực hiện và người review.
+- Điều kiện chạy, phiên bản contract và đường dẫn dữ liệu/fixture.
+- Expected output hoặc quy tắc chấp nhận, nguồn xác nhận và phần chưa chắc chắn.
+- Lệnh hoặc các bước chạy; dependency và cấu hình liên quan.
+- Actual output, trạng thái đạt/chưa đạt/bị chặn, liên kết bằng chứng và lỗi cần xử lý.
 
-Với tác vụ người dùng, bổ sung nhóm người tham gia, tác vụ/câu hỏi, cách chấm, thời gian/lỗi/phản hồi và phiên bản giao diện. Mẫu biểu chính thức chờ D-11/D-12, không tự thêm kết quả, thông số hoặc xác nhận review.
+Nếu quyết định còn mở, ghi rõ phần bị chặn và mã quyết định; không tự điền trường dữ liệu như đã được thông qua.
 
 ## 8. Dữ liệu nhãn và đánh giá chất lượng
 
 ### 8.1. Chuẩn bị dữ liệu
 
-Dũng chủ trì D-10; Nam review đáp án/nhãn. Giữ manifest, nguồn/hash, vai trò, lineage, bộ tham chiếu và giới hạn theo Data Guide. Các biến thể cùng nguồn/chuỗi sửa đổi ở cùng split; mẫu giả định/biến đổi có đánh dấu và không đại diện tự động cho mẫu thực tế.
+Giữ nguồn, vai trò tài liệu, phiên bản, chất lượng chuyển đổi và tài liệu tham chiếu. Phân biệt dữ liệu giả định phục vụ kiểm tra logic với file thật phục vụ kiểm tra khả năng xử lý. Đáp án phải có căn cứ và review phù hợp, không lấy đầu ra thuật toán làm nhãn chuẩn tự động.
 
-Gold dùng các nhận định và ChangeAspect theo tám nhóm phân tích trong SRS. Dữ liệu nhận xét HCI, V2 đối chiếu và gợi ý sai có kiểm soát được lưu riêng khỏi đầu vào đánh giá AI theo D-10.
-
-Nghiên cứu hiện có mới tổng hợp trao đổi với hai sinh viên vừa vào năm 3; chưa là thử nghiệm sản phẩm. Những khoảng trống về bước khó nhất, cách kiểm tra phiên bản, hiểu cảnh báo và hành vi sau phân tích lại vẫn giữ đúng giới hạn trong User Research.
+Trước phép đánh giá độc lập, thống nhất chia dữ liệu phát triển/kiểm thử và tránh rò rỉ giữa các văn bản thuộc cùng nguồn hoặc chuỗi sửa đổi. Quy mô và cách chia còn chờ xác nhận theo dữ liệu thực tế.
 
 ### 8.2. Phép đo cần đề xuất và chốt
 
-| Phạm vi | Căn cứ đã có | Nội dung chưa quyết định | Chủ trì đề xuất |
-| --- | --- | --- | --- |
-| Chất lượng kỹ thuật | BRD mục 10.2; D-11 | Metric/công thức, matching SemanticChange/aspects, ca thiếu/sai aspect, nguồn sai, null/không mẫu và ngưỡng | Nam; Dũng review gold |
-| Nhãn/mức tác động | SRS/Data Guide; D-06 | Rubric pilot, ca ranh giới, chia/gộp item, dữ liệu/đáp án cuối | Nam; Dũng review |
-| Đúng tác vụ người dùng | BRD BG-01–BG-07; D-12 | Tác vụ, đáp án, cách chấm hoàn thành đúng và lỗi diễn giải | Dũng; Nam/Tùng Dương phối hợp |
-| Thời gian và phản hồi | BRD mục 10.1; D-12 | Cách ghi thời gian, SUS, biểu mẫu/phản hồi và cách tổng hợp | Dũng |
-| Kiểm chứng gợi ý AI | BG-03/BG-04; D-10/D-12 | Mẫu gợi ý sai kiểm soát, tiêu chí nhận ra sai hoặc thiếu căn cứ | Dũng; Nam chuẩn bị đáp án |
-| Giới hạn vận hành | D-09/D-13 | Dung lượng, đồng thời, deadline, retry, số đo tài nguyên và môi trường | Đức Anh; owner cung cấp số đo |
+| Phạm vi | Câu hỏi đánh giá | Chi tiết còn phải chốt |
+| --- | --- | --- |
+| Parser/linker | Nội dung và vị trí đích được giữ/tìm đúng đến đâu? | Đơn vị đối chiếu, xử lý khớp một phần và các ca mơ hồ |
+| Retrieval/context | Có tìm đủ căn cứ cần thiết và giữ đúng nguồn không? | Bộ nguồn tham chiếu, tiêu chí đủ căn cứ và cách chấm nhiều đoạn hợp lệ |
+| Thay đổi ngữ nghĩa | Tìm đúng và bỏ sót những nhận định nào? | Đơn vị thay đổi, TP/FP/FN và Precision/Recall/F1 khi phù hợp; áp dụng matching 1–1 trước, matching 1–n bổ sung sau khi hoàn thành 1–1 |
+| Mức tác động | Nhận diện thay đổi trọng yếu và mức độ đúng đến đâu? | Rubric, định nghĩa trọng yếu, cách tính recall và mẫu số |
+| Giải thích/bằng chứng | Kết luận có được nguồn hỗ trợ và nêu đúng giới hạn không? | Rubric review, người review và cách giải quyết bất đồng |
+| Hiệu năng/tài nguyên | Luồng mất bao lâu, tốn tài nguyên hoặc chi phí nào? | Môi trường, cách lặp, cache, model/embedding và cách tổng hợp |
 
-Chưa đặt số ngưỡng chất lượng kỹ thuật hoặc quy tắc matching thay Nam. Không áp đặt một kiểu ghép đánh giá trước D-11. Ghép dự đoán–gold để đo khác với ghép nhận xét qua các lượt ở D-08 và khác liên kết cấu trúc ở D-03.
+Các ngưỡng Change F1 ≥ 90% và Critical Change Recall ≥ 95% là dự tính và có thể thay đổi sau khi hoàn thiện test_evaluation_plan.md; chưa phải ngưỡng nghiệm thu chính thức. Kế hoạch xác định đơn vị đánh giá, matching, công thức, cách xử lý lỗi/chưa xác định, số mẫu hợp lệ và cách báo cáo kết quả. Sau khi hoàn thiện kế hoạch, nhóm xác nhận ngưỡng chính thức trước đánh giá độc lập; không sửa ngưỡng hoặc cách tính sau khi thấy kết quả chỉ để tuyên bố đạt.
 
-BRD dự kiến khoảng 5–10 sinh viên Luật; đây là quy mô dự kiến, không xác nhận đã tuyển hoặc dùng thử. Hai người trao đổi ban đầu chưa được tính như đã thử sản phẩm. Quy mô, điều kiện người tham gia và cách thực hiện phải được Dũng hoàn thiện theo D-12 trước thu kết quả.
+Trong matching 1–1, mỗi dự đoán được ghép tối đa với một nhãn chuẩn và mỗi nhãn chuẩn được ghép tối đa với một dự đoán; không tính trùng. Các trường hợp chia/gộp cần matching 1–n được ghi nhận để phát triển sau, chưa áp dụng cách tính 1–n trong đợt hiện tại.
 
 ### 8.3. So sánh phương pháp
 
-D-05 yêu cầu so sánh trên cùng mẫu, giữ cấu hình/model/output và giới hạn. Phương án so sánh cụ thể chưa quyết định; không tự đặt một baseline kỹ thuật mới.
+Owner đề xuất baseline đơn giản, phù hợp với câu hỏi cần kiểm chứng. Ví dụ có thể so sánh cách chọn ngữ cảnh trực tiếp với cách bổ sung retrieval, nếu cả hai có cùng nhiệm vụ và đầu vào có thể so sánh. Đây là gợi ý thiết kế thí nghiệm, chưa chốt phương án cụ thể.
 
-BRD cho phép so sánh giao diện đối chiếu cơ bản với giao diện có thêm giải thích/bằng chứng trên cùng đầu ra cố định và tác vụ tương đương. Đây là phương án có thể thực hiện, chưa là thiết kế thử nghiệm đã chốt. D-12 xác định cách so sánh và tiêu chí, tách đầu ra thử nghiệm cố định với kết quả chạy thật.
-
-Báo cáo số mẫu, giới hạn, trường hợp thiếu căn cứ và chỉ số không tính được. Không khái quát mẫu nhỏ cho toàn bộ sinh viên Luật hoặc lấy tăng đồng ý/tin tưởng AI làm mục tiêu thay độ đúng và khả năng kiểm chứng.
+Giữ cùng dữ liệu và điều kiện so sánh; ghi các khác biệt cấu hình. Phân tích lỗi theo nhóm tình huống và phân biệt lỗi bắt nguồn từ Parser/linker/context với lỗi Semantic Diff/Scorer. Có thể chạy riêng bước sau bằng đầu vào chuẩn đã review để hỗ trợ tìm nguyên nhân; kết quả đó không thay thế đánh giá toàn luồng.
 
 ## 9. Điều kiện bàn giao và báo cáo
 
-Bản dùng thử cần commit/phiên bản, kết quả AT trọng tâm, dữ liệu/đáp án đã review, giới hạn và cấu hình; không còn lỗi chặn tác vụ, Dũng chạy lại được. Phương pháp, quy tắc và tiêu chí được cố định trước thu kết quả. Nhãn/dữ liệu nghiên cứu và nhận xét trong sản phẩm được quản lý riêng.
+Ghi riêng kết quả validator, kết quả luồng có mock và kết quả gọi dịch vụ thật. Đánh giá chất lượng nghiệp vụ dùng tập có nhãn đã review và phương pháp ghi ở mục 8.
 
-Nam bàn giao phương pháp, công cụ và kết quả kỹ thuật; Dũng tổng hợp báo cáo đánh giá người dùng và vấn đề; Tùng Dương giữ minh chứng thiết kế/cải tiến; Đức Anh chuẩn bị bản chạy và môi trường. Mỗi owner tự cung cấp mô tả/lệnh/kết quả/giới hạn của phần mình.
+Một phần đủ điều kiện bàn giao khi có đặc tả liên quan đã chốt, code, mẫu vào ra, kiểm tra phù hợp, kết quả, cách chạy và giới hạn; bên nhận sử dụng được đầu ra thật. Trạng thái đủ đặc tả, đã hiện thực và đã tích hợp/kiểm tra phải được ghi riêng.
 
-Dũng tổng hợp báo cáo đánh giá chung từ phần kỹ thuật của Nam, phần người dùng do Dũng chủ trì và kết quả kiểm thử tích hợp do Đức Anh điều phối. Tên file, vị trí và định dạng báo cáo/kết quả: **chưa quyết định**; không tạo định dạng runtime mới thay nhóm. Sau cải tiến, kiểm tra/thử lại tác vụ bị ảnh hưởng và nêu đúng phiên bản trước/sau.
+Mỗi đợt đo cần lưu commit, cấu hình, dependency/model khi có, phiên bản dữ liệu/nhãn, cách tính và kết quả. Nếu dùng lỗi test để chỉnh phương pháp, công bố việc đó; chỉ gọi một lần đánh giá mới là độc lập khi dùng dữ liệu chưa được dùng để chỉnh.
+
+evaluation_report.md được tạo khi có kết quả thực tế. Báo cáo gồm phạm vi và phiên bản, phương pháp đo, số mẫu, kết quả, so sánh baseline nếu có, lỗi tiêu biểu, giới hạn và việc cần xử lý. Không cần đợi toàn bộ dự án xong mới ghi kết quả từng đợt, nhưng phải nêu rõ phạm vi đã đo.
 
 ## 10. Việc cần bổ sung sau đề xuất owner
 
-| Việc cần bổ sung | Người chủ trì có căn cứ | Phụ thuộc |
+| Việc cần chốt | Bên cần tham gia | Khi nào cập nhật |
 | --- | --- | --- |
-| Owner tổng hợp kế hoạch và báo cáo đánh giá chung | Dũng | D-11 và D-12 có chủ trì riêng; cần phân biệt với Dũng tổng hợp báo cáo dự án |
-| Contract API/schema và fixture | Đức Anh phụ trách schema; Dũng + Đức Anh cùng biên soạn api-contract.md | D-01, phối hợp D-02/D-06/D-07/D-08 |
-| Native/adapter, nguồn, Unicode và mapping PDF | Dũng | D-02; Đức Anh/Tùng Dương nhận |
-| Chỉ dẫn/đích và trước–sau | Đức Anh | D-03, nguồn từ D-02 |
-| Retrieval và vòng đời | Đức Anh | D-04, phối hợp D-05/D-09/D-13 |
-| AI/prompt/validation/fallback và rubric | Nam | D-05/D-06; Dũng review nguồn/nhãn |
-| Giao diện, cơ chế giữ/đọc bằng chứng và đối chiếu nhận xét | Tùng Dương | D-07/D-08; API từ Đức Anh, nguồn từ Dũng theo D-01/D-02 |
-| Dữ liệu/gold, mẫu tác vụ và split | Dũng | D-10; Nam review |
-| Metric, matching, ca tính tay và ngưỡng kỹ thuật | Nam | D-11; dữ liệu/nhãn đã review |
-| Người tham gia, tác vụ, đáp án, SUS/phản hồi | Dũng | D-12; phối hợp Nam/Tùng Dương, bản chạy từ Đức Anh |
-| Môi trường, tài nguyên và khả năng chạy lại | Đức Anh quyết định chính D-13; Dũng + Đức Anh cùng biên soạn development-guide.md | D-09/D-13; số đo/lệnh của owner |
-| Người chạy/reviewer từng ca và nơi lưu kết quả | Người nhận đầu ra chạy và thông báo; owner cung cấp tự kiểm tra và phối hợp review | Ghi tên theo ca; nơi lưu kết quả chung còn chờ thống nhất |
+| Người thực hiện và người review từng phần | Đức Anh đã được xác nhận điều phối; các owner liên quan phối hợp | Bổ sung trước khi phân công chạy toàn luồng/chính thức |
+| Contract, fixture và hành vi lỗi | Bên giao, bên nhận; schema/API khi liên quan | Sau quyết định CN/LK tương ứng |
+| Ca kiểm tra, expected output và lệnh chạy | Owner và reviewer | Khi phần module đủ đặc tả/có implementation |
+| Nhãn, rubric, dữ liệu và cách tính metric; matching 1–1 | Đức Anh điều phối; Dũng, owner phân tích và reviewer phối hợp | Trước đánh giá chính thức; ngưỡng dự tính Change F1 ≥ 90% và Critical Change Recall ≥ 95% có thể thay đổi sau khi hoàn thiện test_evaluation_plan.md; matching 1–n bổ sung sau khi hoàn thành 1–1 |
+| Baseline và thiết kế thí nghiệm | Owner phương pháp, bên tích hợp và reviewer | Trước chạy so sánh |
+| Cấu hình và kiểm tra LightRAG thật | Đức Anh và các bên liên quan | Theo thứ tự chốt LK-13 |
 
+Các mục chờ trên không tự tạo quyết định mới hoặc thay phân công đã chốt. Sau khi module.md hoàn thiện, rà lại kế hoạch để không thiếu điểm nối, lỗi và điều kiện bàn giao; không phải viết lại toàn bộ kế hoạch từ đầu.
 
-Tất cả D-01–D-13 vẫn giữ trạng thái chờ owner như register nguồn, trừ khi có đề xuất và xác nhận thực tế. Việc bổ sung kế hoạch này không tự xác nhận đã có API contract, development guide, công cụ đo hoặc kết quả người dùng.
+## Kiểm tra hợp đồng chung độc lập
+
+Các test schema chạy từ repo root: `python -m unittest discover -s test/schema_suite -p "test_*.py" -v` sau khi cài `requirements.txt`. Fixture nguồn dùng block:N, có báo cáo thành công, từng biến thể sai schema/nguồn/scoring và report nền main chưa có runner. Đây là kiểm tra hợp đồng, không phải đánh giá chất lượng mô hình hoặc xác nhận Pipeline đã nối validation. Các giới hạn validator giữ nguyên và ví dụ cần review ở [SRS mục 1.7](srs.md).

@@ -1,12 +1,15 @@
 # WORKFLOW — Quy trình làm việc, Git và kiểm thử chéo
 
-**Học phần và nhóm:** 2627I_INT2041_1 — Nhóm 6 (HCI)
+**HCI, Nhóm 6 — cập nhật 22/11/2026.** Phạm vi chỉ S, kho dân sự, nhiều đích và tác động gián tiếp là thiết kế mục tiêu. Hiện trạng mã và kết quả kiểm tra HCI được ghi tại [nền HCI](common-baseline.md). Phân công theo [module](module.md). Công việc nghiên cứu ngắn hạn được theo dõi trong tài liệu tiến độ của nhóm.
 
-**Dự án:** Hệ thống hỗ trợ đối chiếu thay đổi văn bản pháp luật với AI có giải thích và có sự kiểm chứng của người dùng
 
-**Phiên bản:** Bản hoàn thiện quy trình HCI
+**Dự án:** Legal Document Change Detection — HCI, Nhóm 6
+**Phiên bản:** Bản đầu tiên
+**Trạng thái:** Bản dự thảo để nhóm đọc và thống nhất áp dụng
 
-**Trạng thái:** Quy trình phối hợp áp dụng cho nhóm HCI; không xác nhận cấu hình GitHub hoặc trạng thái hoàn thành của module
+## Cập nhật phạm vi ngày 20/11/2026
+
+Architecture/BRD/SRS mới định hướng chỉ S trong kho dân sự. Nền code hiện tại vẫn là demo V1–S; chín fixture lịch sử chỉ kiểm lõi từng đích. Các ví dụ V1–S và mốc nhánh tháng 11 bên dưới đọc theo phạm vi đó, không coi là đầy đủ điểm nối hệ thống mới. Giữ quy trình bán song song, review bên giao/nhận và main qua PR; thay đổi contract cấp S phải kèm schema/validator/fixture và kế hoạch chuyển tiếp trước khi tích hợp code. Không tự thay bảng phân công hoặc lịch sử báo cáo trong đợt tài liệu.
 
 ## 1. Mục đích và phạm vi
 
@@ -18,9 +21,9 @@ Tài liệu quy định cách thành viên phối hợp từ lúc chốt lựa c
 | module.md | Phân công, nhiệm vụ, file chính và điểm nối của module sau khi quyết định liên quan được chốt |
 | workflow.md | Cách nhận việc, code song song, dùng Git, kiểm thử chéo và đưa kết quả vào nhánh chung |
 
-Quy trình và quy tắc Git dưới đây là cách phối hợp của nhóm. Việc ghi quy tắc không tự xác nhận GitHub đã bật branch protection hoặc CI. Yêu cầu phần mềm theo [SRS](srs.md); trách nhiệm và điểm bàn giao theo [Module](module.md), [Implementation Plan HCI](implementation-plan-hci.md) và [Module Owner Decisions](module-owner-decisions-hci.md). Khi đổi hợp đồng hoặc phân công, cập nhật tài liệu và bên bị ảnh hưởng trước tích hợp.
+Quy tắc Git và các checklist dưới đây là đề xuất vận hành của bản đầu tiên, không khẳng định nhóm đã thông qua hoặc GitHub đã bật cấu hình bảo vệ. Quyết định và phân công mới nhất được nhóm xác nhận là căn cứ; khi tài liệu còn lệch nhau, cập nhật phần liên quan trước khi dựa vào đó để triển khai.
 
-Theo phân công HCI: Dũng phụ trách đầu vào/Parser/adapter nguồn, dữ liệu/docs, nghiên cứu và đánh giá người dùng; Đức Anh phụ trách backend/API/Pipeline, linker, context và tích hợp/vận hành; Nam phụ trách Text Diff, Semantic Diff, AI Adapter, Scorer và đánh giá kỹ thuật; Tùng Dương phụ trách thiết kế tương tác, frontend và nhận xét trong phiên. Nam quyết định chính D-05; Đức Anh quyết định chính D-04/D-13; Tùng Dương quyết định cơ chế giữ/đọc bằng chứng theo D-07. Dũng + Đức Anh cùng biên soạn api-contract.md và development-guide.md theo D-01/D-13. Quyền lựa chọn phương pháp không thay việc phối hợp khi đổi contract hoặc môi trường chung.
+Theo phân công hiện có: Đức Anh phụ trách tích hợp/API; Dũng phụ trách dữ liệu/docs; Dũng phụ trách xử lý tài liệu; Nam phụ trách Text Diff; Nam phụ trách Semantic Diff và Scorer; Tùng Dương phụ trách UI và xử lý lỗi trả về; Nam phụ trách AI Adapter. Đức Anh phụ trách gọi/tích hợp LightRAG; Đức Anh phụ trách context và điều phối kế hoạch đánh giá.
 
 ## 2. Quy trình làm việc
 
@@ -43,17 +46,17 @@ Trước một task phụ thuộc, bên cung cấp và bên nhận thống nhấ
 3. Một bộ input/output mẫu cùng kết quả mong đợi đã được hai bên review.
 4. Phiên bản hợp đồng hoặc commit làm căn cứ, để hai bên không code theo hai bản khác nhau.
 
-Ghi lựa chọn trong module-owner-decisions-hci.md; cập nhật module.md và schema liên quan khi đã chốt. Nếu mới có đề xuất, không tự coi đó là hợp đồng chung. Chỉ cần chốt các quyết định liên quan trực tiếp đến task để bắt đầu phần độc lập; không cần chờ toàn bộ dự án xong quyết định. D-01/D-02 cần đủ rõ trước ghép dữ liệu; có thể thử riêng D-03/D-04/D-05/D-07 bằng fixture. D-06/D-10 và D-11/D-12 phải rõ trước khóa nhãn hoặc đánh giá. LightRAG HTTP vẫn là phương án tạm chọn theo tài liệu HCI; không xem đề xuất hoặc file khung là tích hợp đã hoàn thành.
+Ghi lựa chọn trong module-owner-decisions-hci.md; cập nhật module.md và schema liên quan khi đã chốt. Nếu mới có đề xuất, không tự coi đó là hợp đồng chung. Chỉ cần chốt các quyết định liên quan trực tiếp đến task để bắt đầu phần độc lập; không cần chờ toàn bộ dự án xong quyết định. Riêng chi tiết LK-13 được chốt sau các quyết định còn lại theo thứ tự đã thống nhất; phương án LightRAG HTTP vẫn giữ nguyên.
 
 ### 2.2. Code song song bằng dữ liệu mẫu
 
 - Bên cung cấp hiện thực để trả đúng hợp đồng đã chốt.
 - Bên nhận sử dụng fixture/mock cùng hợp đồng để code ngay, không đợi bên cung cấp hoàn thiện toàn module.
-- JSON có thể dùng lưu mẫu; các module trong cùng backend có thể gọi hàm với object/dict. Không bắt mọi điểm nối ghi file hoặc gọi HTTP.
+- JSON có thể dùng lưu mẫu; các module trong cùng backend bàn giao dict/list theo TypedDict của schema chung đã chốt; object nội bộ khác cần adapter tại điểm bàn giao. Không bắt mọi điểm nối ghi file hoặc gọi HTTP.
 - Mock phải có nhãn rõ, nằm ở phần phát triển/kiểm thử phù hợp. Không dùng kết quả mock để tuyên bố đã tích hợp với module thật.
 - Khi giao AI assistant làm task, cung cấp cùng phiên bản quyết định, đặc tả module và dữ liệu mẫu. Không để AI tự thêm trường/đổi contract để code chạy được.
 
-Ví dụ: Đức Anh và Nam chốt dữ liệu trước/sau cục bộ, chỉ dẫn/đích, ID, nguồn và cảnh báo. Nam triển khai phân tích với fixture đó trong khi Đức Anh hoàn thiện linker/context. Dũng đồng thời bàn giao nguồn/adapter theo hợp đồng với Đức Anh; Tùng Dương làm giao diện bằng fixture báo cáo. Chỉ có cây Parser chưa đủ thay cho đầu vào phân tích; mẫu phải bao phủ đúng điểm nối đang sử dụng.
+Ví dụ: Dũng và Nam chốt nội dung trước/sau cục bộ cùng ID và căn cứ mà Text Diff cần. Nam code với fixture đó trong khi Dũng hoàn thiện đầu ra thật. Chỉ có cây Parser chưa đủ thay cho bước trích/liên kết chỉ dẫn V1–S; dữ liệu mẫu phải bao phủ đúng điểm nối được dùng.
 
 ### 2.3. Tự kiểm tra trước khi bàn giao
 
@@ -63,7 +66,7 @@ Người làm tự đọc diff và kiểm tra phần mình trước khi đề ng
 
 Khi có output thật, hai owner chạy theo mục 4. Sau khi sửa lỗi và đạt điều kiện bàn giao, mở/hoàn thiện PR vào nhánh chung. Có thể mở draft PR sớm để cùng review nhưng chưa merge như phần đã hoàn thành.
 
-Không đợi mọi module xong mới thử ghép: tích hợp từng điểm nối có dữ liệu thật và chạy lại phần bị ảnh hưởng. Đức Anh điều phối tích hợp/API và kiểm tra toàn luồng; owner sửa phần mình. Nam phụ trách đánh giá kỹ thuật, Dũng chủ trì đánh giá người dùng sau khi có bản chạy đủ điều kiện.
+Không đợi mọi module xong mới thử ghép: tích hợp từng điểm nối có dữ liệu thật và chạy lại phần bị ảnh hưởng. Đức Anh điều phối tích hợp/API, phối hợp các owner chạy kiểm tra toàn luồng.
 
 ### 2.5. Khi cần thay đổi hoặc bị chặn
 
@@ -71,7 +74,7 @@ Không đợi mọi module xong mới thử ghép: tích hợp từng điểm n�
 | --- | --- |
 | Đổi thuật toán nội bộ, không ảnh hưởng contract/dependency chung | Người phụ trách chủ động triển khai, tự kiểm tra và báo trong PR |
 | Đổi trường, kiểu, ý nghĩa, nguồn/offset hoặc giao diện công khai | Báo bên cung cấp/nhận; thống nhất decision trước, rồi cập nhật schema, mẫu và code phụ thuộc |
-| Đổi dependency/cấu hình ảnh hưởng môi trường chung | Phối hợp Đức Anh và owner liên quan trước tích hợp; cấu hình mô hình thuộc D-05 do Nam quyết định chính, ảnh hưởng phạm vi/nguồn lực cần trao đổi với Dũng |
+| Đổi dependency/cấu hình ảnh hưởng môi trường chung | Phối hợp Dũng và người phụ trách kỹ thuật liên quan trước khi tích hợp |
 | Chưa có output thật | Tiếp tục phần độc lập bằng fixture/mock; ghi đang chờ gì, chưa đánh dấu đã tích hợp |
 | Hợp đồng chưa rõ | Đưa ví dụ cụ thể vào decision, không để hai bên tự chọn cách hiểu riêng |
 | Cần sửa file thuộc người khác | Thống nhất phạm vi với owner hoặc mở PR để owner review; không tự sửa hợp đồng ngầm |
@@ -87,10 +90,10 @@ Không đợi mọi module xong mới thử ghép: tích hợp từng điểm n�
 
 ### 3.2. Nhánh chung và việc tạo branch
 
-Nhánh tích hợp chung là `main`. Tạo nhánh công việc từ `main` đã cập nhật và mở PR về `main`. Nếu một task cần dựa trên thay đổi chưa merge của người khác, ghi rõ nhánh/commit phụ thuộc và thứ tự tích hợp; không tự biến nhánh công việc thành nhánh chung mới. Cấu trúc mục tiêu theo Architecture HCI, không ghi đè implementation bằng cây thư mục khung.
+Nhóm thông báo nhánh tích hợp cho từng phiên. `main` là mốc cấu trúc và hợp đồng schema đã merge. Mỗi việc triển khai dùng nhánh riêng và đưa kết quả vào nhánh chung qua PR.
 
 - Tạo branch từ nhánh tích hợp đã cập nhật, theo một task/phạm vi cụ thể.
-- Không tự lập nhánh chung mới hoặc tạo branch không rõ mục đích. Thành viên tạo branch công việc theo quy ước cho task đã nhận; không cần xin lại quyền bắt đầu từng buổi làm việc.
+- Không tự lập nhánh chung mới hoặc tạo branch không rõ mục đích. Thành viên được tạo branch công việc theo quy ước, không cần xin phép lại cho từng task đã nhận.
 - Không tạo branch mới chỉ vì đổi máy hoặc bắt đầu buổi làm việc mới. Task đang làm tiếp tục dùng branch hiện có.
 - Branch cũ chỉ đóng/đổi tên sau khi phối hợp người liên quan; không viết lại lịch sử cũ chỉ để đổi cách đặt tên.
 - Không code trực tiếp trên nhánh chung, không push trực tiếp hoặc force push vào nhánh chung. Đưa thay đổi vào bằng PR.
@@ -99,9 +102,9 @@ Nhánh tích hợp chung là `main`. Tạo nhánh công việc từ `main` đã 
 
 Mẫu: `ten_owner/module` — tên owner và module/chức năng viết thường, không dấu; phần module dùng tên thống nhất trong nhóm.
 
-Ví dụ: `dung/document_processing`, `ducanh/backend`, `nam/change_analysis`, `tungduong/frontend`. Branch tài liệu có thể dùng `dung/docs`. Giữ nhánh đang làm cho cùng phạm vi; không đổi tên chỉ để khớp ví dụ.
+Ví dụ: `tho/document_processing`, `ngocanh/text_diff`, `tuananh/semantic_diff`, `dung/api`, `ducanh/ai_adapter`.
 
-Không thêm prefix loại thay đổi như feat/ hoặc fix/ trước tên owner. Loại thay đổi được ghi trong commit theo mục 3.4; docs có thể là phạm vi công việc trong ten_owner/docs.
+Không đưa loại thay đổi như feat, fix hoặc docs vào tên branch. Loại thay đổi được ghi trong commit theo mục 3.4.
 
 Một branch không gom các task không liên quan. Không tự đổi cấu trúc chính dưới danh nghĩa refactor.
 
@@ -127,8 +130,10 @@ Mẫu: `type(scope): mô tả ngắn`, ví dụ `fix(text-diff): correct replace
 
 PR ghi tối thiểu: task/phạm vi, file/chức năng đổi, contract/version sử dụng, dữ liệu và lệnh kiểm tra, kết quả, phần chưa xong và bên bị ảnh hưởng.
 
+Khi rà PR, Dũng, Đức Anh hoặc reviewer được phân công ghi SHA thực sự đã kiểm tra và dẫn ca chạy hoặc kết quả liên quan. Khi owner đẩy commit sửa, reviewer xem phần diff kể từ SHA đã kiểm tra và chạy lại các ca bị ảnh hưởng trước khi xác nhận SHA mới.
+
 - Người nhận đầu ra review cách module cung cấp dữ liệu; owner phần liên quan review thay đổi trong phạm vi của mình. Nếu cùng một người làm hai chức năng nối nhau, nhờ một thành viên khác review phần tích hợp; không tự gọi đó là kiểm thử chéo độc lập.
-- Đức Anh điều phối tích hợp và thực hiện merge vào main, hoặc phối hợp người được Dũng giao thực hiện. Dũng điều phối chung và thay đổi phạm vi/phân công; người làm không tự merge trước khi reviewer cần thiết xác nhận.
+- Dũng phụ trách tích hợp và merge vào nhánh chung, hoặc chỉ định người thực hiện cụ thể. Người làm không tự merge trước khi reviewer cần thiết xác nhận.
 - Chỉ merge khi các kiểm tra phù hợp đã đạt, không còn lỗi chặn và contract/schema/mẫu khớp nhau. Thay đổi cần nhiều PR phải ghi thứ tự tích hợp.
 - Khi có conflict, phối hợp owner file liên quan; không chọn toàn bộ ours/theirs chỉ để hết lỗi. Sau giải quyết, đọc diff và chạy lại kiểm tra bị ảnh hưởng.
 - Cấu hình bảo vệ nhánh/CI có thể thực thi các quy tắc sau khi được thiết lập. Khi chưa có, vẫn phải có bằng chứng review/test trong PR; không khẳng định cấu hình đã bật.
@@ -146,25 +151,15 @@ Với điểm nối A → B:
 | Hai owner | Cùng thống nhất expected output, tái hiện lỗi, xác định bên sửa và xác nhận kiểm tra lại |
 | Thành viên khác | Review phụ hoặc nghiệp vụ theo phạm vi; hỗ trợ xử lý bất đồng, không thay việc hai owner tự kiểm tra |
 
-Đức Anh điều phối kiểm thử tích hợp; Nam chủ trì đánh giá kỹ thuật theo D-11; Dũng chủ trì đánh giá người dùng theo D-12; Tùng Dương kiểm tra giao diện và trạng thái phiên. Thiết kế đánh giá, matching và phép đo theo [Kế hoạch kiểm thử và đánh giá](test_evaluation_plan.md).
+Dũng điều phối tích hợp; Đức Anh điều phối kế hoạch đánh giá. Thiết kế đánh giá, matching và phép đo theo [Kế hoạch kiểm thử và đánh giá](test_evaluation_plan.md).
 
-Công cụ đánh giá kỹ thuật thuộc Nam theo HCI-12/D-11 và cây evaluation/evaluator.py trong Architecture; không xác nhận công cụ đã hoàn thiện. Kiểm tra module/điểm nối vẫn là trách nhiệm owner và bên nhận. Test, fixture và script kiểm tra đặt theo cấu trúc test/ của HCI; kiểm thử chéo phải có kết quả và cách tái hiện.
+Không triển khai Evaluator riêng. Các phép kiểm tra tự động và script đo nếu cần vẫn được viết trong test/; kiểm thử chéo không chỉ là nhìn kết quả rồi nhận xét miệng.
 
 ### 4.2. Những cặp cần kiểm tra
 
-| Điểm nối | Hai bên kiểm tra chính |
-| --- | --- |
-| Nguồn/Parser/adapter → backend/linker | Dũng ↔ Đức Anh |
-| Linker/context → Text Diff/Semantic Diff/Scorer | Đức Anh ↔ Nam |
-| Kết quả phân tích → Pipeline/API | Nam ↔ Đức Anh |
-| Báo cáo/nguồn → frontend/nhận xét | Đức Anh ↔ Tùng Dương |
-| Nội dung giải thích/aspects → hiển thị | Nam ↔ Tùng Dương |
-| Nhãn/đáp án và rubric | Dũng ↔ Nam |
-| Prototype/tác vụ và phản hồi người dùng | Dũng ↔ Tùng Dương |
-| LightRAG/context và nguồn | Đức Anh ↔ Dũng về nguồn; Đức Anh ↔ Nam về ngữ cảnh sử dụng |
-| Bản chạy dùng thử | Đức Anh/Nam/Tùng Dương bàn giao cho Dũng |
+Dùng [bảng chín điểm nối](module.md) để xác định bên giao, bên nhận, input, output và fixture. Bên giao tự kiểm tra payload và nguồn. Bên nhận chạy với fixture rồi với đầu ra thật. Với điểm nối mà hai phía có cùng owner, mời một người khác review. Ghi điều kiện bỏ qua trong ca tương ứng khi bước thiếu đầu vào.
 
-Các điểm nối có thể nằm cùng folder hoặc qua bước chuẩn hóa. Input/output và yêu cầu nguồn theo D-01/D-02/D-03/D-04/D-05/D-06; dữ liệu frontend/phiên theo D-07/D-08. Text Diff → Semantic Diff → Scorer cùng Nam vẫn phải được kiểm tra; Đức Anh review khi nhận kết quả tích hợp. Với các chức năng cùng một owner, có thành viên khác review phần liên quan trước khi gọi đó là kiểm thử chéo.
+Các module và điểm nối nằm trên luồng runtime trong [Architecture](architecture.md). Nhóm phát triển bán song song bằng fixture đã thống nhất.
 
 ### 4.3. Trình tự kiểm thử một điểm nối
 
@@ -181,6 +176,8 @@ Các ca tối thiểu tùy điểm nối: bình thường, không có kết qu�
 
 ### 4.4. Ghi nhận và xử lý lỗi
 
+Owner từng module tự xử lý và báo lỗi thuộc phần mình; chuyển bằng chứng có nguồn cùng lỗi/cảnh báo và phạm vi bị ảnh hưởng cho module nhận đầu ra theo contract chung. Bên nhận kiểm tra dữ liệu, không bỏ cảnh báo hoặc biến thiếu căn cứ thành không có thay đổi. Pipeline tổng hợp trạng thái báo cáo, không thay owner xử lý lỗi nội bộ.
+
 Mỗi lỗi nên có mẫu ngắn:
 
 ```text
@@ -192,15 +189,14 @@ Kết quả mong đợi và căn cứ:
 Bước/lệnh tái hiện:
 Bên chịu trách nhiệm sửa:
 Trạng thái và kết quả chạy lại:
+Mức ảnh hưởng (chặn bàn giao của phần liên quan / có thể chuyển phiên):
+Điểm nối khác bị ảnh hưởng (nếu có):
+Reviewer, SHA bản sửa và bằng chứng xác nhận:
 ```
 
-Phân biệt: A trả sai contract → A sửa; A đúng nhưng B dùng sai → B sửa; contract mâu thuẫn/thiếu quy tắc → hai bên thống nhất lại decision, rồi cập nhật mẫu và code. Nếu bất đồng kỹ thuật liên module chưa giải quyết, Đức Anh phối hợp owner và mời người phù hợp review; vấn đề phạm vi/phân công do Dũng điều phối; không âm thầm sửa expected output để test đạt.
+Phân biệt: A trả sai contract → A sửa; A đúng nhưng B dùng sai → B sửa; contract mâu thuẫn/thiếu quy tắc → hai bên thống nhất lại decision, rồi cập nhật mẫu và code. Nếu bất đồng chưa giải quyết, đưa ví dụ cho Dũng điều phối và mời người phù hợp review; không âm thầm sửa expected output để test đạt.
 
-### 4.5. Bàn giao dùng thử và xử lý góp ý
-
-Chỉ bàn giao dùng thử khi có phiên bản, cấu hình, dữ liệu/đáp án đã review, kết quả kiểm tra trọng tâm và giới hạn; không còn lỗi chặn tác vụ. Dũng phải chạy lại được bản bàn giao. Kế hoạch tác vụ, cách chấm và thu phản hồi được chuẩn bị trước khi dùng thử.
-
-Dũng tổng hợp vấn đề từ người dùng, ưu tiên và giao owner sửa; Đức Anh xử lý phối hợp backend/tích hợp, Nam sửa phần phân tích, Tùng Dương sửa giao diện/phiên, Dũng sửa nguồn/đầu vào thuộc phần mình. Sau sửa, kiểm tra hoặc thử lại tác vụ bị ảnh hưởng; giữ minh chứng và phiên bản trước/sau. Nhận xét trong sản phẩm không tự thành nhãn chuẩn hoặc kết quả nghiên cứu.
+Ghi lỗi trên PR đang review nếu việc sửa thuộc phạm vi PR. Dùng issue nếu lỗi cần theo dõi qua nhiều PR hoặc nhiều phiên. Owner báo lại tại cùng chỗ với SHA mới, phần đã sửa và kết quả chạy lại. Reviewer xác nhận trên đúng bản sửa. Khi chuyển việc sang phiên sau, dẫn lại PR hoặc issue gốc.
 
 ## 5. Checklist xác nhận hoàn thành
 
@@ -218,6 +214,20 @@ Dũng tổng hợp vấn đề từ người dùng, ưu tiên và giao owner s�
 - [ ] Cách sử dụng dữ liệu đã được bên cung cấp review.
 - [ ] Lỗi đã sửa được kiểm tra lại; giới hạn còn lại được ghi rõ, không có lỗi chặn bị che đi.
 - [ ] Contract, schema, fixture và tài liệu bị ảnh hưởng nhất quán.
-- [ ] Reviewer cần thiết xác nhận; Đức Anh hoặc người được giao thực hiện tích hợp.
+- [ ] Reviewer cần thiết xác nhận; Dũng hoặc người được giao thực hiện tích hợp.
 
 Phân biệt **đã code**, **đã tự kiểm tra**, **đã kiểm thử chéo**, **đã merge** và **đã chạy toàn luồng**. Chỉ báo trạng thái đã có bằng chứng; merge một điểm nối không tự xác nhận toàn bộ hệ thống đã hoàn thành.
+
+## 6. Chốt kết quả theo phiên code
+
+Dũng và Đức Anh dùng trình tự sau để tổng hợp tình trạng tích hợp. Các thành viên tiếp tục báo kết quả trong PR hoặc issue đang làm.
+
+1. **Đầu phiên:** Đức Anh xác nhận phạm vi trên một SHA của nhánh chung. Dũng đối chiếu điểm nối, ca chung và đầu ra kỳ vọng.
+2. **Trong phiên:** Dũng rà nghiệp vụ và điểm nối tích hợp. Đức Anh rà schema và các phụ thuộc liên quan. Reviewer từng module xác nhận phần được giao theo mục 3.5. Ghi kết quả theo SHA và chuyển việc cần sửa cho owner theo mục 4.4.
+3. **Sau khi owner cập nhật:** Reviewer kiểm tra bản sửa và cập nhật kết quả trên cùng PR hoặc issue. Ghi rõ ca nào đã chạy thật, ca nào còn dùng mock và phần nào chưa xác nhận.
+4. **Cuối phiên:** Dũng đối chiếu các điểm nối đã tích hợp. Đức Anh tổng hợp SHA của nhánh chung, PR đã merge, ca đã chạy, lỗi còn mở và việc đã thống nhất cho phiên sau. Cập nhật [mốc kiểm chứng](common-baseline.md) và [kế hoạch phiên](implementation-plan-hci.md).
+
+- Trước phiên, Đức Anh xác nhận phạm vi và người phụ trách. Mỗi task có owner, reviewer, điểm nối, fixture và điều kiện đạt. Các quy tắc dùng chung tra tại [Decision](module-owner-decisions-hci.md).
+- Cuối phiên, owner gửi commit, lệnh và kết quả chạy, ca lỗi tái hiện được, phần đang dùng mock, giới hạn và đề xuất thay đổi. Đức Anh điều phối tổng hợp. Dũng đối chiếu nghiệp vụ và các điểm nối Pipeline/API.
+- Khi thay đổi hợp đồng, bên giao và bên nhận cùng review. Đức Anh điều phối thay đổi schema nếu cần. Dũng và các owner liên quan review quy tắc căn cứ, nhãn hoặc phạm vi nghiệp vụ. Quyết định đã xác nhận ghi vào `module-owner-decisions-hci.md`, yêu cầu bị ảnh hưởng cập nhật tại SRS, và fixture được cập nhật cùng hai phía.
+- Owner có thể chọn thuật toán nội bộ theo phạm vi được giao và báo thay đổi môi trường. Thay đổi phạm vi, mốc hoặc ownership được xác nhận với những người liên quan. Bản kế hoạch cập nhật đầu ra và phụ thuộc của phiên sau theo kết quả chạy.

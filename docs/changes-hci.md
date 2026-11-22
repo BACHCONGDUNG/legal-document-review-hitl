@@ -1,11 +1,4 @@
-# Tóm tắt thay đổi tài liệu HCI
-
-## Cập nhật bản nền
-
-- Dùng API upload, ComparisonReport, tám nhóm phân tích và validator quy định trong SRS. Xem [SRS](srs.md).
-- Đồng bộ [kiến trúc](architecture.md), [phân công](module.md), [hướng dẫn gán nhãn](data-annotation-guide-hci.md) và [kế hoạch kiểm thử](test_evaluation_plan.md).
-- Dùng runner của `backend.demo:app` cho giao diện HCI. Các yêu cầu mở rộng về đọc nguồn, nhận xét và kiểm tra lại được theo dõi trong [quyết định module](module-owner-decisions-hci.md).
-
-## 08/11
-
-Bổ sung tài liệu module, workflow và kế hoạch kiểm thử/đánh giá.
+# Cập nhật tài liệu HCI
+## Ngày 22/11/2026
+Cập nhật thiết kế nhận S, kho dân sự, chọn phiên bản, nhiều đích, tác động gián tiếp và báo cáo cấp S. Đồng bộ phân công HCI và các nhánh Use Case. Lõi demo vẫn là V1–S theo common-baseline.md.
+Các đường dẫn -hci tiếp tục dùng cho kế hoạch, quyết định và hướng dẫn dữ liệu.

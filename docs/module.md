@@ -1,225 +1,272 @@
-# MODULE — Phân công cấu trúc và bàn giao
+# MODULE — Phân công, cấu trúc và bàn giao
 
-**Học phần và nhóm:** 2627I_INT2041_1 — Nhóm 6
+**HCI, Nhóm 6 — cập nhật 22/11/2026.** Phạm vi chỉ S, kho dân sự, nhiều đích và tác động gián tiếp là thiết kế mục tiêu. Hiện trạng mã và kết quả kiểm tra HCI được ghi tại [nền HCI](common-baseline.md). Phân công theo [module](module.md). Công việc nghiên cứu ngắn hạn được theo dõi trong tài liệu tiến độ của nhóm.
 
-**Phiên bản:** Bản khung bổ sung
 
-**Trạng thái:** Tổng hợp theo tài liệu HCI hiện có; lựa chọn triển khai còn chờ owner đề xuất tại [Module Owner Decisions](module-owner-decisions-hci.md).
+**Dự án:** Legal Document Change Detection — HCI, Nhóm 6
+**Phiên bản:** Bản đầu tiên
+**Trạng thái:** Đang hoàn thiện theo các quyết định trong [module-owner-decisions-hci.md](module-owner-decisions-hci.md)
 
 ## 1. Mục đích và quy định chung
 
-Tài liệu tập hợp nhiệm vụ, trách nhiệm, file mục tiêu, điểm nối và điều kiện bàn giao. Căn cứ là [Architecture](architecture.md), [SRS](srs.md), [Implementation Plan HCI](implementation-plan-hci.md) và [Module Owner Decisions](module-owner-decisions-hci.md). Nội dung chưa được quyết định không được ghi như implementation hoặc lựa chọn đã hoàn thành.
+Owner từng module tự xử lý và báo lỗi thuộc phần mình; chuyển bằng chứng có nguồn cùng lỗi/cảnh báo và phạm vi bị ảnh hưởng cho module nhận đầu ra theo contract chung. Bên nhận kiểm tra dữ liệu, không bỏ cảnh báo hoặc biến thiếu căn cứ thành không có thay đổi. Pipeline tổng hợp trạng thái báo cáo, không thay owner xử lý lỗi nội bộ.
 
-- Giữ ranh giới mục tiêu backend/app/ và test/ theo Architecture. Cây mục tiêu không chứng minh các file đã có code hoặc đã chạy được.
-- Phân biệt implementation hiện có, file khung và tên file mục tiêu. Giữ converter/Parser hiện có; không tự yêu cầu thay toàn bộ nội bộ khi adapter đáp ứng được hợp đồng.
-- Các module nội bộ phải chuyển đầu ra về contract HCI trong SRS; cây Parser hoặc response dịch vụ không tự là ComparisonReport.
-- Owner được ghi theo phạm vi đã nêu trong tài liệu gốc. Người tổng hợp một D-ID không mặc nhiên là người đã xác nhận mọi phương án hoặc đã hoàn thành code.
-- Mỗi task có người chủ trì và bên nhận/reviewer. Người kiểm thử không thay trách nhiệm tự kiểm tra của owner.
-- Thay contract cần bên cung cấp và bên nhận review mẫu, cập nhật schema, fixture và các tài liệu bị ảnh hưởng.
-- LightRAG Server riêng qua HTTP là phương án B tạm chọn; release, model, API và vòng đời còn chờ D-04/D-05/D-13.
-- Lựa chọn tên/cấu trúc file hỗ trợ và giao diện nội bộ chưa được xác định: chưa quyết định; owner đề xuất theo phạm vi và bên nhận review khi ảnh hưởng hợp đồng.
+Nhận xét của người dùng thuộc phạm vi mở rộng. Xem [SRS](srs.md) để tra phạm vi.
+
+Tài liệu ghi nhiệm vụ, người chịu trách nhiệm, file chính, điểm nối và điều kiện bàn giao từng module. Các lựa chọn và nội dung đang bàn được ghi trong module-owner-decisions-hci.md; module.md chỉ ghi lựa chọn đã chốt, hoặc đánh dấu rõ phần còn chờ và mã quyết định liên quan.
+
+- Cấu trúc thư mục chuẩn lấy từ `main`, xem [Architecture](architecture.md). Quy trình thay đổi đường dẫn hoặc giao diện chung nằm trong [Workflow](workflow.md).
+- File bắt buộc là file chính được cố định đường dẫn và trách nhiệm. Được sửa implementation; không tự đổi giao diện công khai, xóa/đổi tên/chuyển vị trí.
+- File hỗ trợ do thành viên bổ sung trong module để chia nhỏ code, hỗ trợ file chính hoặc cải thiện phương pháp. Owner module review; không tự tạo dependency mới lên module khác hoặc thay hợp đồng chung.
+- Mỗi module/chức năng được phân công có người chịu trách nhiệm cuối cùng và có thể có người khác tham gia. Với folder chứa nhiều chức năng như change_analysis, áp dụng owner theo từng chức năng đã chốt ở LK-01; không tự gán owner toàn folder. Mỗi task có một người chịu trách nhiệm chính.
+- Owner không phải người duy nhất được code. Người phụ trách chức năng chủ động triển khai trong ranh giới đã chốt; người nhận đầu ra review hợp đồng và cách sử dụng.
+- Không tạo file trống ghi đè implementation đã có. Danh sách file bắt buộc không phải danh sách duy nhất được phép tồn tại.
+- LightRAG Server riêng qua HTTP là phương án đã chốt; API/release/cấu hình cụ thể vẫn cần xác nhận.
+- Không triển khai Evaluator độc lập. Giữ folder/file cũ để không tự đổi cấu trúc; kiểm thử do owner từng phần và hai owner tại điểm nối đảm nhiệm, cần có cả kiểm tra toàn luồng.
+
+## Phạm vi mục tiêu sau buổi học 17/11
+
+| Chức năng cần bổ sung | Đầu vào | Đầu ra tối thiểu cần đặc tả | Phối hợp theo chức năng hiện có |
+| --- | --- | --- | --- |
+| Chuẩn bị kho dân sự | Văn bản/nguồn nhóm chọn | Văn bản, phiên bản, snapshot, cấu trúc/nguyên văn và mapping chunk → nguồn; trạng thái index | Dữ liệu/Pipeline, xử lý tài liệu, schema và Context/LightRAG |
+| Trích yêu cầu độc lập với V1 | S đã đọc/parse | ID chỉ dẫn, thao tác, dấu hiệu đích và bằng chứng S; giữ yêu cầu chưa trích đủ | Xử lý tài liệu/Linker → điều phối và bên xác định đích |
+| Xác định đích và phiên bản | Yêu cầu S + danh mục/kho | Đích/phiên bản/điều khoản và căn cứ lựa chọn; hoặc ứng viên/lý do chưa giải quyết | Retrieval/Context + dữ liệu/nghiệp vụ → Linker/Pipeline |
+| Binding nguồn cho từng đích | Đích/phiên bản đã xác minh + S/nguồn bổ sung | documents/clauses/units cục bộ dùng v1/s/ref_*; mapping về phiên bản thật | Adapter + schema → Linker và runner |
+| Kiểm chứng tác động gián tiếp | Thay đổi trực tiếp + nguồn kho | Quy định B, liên kết (target_id, amendment_id/change_id), quan hệ/giải thích, bằng chứng V1/B và thiếu căn cứ | Semantic/nghiệp vụ + retrieval → Pipeline/schema/UI |
+| Tổng hợp cấp S | Báo cáo từng đích + chỉ dẫn chưa giải quyết + tác động | SRS §1.8: analysis_id, snapshot/coverage, targets, unresolved_amendments, indirect_impacts, trạng thái/lỗi | Pipeline/API + schema → UI; kiểm tra ID và nguồn xuyên đích |
+
+Bảng này là phạm vi điểm nối cần triển khai, không tự phân công task/owner mới hoặc quy định tên file chưa có. Giữ LK-01; người làm chính và reviewer từng task chốt theo Workflow. Kiểu dữ liệu đầy đủ, null/lỗi và fixture của các điểm nối mới phải được bên giao/nhận review trước code. Không dùng các JSON 9 điểm nối cũ làm bằng chứng đã đáp ứng hệ thống mới.
+
+Tra cứu định danh/phiên bản chính xác trước khi tìm ứng viên ngữ nghĩa. Retrieval trả ứng viên; bước dùng kết quả kiểm tra nguồn và phiên bản, không dùng điểm similarity làm tác động pháp lý. Client hiện tại dành server/storage riêng cho một comparison; cần hiện thực riêng vòng đời kho bền vững và nguồn tạm, không bỏ kiểm tra cách ly hoặc dùng cleanup cũ trên kho chung.
 
 ## 2. Tổng quan module và phân công
 
-Đường dẫn các module dưới đây tính từ backend/app/ theo cây mục tiêu trong Architecture.
+Đường dẫn module dưới đây tính từ backend/app/.
 
-| Module | Owner theo tài liệu hiện có | Phối hợp và review | Trạng thái đặc tả |
+| Module | Owner/phân công hiện có | Người tham gia và review | Trạng thái đặc tả |
 | --- | --- | --- | --- |
-| api/ | Dương Đức Anh | Tùng Dương nhận API; Dũng/Nam review dữ liệu | Contract HCI; route demo ở backend/demo.py và handler ở backend/main.py |
-| schemas/ | Dương Đức Anh | Các bên cung cấp và nhận dữ liệu | Schema/fixture và validation còn chờ D-01/D-02 |
-| document_processing/ | Owner chung: chưa quyết định. Dũng phụ trách đầu vào/adapter; Đức Anh phụ trách linker | Nam nhận trước–sau; Tùng Dương dùng nguồn | Chi tiết ranh giới theo D-02/D-03 |
-| context/ | Dương Đức Anh | Dũng review nguồn; Nam nhận context; Tùng Dương đọc bằng chứng | Chờ D-04, phối hợp D-05/D-09/D-13 |
-| change_analysis/ | Vương Thành Nam | Đức Anh tích hợp/vận hành; Dũng review nguồn/nhãn; Tùng Dương nhận nội dung hiển thị | Chờ D-05/D-06 |
-| evaluation/ | Vương Thành Nam — phần đánh giá kỹ thuật | Dũng review gold; Đức Anh/Tùng Dương cung cấp kết quả | Công cụ và phép đo chờ D-11; không xác nhận evaluator hoàn chỉnh |
+| api/ | Đức Anh | Owner Pipeline, frontend và các bên dùng API | Báo cáo đã chốt theo schema chung; endpoint/upload và mapping còn chờ |
+| schemas/ | Đức Anh | Owner bên cung cấp và bên nhận từng kiểu dữ liệu | Hợp đồng chung đã chọn; validator hiện có, wiring Pipeline còn chờ |
+| document_processing/ | Dũng (đầu vào/adapter), Đức Anh (linker) | Đức Anh, Nam theo điểm nối; Dũng review nguồn/nghiệp vụ | ExtractedDocument/Clause/AmendmentItem đã chốt; mapping cây native và thuật toán còn chờ |
+| context/ | Đức Anh phụ trách context; Đức Anh phụ trách gọi/tích hợp LightRAG | Dũng cung cấp nguồn; Nam nhận ngữ cảnh cho Semantic Diff; Đức Anh nhận phần tích hợp | HTTP đã chốt; chi tiết LightRAG chờ LK-13 sau các quyết định còn lại |
+| change_analysis/ | Chốt theo chức năng ở LK-01, không gán owner chung toàn folder | Nam: Text Diff; Nam: Semantic Change/Scorer; Nam: AI Adapter | Phân công và kiểu dữ liệu chung đã chốt; thuật toán/giao diện gọi chi tiết còn chờ |
+| evaluation/ | Không triển khai như module riêng | Test chuyển sang các owner và test/ | Giữ cấu trúc, không giao lại đầu việc Evaluator |
 
-| Thành phần ngoài các folder trên | Người phụ trách theo tài liệu | Căn cứ và giới hạn |
+| Thành phần ngoài các folder trên | Người phụ trách | Ghi chú |
 | --- | --- | --- |
-| Backend API/Pipeline và bộ tổng hợp báo cáo | Dương Đức Anh | HCI-02/HCI-09; D-01/D-03/D-09 |
-| backend/main.py và backend/app/config.py | Chưa quyết định owner riêng từng file | Đức Anh phụ trách backend/vận hành; tài liệu chưa giao riêng ownership hai file |
-| frontend/ và nhận xét trong phiên | Lê Tùng Dương | HCI-10/HCI-11; D-07/D-08; cấu trúc file frontend chờ đề xuất |
-| Dữ liệu, manifest và đáp án ban đầu | Bạch Công Dũng | HCI-03/HCI-06; D-10; Nam review phần phân tích/nhãn |
-| Nghiên cứu, dùng thử và đánh giá người dùng | Bạch Công Dũng | HCI-14/HCI-15; D-12; Tùng Dương phối hợp thiết kế |
-| Đóng gói môi trường và bản chạy | Dương Đức Anh — quyết định chính D-13 | Từng owner bàn giao dependency/cách chạy; Dũng + Đức Anh cùng biên soạn development-guide.md |
-| Tổng hợp kế hoạch và báo cáo đánh giá chung | Bạch Công Dũng | Nam chủ trì kỹ thuật D-11; Dũng chủ trì người dùng D-12; Đức Anh chủ trì kiểm thử tích hợp |
-| Biên soạn api-contract.md và development-guide.md | Dũng + Đức Anh | Phối hợp D-01/D-13; hai file chưa có trong gói |
+| backend/main.py | Đức Anh | Khởi tạo ứng dụng, đăng ký thành phần backend |
+| backend/app/pipeline.py | Đức Anh | Điều phối và tổng hợp báo cáo |
+| backend/app/config.py | Đức Anh điều phối cấu hình tích hợp/API; Đức Anh phối hợp phần kỹ thuật liên quan | Đức Anh phụ trách cấu hình LightRAG, Dũng review dữ liệu |
+| frontend/ | Tùng Dương | Hiển thị báo cáo và xử lý lỗi, cảnh báo, trạng thái do Pipeline/API trả về |
+| Dữ liệu, nghiệp vụ, nhãn/fixture nghiệp vụ và tài liệu tổng quát | Dũng | Owner liên quan phối hợp, người review nhãn khác người tạo |
 
 ## 3. Đặc tả từng module
 
 ### 3.1. api/
 
-**Owner:** Dương Đức Anh, theo HCI-02/HCI-09 và D-01.
+**Owner:** Đức Anh
 
-**Hiện trạng mã nền:** Route upload hiện ở backend/main.py; api/compare.py còn trống. File compare.py dưới đây là vị trí mục tiêu, không xác nhận đã có logic.
+**Nhiệm vụ và ranh giới:** Nhận yêu cầu, kiểm tra đầu vào cấp HTTP, gọi Pipeline và trả báo cáo/lỗi. Không thực hiện thuật toán phân tích pháp lý trong router.
 
-**Nhiệm vụ và ranh giới:** Nhận yêu cầu từ frontend, kiểm tra đầu vào, gọi Pipeline, trả báo cáo/nguồn hoặc lỗi. Luồng người dùng dùng request đồng bộ, không thêm API lưu nhận xét hoặc job/polling.
-
-| File mục tiêu | Trách nhiệm |
+| File chính | Trách nhiệm |
 | --- | --- |
-| compare.py | API so sánh V1–S và tham chiếu; request/response và lỗi theo contract HCI sau khi D-01 được review |
+| compare.py | File khung mục tiêu để tách router; hiện route POST /api/compare vẫn ở backend/main.py. Trách nhiệm dự kiến: nhận file/tham số, gọi Pipeline, ánh xạ lỗi HTTP. |
 
-**Đầu vào:** multipart doc_v1, doc_s, reference_files tùy chọn.
+**Đầu vào đang chạy:** File V1, S và tham chiếu. **Đầu vào mục tiêu:** S bắt buộc, bối cảnh/nguồn bổ sung tùy chọn; hợp đồng HTTP cần review trước khi triển khai.
 
-**Đầu ra:** ComparisonReport HCI và nguồn đọc được trong giao diện; HTTP status/error body và cơ chế truyền nguồn chờ D-01/D-02.
+**Đầu ra đang chạy:** ComparisonReport với base_document/amendment_document/reference_documents/results theo schema chung. **Mục tiêu:** báo cáo cấp S theo SRS §1.8 bao kết quả từng đích, tác động gián tiếp và phần chưa giải quyết; nguồn cần đọc và lỗi có cấu trúc. Mã HTTP tách khỏi trạng thái nghiệp vụ; không thêm dữ liệu nhận xét vào báo cáo AI.
 
-**Bên kết nối:** Frontend của Tùng Dương; Pipeline của Đức Anh; nguồn của Dũng và phân tích của Nam.
+**Bên kết nối:** Pipeline, schemas, frontend.
 
-**File hỗ trợ:** Chưa quyết định; đề xuất cùng giao diện cần bên nhận sử dụng.
+**File hỗ trợ:** được thêm trong module theo quy định mục 1; tên/cấu trúc nội bộ chỉ cố định khi owner đề xuất và các bên liên quan thống nhất.
 
-**Điều kiện bàn giao:** Có mẫu SUCCESS/PARTIAL/FAILED, lỗi đầu vào và nguồn; Tùng Dương dùng được fixture; không lấy đọc/parse thành công làm kết quả phân tích hoàn chỉnh.
+**Điều kiện bàn giao:** Fixture upload hợp lệ/lỗi, báo cáo đầy đủ/một phần/thất bại; frontend và Pipeline cùng xác nhận dùng được.
 
-**Quyết định liên quan:** D-01, D-02, D-09, D-13.
+**Quyết định liên quan:** LK-02, LK-11, LK-12. Tra cứu trong [module-owner-decisions-hci.md](module-owner-decisions-hci.md).
 
 ### 3.2. schemas/
 
-**Owner:** Dương Đức Anh, theo D-01 và phần quản lý schema/fixture trong kế hoạch.
+**Owner:** Đức Anh
 
-**Nhiệm vụ và ranh giới:** Hiện thực hợp đồng dữ liệu và kiểm tra tính nhất quán. SRS là baseline; không lấy response cũ hoặc dict Parser thay contract HCI.
+**Nhiệm vụ và ranh giới:** Giữ định nghĩa dữ liệu dùng chung và quy tắc kiểm tra tại ranh giới module. Không tự quyết định kết luận nghiệp vụ hoặc thuật toán của module khác.
 
-| File mục tiêu | Trách nhiệm |
+| File chính | Trách nhiệm |
 | --- | --- |
-| contracts.py | DocumentIdentity, bằng chứng, AmendmentResult, ComparisonReport và các kiểu dữ liệu liên quan |
+| contracts.py | Hợp đồng TypedDict chung theo commit Đức Anh được nhóm chọn. |
+| validation.py | validate_extracted_document kiểm tra metadata, blocks, source_ref và nội dung đọc được. |
+| report_validation.py | validate_payload, validate_sources, validate_amendment, validate_report kiểm tra ranh giới theo hợp đồng chung. |
 
-**Đầu vào:** SRS cùng mẫu nguồn/đầu ra được bên giao và bên nhận review.
+**Đầu vào:** Các quyết định hợp đồng, input/output mẫu và quy tắc nghiệp vụ đã chốt.
 
-**Đầu ra:** Schema và fixture có validator; kiểm tra document_id, source_ref, amendment_id và change_id.
+**Đầu ra:** Schema/validator dùng chung, phiên bản hợp đồng và fixture hợp lệ/không hợp lệ.
 
-**Bên kết nối:** Dũng ở nguồn; Nam ở phân tích; Tùng Dương ở báo cáo/phiên; Đức Anh ở backend.
+**Bên kết nối:** Mọi module trao đổi dữ liệu; mỗi owner review kiểu dữ liệu mình cung cấp hoặc nhận.
 
-**File hỗ trợ:** Chưa quyết định.
+**File hỗ trợ:** được thêm trong module theo quy định mục 1; tên/cấu trúc nội bộ chỉ cố định khi owner đề xuất và các bên liên quan thống nhất.
 
-**Điều kiện bàn giao:** Fixture được các bên dùng được; biểu diễn đúng PRESENT/ABSENT/UNRESOLVED, QUOTED/DERIVED và cảnh báo theo SRS. Danh sách ca validation chi tiết chờ D-01/D-02.
+**Điều kiện bàn giao:** Schema và fixture nhất quán với decision; validator phát hiện ca sai liên quan. contracts.py, validation.py, report_validation.py giữ nguyên code căn cứ; fixture và test độc lập ở test/schema_suite. Pipeline nền chưa đủ validation lồng nhau; demo runner đã gọi kiểm tra nguồn/amendment/report; kho nguồn/Clause và thứ tự gọi theo [SRS mục 1.7](srs.md).
 
-**Quyết định liên quan:** D-01, D-02, D-06, D-08.
+**Quyết định liên quan:** LK-02 đến LK-12. Tra cứu trong [module-owner-decisions-hci.md](module-owner-decisions-hci.md).
 
 ### 3.3. document_processing/
 
-**Owner chung:** Chưa quyết định. Phân công chức năng hiện có: Dũng xử lý đầu vào và adapter nguồn theo D-02; Đức Anh xử lý chỉ dẫn/liên kết theo D-03.
+**Owner:** Dũng phụ trách đầu vào/adapter; Đức Anh phụ trách linker
 
-**Nhiệm vụ và ranh giới:** PDF có lớp chữ → DOCX → Parser hiện có; DOCX đi thẳng vào Parser. Giữ cây/nguồn rồi trích chỉ dẫn S, xác định đích và chuẩn bị trước–sau cục bộ. Không diff toàn văn V1 với S.
+**Nhiệm vụ và ranh giới:** Đọc/chuyển đổi, parse cây tài liệu, chuẩn hóa nguồn và trích/liên kết chỉ dẫn sửa đổi. Không phân tích nghĩa thay Semantic Diff hoặc coi V1 và S là hai bản đầy đủ để diff toàn văn.
 
-| File mục tiêu | Phụ trách và trách nhiệm |
+| File chính | Trách nhiệm |
 | --- | --- |
-| pdf_to_docx.py | Dũng: chuyển đổi và kiểm tra chất lượng, giữ bản gốc và thông tin chuyển đổi |
-| parser/legal_structure_parser.py | Dũng: giữ thứ tự, Điều/Khoản/Điểm, bảng, outside và vị trí nguồn |
-| document_adapter.py | Dũng: đề xuất adapter/native contract và ánh xạ nguồn theo D-02; Đức Anh nhận dữ liệu |
-| amendment_linker.py | Đức Anh: trích chỉ dẫn, đích, thao tác, trước–sau và thông tin hiệu lực/chuyển tiếp theo D-03 |
+| pdf_to_docx.py | Chuyển PDF có lớp chữ sang DOCX khi cần, giữ thông tin chuyển đổi và cảnh báo. |
+| parser/legal_structure_parser.py | Parse Điều/Khoản/Điểm, bảng và nội dung ngoài Điều; giữ cây và nguồn. |
+| document_adapter.py | Chuẩn hóa output Parser sang hợp đồng các bên nhận; giữ định danh, vai trò và vị trí nguồn. |
+| amendment_linker.py | Trích yêu cầu trong S, liên kết đích V1, xác định nội dung trước/sau cục bộ và thông tin hiệu lực/chuyển tiếp có căn cứ. |
 
-**Đầu vào:** V1/S/tham chiếu có vai trò và nguồn; DOCX hoặc PDF có lớp chữ theo phạm vi.
+**Đầu vào:** V1, S và tài liệu tham chiếu đã kiểm tra định dạng; metadata định danh/vai trò.
 
-**Đầu ra:** Cây/nguồn chuẩn hóa và nội dung cục bộ có căn cứ; chỉ dẫn chưa xác định phải được giữ cùng cảnh báo. Parser native trả articles/outside/source_blocks/warnings/status/summary theo mô tả Architecture; contract bàn giao chờ D-02/D-03.
+**Đầu ra:** Cây/nguồn chuẩn hóa; chỉ dẫn sửa đổi, vị trí đích, nội dung cục bộ, hiệu lực và cảnh báo theo schema chung; adapter từ cây native còn cần hiện thực.
 
-**Bên kết nối:** Dũng → Đức Anh ở đầu vào/nguồn; Đức Anh → Nam ở dữ liệu phân tích; nguồn cung cấp cho Tùng Dương qua báo cáo.
+**Bên kết nối:** Dũng → Đức Anh ở nguồn/context; Dũng → Đức Anh ở Pipeline/API; Dũng → Nam ở đầu vào Text Diff và cung cấp căn cứ cho nhóm Semantic Diff.
 
-**File hỗ trợ:** Chưa quyết định; chưa bắt buộc tách Reader riêng khỏi Parser hiện có.
+**File hỗ trợ:** được thêm trong module theo quy định mục 1; tên/cấu trúc nội bộ chỉ cố định khi owner đề xuất và các bên liên quan thống nhất.
 
-**Điều kiện bàn giao:** Có mẫu DOCX và PDF, bảng/outside, chỉ dẫn sửa cụm từ/toàn đơn vị, thêm/bãi bỏ và đích mơ hồ; bên nhận chạy được. Nguồn block:N không được ghi như trang PDF khi chưa có mapping đã kiểm chứng.
+**Điều kiện bàn giao:** Có fixture file thật/cây mong đợi, bảng/outside, chỉ dẫn mơ hồ và sai văn bản đích. Số lượng Điều/Khoản/Điểm kỳ vọng được review độc lập từ nguồn; summary tự đếm không chứng minh Parser không bỏ sót.
 
-**Quyết định liên quan:** D-02, D-03, D-10.
+**Quyết định liên quan:** CN-01, CN-02, LK-03, LK-04, LK-05, LK-12. Tra cứu trong [module-owner-decisions-hci.md](module-owner-decisions-hci.md).
 
 ### 3.4. context/
 
-**Owner:** Dương Đức Anh — quyết định chính D-04/D-13 theo phạm vi retrieval và vận hành; phối hợp Nam về lựa chọn mô hình thuộc D-05.
+File hỗ trợ trên nhánh: `semantic_bridge.py` chạy chuẩn bị index song song Text Diff, chờ cả hai rồi ghép query trước Semantic. Chuẩn bị index nhận nguồn adapter; query nhận chỉ dẫn/trước-sau/TextDiffResult. Demo vẫn tắt retrieval; chưa kiểm chứng dịch vụ thật. Giữ owner/schema chung.
 
-**Nhiệm vụ và ranh giới:** Chuẩn bị ngữ cảnh, dùng phương án retrieval tạm chọn, kiểm tra nguồn và nhu cầu tham chiếu; không giao dịch vụ quyết định kết quả pháp lý hoặc tạo báo cáo hoàn chỉnh.
+**Owner:** Đức Anh phụ trách context; Đức Anh phụ trách gọi/tích hợp LightRAG. LK-13 chốt sau các quyết định còn lại.
 
-| File mục tiêu | Trách nhiệm |
+**Nhiệm vụ và ranh giới:** Chuẩn bị chunk, truy xuất LightRAG và chọn ngữ cảnh/căn cứ cho phân tích. LightRAG phục vụ retrieval; không tự thay linker, Semantic Diff hoặc Scorer.
+
+| File chính | Trách nhiệm |
 | --- | --- |
-| chunk_builder.py | Tạo đoạn đủ nghĩa, giữ vai trò/định danh/spans và tránh nội dung full_text lặp |
-| source_registry.py | Nối đoạn/kết quả truy xuất về đúng tài liệu và nguyên văn |
-| lightrag_client.py | Giao tiếp HTTP: nhập, theo dõi sẵn sàng, query, lỗi và dọn theo phương án còn chờ review |
-| context_builder.py | Truy vấn theo chỉ dẫn, chọn/kiểm tra căn cứ, giữ nhu cầu tham chiếu và giới hạn |
+| chunk_builder.py | Đức Anh: tạo đoạn đủ nghĩa, giữ metadata và liên kết nguồn. |
+| source_registry.py | Đức Anh: ánh xạ chunk/kết quả truy xuất về đúng document_id và nguyên văn nguồn. |
+| lightrag_client.py | Đức Anh: gọi LightRAG Server qua HTTP: nhập, theo dõi sẵn sàng, truy vấn, xử lý lỗi và dọn dữ liệu. |
+| context_builder.py | Đức Anh: lập truy vấn, chọn/kiểm tra căn cứ, cung cấp ngữ cảnh và nhu cầu tham chiếu thiếu/chưa rõ. |
 
-**Đầu vào:** Nguồn/cây, chỉ dẫn và dữ liệu liên quan từ D-02/D-03.
+Điểm gọi nội bộ: `prepare_index(item, registry, client)` chỉ chuẩn bị chỉ mục; `build_context(item, registry, client, text_diff=diff)` truy vấn và kiểm tra nguồn. `run_semantic_stage` nhận `context_prepare(item)` và `context_work(item, diff)`; runner giữ quyền quản lý client/cleanup. Trong điểm gọi query ngữ cảnh này, thiếu hoặc sai diff phải trả cảnh báo, không truy vấn bằng dữ liệu chưa kiểm chứng. Query tìm đích hoặc B cần contract riêng, không áp điều kiện có diff của helper này. Không đổi hợp đồng dict bàn giao giữa các module.
 
-**Đầu ra:** Ngữ cảnh/bằng chứng và thông tin thiếu/chưa rõ theo contract được review; score retrieval không phải significance và mô tả dịch vụ không phải quote.
+**Đầu vào:** Tài liệu/cây/nguồn và yêu cầu sửa đổi đã chuẩn hóa.
 
-**Bên kết nối:** Dũng cung cấp nguồn; Nam nhận context; Đức Anh điều phối Pipeline; Tùng Dương kiểm tra đọc bằng chứng.
+**Đầu ra:** Ngữ cảnh có nguồn, tình trạng tài liệu tham chiếu, cảnh báo và trạng thái retrieval/index theo hợp đồng.
 
-**File hỗ trợ:** Chưa quyết định; payload, model/release, storage, query/chunking và cơ chế cách ly chưa chốt.
+**Bên kết nối:** Dũng cung cấp nguồn; Nam dùng context cho Semantic Diff; Pipeline quản lý luồng và việc dọn.
 
-**Điều kiện bàn giao:** Thử nhập → sẵn sàng → query → ánh xạ quote → dọn; hai bộ không lẫn. Query rỗng/lỗi dịch vụ không tự chứng minh thiếu tài liệu hoặc không thay đổi. Không dọn nguồn khi tác vụ vẫn sử dụng.
+**File hỗ trợ:** được thêm trong module theo quy định mục 1; tên/cấu trúc nội bộ chỉ cố định khi owner đề xuất và các bên liên quan thống nhất.
 
-**Quyết định liên quan:** D-04, D-05, D-09, D-13.
+**Điều kiện bàn giao:** Kiểm chứng nhập/sẵn sàng/query/mapping/cách ly/xóa trên release cố định; không coi query rỗng là tài liệu chắc chắn thiếu, không dùng retrieval score làm significance.
+
+**Quyết định liên quan:** CN-03, CN-04, LK-04, LK-06, LK-12, LK-13. Tra cứu trong [module-owner-decisions-hci.md](module-owner-decisions-hci.md).
 
 ### 3.5. change_analysis/
 
-**Owner:** Vương Thành Nam, theo HCI-08 và D-05/D-06; Nam có quyền quyết định chính D-05, phối hợp bên liên quan khi thay contract, nguồn lực hoặc môi trường chung.
+**Owner:** Phân theo chức năng đã chốt tại LK-01: Nam — Text Diff; Nam — Semantic Change/Scorer; Nam — AI Adapter. Không tự gán owner chung toàn folder.
 
-**Nhiệm vụ và ranh giới:** So sánh chữ, phân tích nghĩa và chấm tác động theo schema HCI; nhận định và điểm nối bằng change_id.
+**Nhiệm vụ và ranh giới:** Phân tích chữ và nghĩa trên nội dung trước/sau cục bộ có ngữ cảnh; phân loại và chấm tác động theo bằng chứng. Không tự dựng dữ liệu nguồn hoặc xóa cảnh báo của bước trước.
 
-| File mục tiêu | Trách nhiệm |
+| File chính | Trách nhiệm |
 | --- | --- |
-| text_diff.py | Vùng INSERT/DELETE/REPLACE khớp before_text/after_text; không dùng chuỗi rỗng thay phía chưa xác định |
-| semantic_diff.py | Nhận định và aspects có căn cứ; giữ nhiều khía cạnh, giải thích và trạng thái chưa xác định |
-| scorer.py | Mức tác động cùng lý do theo rubric được review; thiếu căn cứ không ép LOW |
-| ai_adapter.py | Gọi mô hình và kiểm tra output; phương pháp, prompt, validation/fallback chờ D-05 |
+| text_diff.py | Nam: xác định vùng INSERT/DELETE/REPLACE theo hai chuỗi cục bộ. |
+| semantic_diff.py | Nam: rule trước, model khi cần; xác định Semantic Change, giải thích, bằng chứng và trường hợp chưa đủ căn cứ. |
+| scorer.py | Nam: phân loại/chấm mức tác động theo kết quả ngữ nghĩa và rubric chung. |
+| ai_adapter.py | Nam: đóng gói gọi mô hình và kiểm tra output; chi tiết cách gọi/giao diện còn chờ CN-08/LK-02. |
 
-**Đầu vào:** Nội dung trước–sau và context/bằng chứng từ Đức Anh, nguồn/nhãn phối hợp Dũng.
+**Đầu vào:** Yêu cầu sửa đổi có nội dung trước/sau và context; Text Diff được cung cấp cho Semantic Diff khi có.
 
-**Đầu ra:** Nhận định có giải thích và nguồn, TextChange, aspects và mức tác động theo SRS; nội bộ và cách chuyển đổi chờ fixture được review.
+**Đầu ra:** TextDiffResult, SemanticDiffResult và list[ScoringResult] theo contracts.py; Pipeline đặt vào AmendmentResult trong ComparisonReport.results.
 
-**Bên kết nối:** Đức Anh cung cấp/tổng hợp; Dũng review nguồn/nhãn; Tùng Dương hiển thị kết quả.
+**Bên kết nối:** Nam bàn giao Text Diff cho nhóm Semantic Diff. Semantic Diff → Scorer là điểm nối giữa hai chức năng cùng do Nam phụ trách; các phần → Đức Anh ở Pipeline/API; Nam cung cấp AI Adapter.
 
-**File hỗ trợ:** Chưa quyết định.
+**File hỗ trợ:** được thêm trong module theo quy định mục 1; tên/cấu trúc nội bộ chỉ cố định khi owner đề xuất và các bên liên quan thống nhất.
 
-**Điều kiện bàn giao:** Ca bốn nhóm, sửa diễn đạt, nhiều khía cạnh, thiếu căn cứ, ngoài phạm vi và lỗi AI. Kiểm tra đúng cấu trúc không thay kiểm tra đúng nội dung; không làm mất chỉ dẫn khi chưa tạo được nhận định.
+**Điều kiện bàn giao:** Các điểm nối Text Diff → Semantic Diff → Scorer có contract/fixture và test output thật; dữ liệu đủ/thiếu căn cứ, chỉ đổi diễn đạt và lỗi mô hình không bị nhầm thành không có thay đổi.
 
-**Quyết định liên quan:** D-05, D-06, D-11.
+**Quyết định liên quan:** CN-05, CN-06, CN-07, CN-08, LK-01, LK-07, LK-08, LK-09, LK-10, LK-11, LK-12. Tra cứu trong [module-owner-decisions-hci.md](module-owner-decisions-hci.md).
 
 ### 3.6. evaluation/
 
-**Owner:** Vương Thành Nam — phần kỹ thuật, theo HCI-12 và D-11.
+**Owner:** Không phân công triển khai Evaluator độc lập.
 
-**Nhiệm vụ và ranh giới:** Xây dựng công cụ và phương pháp đánh giá kỹ thuật, chạy phép đo và phân tích lỗi; tách khỏi đánh giá người dùng do Dũng chủ trì. Tài liệu hiện có chưa xác nhận công cụ hoàn chỉnh hoặc kết quả đo.
+**Nhiệm vụ và ranh giới:** Giữ thư mục để không thay cấu trúc đã chốt. Trách nhiệm kiểm thử vẫn tồn tại ở từng module, điểm nối và toàn luồng.
 
-| File mục tiêu | Trách nhiệm |
+| File chính | Trách nhiệm |
 | --- | --- |
-| evaluator.py | Công cụ đánh giá kỹ thuật theo D-11; giao diện, metric, matching và lệnh chạy chưa quyết định |
+| evaluator.py | Giữ file hiện có; không thuộc danh sách bắt buộc phải hoàn thiện ở giai đoạn này. |
 
-**Đầu vào:** Kết quả của phiên bản được đo, dữ liệu/nhãn có nguồn và được review theo D-10/D-11.
+**Đầu vào:** Không thiết lập hợp đồng runtime mới cho module này.
 
-**Đầu ra:** Kết quả kỹ thuật, lỗi và giới hạn gắn phiên bản; cấu trúc báo cáo và đường dẫn kết quả chưa quyết định.
+**Đầu ra:** Không có đầu ra bắt buộc từ Evaluator riêng; phép đo nếu cần thực hiện qua test/script đã thống nhất.
 
-**Bên kết nối:** Dũng review gold; Đức Anh/Tùng Dương cung cấp kết quả; Nam phân tích lỗi thuộc phần mình.
+**Bên kết nối:** Đức Anh điều phối kế hoạch đánh giá; các owner thực hiện kiểm tra phần mình và kiểm tra chéo; thành viên khác kiểm tra phụ; Dũng phụ trách tích hợp/Pipeline/API.
 
-**File hỗ trợ:** Chưa quyết định.
+**File hỗ trợ:** được thêm trong module theo quy định mục 1; tên/cấu trúc nội bộ chỉ cố định khi owner đề xuất và các bên liên quan thống nhất.
 
-**Điều kiện bàn giao:** Có ca tính tay, quy tắc khớp SemanticChange/aspects, xử lý thiếu/sai aspect, nguồn sai, chưa xác định và không có mẫu; có lệnh chạy và cấu hình để kiểm tra lại. Chưa chốt ngưỡng hoặc công thức thay owner.
+**Điều kiện bàn giao:** Có người chịu trách nhiệm kiểm tra từng điểm nối và toàn luồng; bỏ Evaluator không được hiểu là bỏ expected output, nhãn chuẩn hoặc phép đo khi báo cáo yêu cầu.
 
-**Quyết định liên quan:** D-10, D-11; phối hợp D-12 khi dùng đáp án cho tác vụ người dùng.
+**Quyết định liên quan:** LK-01. Tra cứu trong [module-owner-decisions-hci.md](module-owner-decisions-hci.md).
 
 ## 4. Đầu vào–đầu ra và các điểm nối
 
-| Điểm nối | Bên giao | Bên nhận | Nội dung cần review | Quyết định |
-| --- | --- | --- | --- | --- |
-| Đầu vào/Parser/adapter → backend/linker | Dũng | Đức Anh | Cây, source_blocks, ID, vai trò, bảng/outside, spans, cảnh báo | D-01/D-02/D-03 |
-| Linker/context → phân tích | Đức Anh | Nam | Trước–sau trích/suy ra, chỉ dẫn/đích, ngữ cảnh và phần thiếu căn cứ | D-03/D-04/D-05 |
-| Text Diff → Semantic Diff → Scorer | Nam | Nam; Đức Anh review đầu ra tích hợp | Nội dung/offset, nhận định, aspects, rubric, nguồn và lỗi | D-05/D-06 |
-| Phân tích → bộ tổng hợp/Pipeline | Nam | Đức Anh | Kết quả chuyển sang contract HCI, nhiều khía cạnh và cảnh báo | D-01/D-05/D-06 |
-| API/Pipeline → frontend | Đức Anh | Tùng Dương | Report/nguồn, trạng thái, lỗi, file bổ sung và dữ liệu giữa hai lượt; Tùng Dương quyết định cơ chế giữ/đọc bằng chứng theo D-07, phối hợp D-01/D-02 | D-01/D-07/D-08 |
-| Nội dung phân tích → hiển thị | Nam | Tùng Dương | Câu giải thích, bằng chứng, mức tác động và phần chưa rõ | D-06/D-07 |
-| Nhãn/đáp án → đánh giá kỹ thuật | Dũng; Nam review | Nam | Bộ căn cứ, split, nhãn và quy tắc đối chiếu | D-06/D-10/D-11 |
-| Bản dùng thử và đáp án → đánh giá người dùng | Đức Anh/Nam/Tùng Dương theo phần việc | Dũng | Phiên bản, tác vụ, dữ liệu, kết quả kỹ thuật và giới hạn | D-11/D-12/D-13 |
+Bảng chín điểm nối dưới áp dụng lõi từng V1 và fixture lịch sử. Điểm nối mục tiêu cấp S ở bảng đầu tài liệu; chưa có schema/fixture thực thi cho các bước mới.
 
-Tên hàm, kiểu, return, mã lỗi và fixture cụ thể còn chờ owner đề xuất. Bảng là các điểm bàn giao trong tài liệu hiện có, không tự tạo public API mới.
+Phiên 1 giữ toàn văn cùng một đơn vị đối chiếu ở cả hai trạng thái. Với sửa nội dung của Điểm, Khoản hoặc Điều hiện có, đơn vị đối chiếu là toàn văn đơn vị đó. Khi thêm hoặc bãi bỏ cả một đơn vị, dùng đơn vị chứa nhỏ nhất còn tồn tại ở hai phía, ví dụ toàn Điều khi thêm hoặc bãi bỏ một Khoản. Vị trí đích vẫn ghi chính xác Điểm, Khoản hoặc Điều mà S chỉ ra. Nếu chỉ dẫn có nhiều đích, giữ đủ đích và căn cứ cho từng đích. Xem [LK-05](module-owner-decisions-hci.md) để tra quyết định và điểm còn mở.
+
+| Điểm nối | Bên giao → bên nhận | Đầu vào | Đầu ra | Điều kiện | Fixture và quyết định |
+| --- | --- | --- | --- | --- | --- |
+| Adapter → Linker | Dũng → Dũng | Kho `ExtractedDocument`, `Clause` của V1 và chỉ dẫn từ S | Danh sách `AmendmentItem` giữ đủ vị trí, nguồn và trước/sau | Giữ chỉ dẫn kèm lý do nếu chưa tìm được đích | [Ca mẫu](../data/module_handoff_fixtures/adapter_to_linker/deadline_reduction.json) · LK-03–05 |
+| Adapter → Context | Dũng → Đức Anh | Kho tài liệu chuẩn hóa và nguồn | Chunk, ánh xạ nguồn và trạng thái chỉ mục. Fixture minh họa trạng thái sẵn sàng | Có thể chuẩn bị chỉ mục song song với Linker | [Ca mẫu](../data/module_handoff_fixtures/adapter_to_context/deadline_reduction.json) · LK-03/04/06/13 |
+| Linker → Text Diff | Dũng → Nam | `AmendmentItem` có hai trạng thái đủ căn cứ | `TextDiffResult` và offset theo hai chuỗi | Bỏ qua item chưa đủ nội dung để diff | [Ca mẫu](../data/module_handoff_fixtures/document_to_text_diff/deadline_reduction.json) · LK-04/05/07 |
+| Text Diff + chỉ mục → Ghép query | Nam + Đức Anh → Đức Anh + Dũng | Chỉ dẫn, trước/sau, `TextDiffResult` và chỉ mục đã sẵn sàng | Truy vấn cho đúng `amendment_id` | Chờ đủ dữ liệu ở hai nhánh. Ghi rõ lý do nếu bỏ qua | [Ca mẫu](../data/module_handoff_fixtures/text_diff_and_index_to_query/deadline_reduction.json) · LK-06/07/13 |
+| Retrieval → Context | Đức Anh → Đức Anh | `AmendmentItem` và ứng viên nguồn đã ánh xạ | `AmendmentItem` bổ sung `AnalysisContext` và căn cứ đã đối chiếu | Giữ lý do khi kết quả truy xuất rỗng, lỗi hoặc thiếu căn cứ | [Ca mẫu](../data/module_handoff_fixtures/retrieval_to_context/deadline_reduction.json) · LK-04/06/12/13 |
+| Context + Text Diff → Semantic Diff | Đức Anh + Nam → Nam | `AmendmentItem` có context và `TextDiffResult` nếu đã tạo | `SemanticDiffResult` khớp `amendment_id` | Chạy rule trước và dùng model khi cần theo CN-06. Báo giới hạn khi thiếu căn cứ | [Ca mẫu](../data/module_handoff_fixtures/context_and_text_diff_to_semantic/deadline_reduction.json) · CN-06/LK-06–09/12 |
+| Semantic Diff → Scorer | Nhóm Semantic Diff → Nhóm Scorer (cùng phân công LK-01) | `AmendmentItem` và `SemanticDiffResult` | Danh sách `ScoringResult` nối theo `change_id` | Giữ mức độ chưa xác định theo LK-10. Có reviewer khác khi kiểm thử chéo | [Ca mẫu](../data/module_handoff_fixtures/semantic_to_scorer/deadline_reduction.json) · LK-09/10/12 |
+| Phân tích → Pipeline/API | Các owner → Dũng | Định danh tài liệu, kết quả từng item, cảnh báo và lỗi | `ComparisonReport` qua validator | Giữ item có bước chưa chạy và ghi lý do | [Ca mẫu](../data/module_handoff_fixtures/analysis_to_pipeline/deadline_reduction.json) · LK-11/12 |
+| API → Frontend | Dũng → Tùng Dương | `ComparisonReport` hoặc lỗi HTTP theo API | Hiển thị trước/sau, kết luận, bằng chứng và xử lý lỗi, cảnh báo, trạng thái trả về | Hiện `quote` và vị trí đã trả. Mục chưa xử lý phải nhìn thấy được | [Ca mẫu](../data/module_handoff_fixtures/api_to_frontend/deadline_reduction.json) · LK-11/12 |
+
+Các fixture mô tả hợp đồng tại từng điểm nối. Trạng thái chỉ mục, câu query và dữ liệu hiển thị trong fixture dùng để mô phỏng, theo [README của bộ fixture](../data/module_handoff_fixtures/README.md). Tên hàm và chi tiết tích hợp còn mở được chốt khi có kết quả chạy.
+
+Binding code hiện tại: `adapt_documents(parsed) -> BoundaryData(documents, clauses, units)`; `link_amendments(boundary) -> (items, issues)`; `compute_text_diff(item)`; `detect_semantic_changes(item, text_diff)`; `score_changes(semantic)` (chưa nhận item riêng như wrapper fixture); runner `(parsed, comparison_id, deadline) -> AnalysisOutcome`. Fixture đóng gói input không quy định chữ ký hàm. Khi nối dùng adapter tại bên gọi, không sửa contract TypedDict hoặc buộc mọi module đổi hàm theo tên khóa JSON. Thiết kế bridge ghép query sau Text Diff và chuẩn bị index cần được kiểm tra trên HCI; demo vẫn tắt retrieval. Đây là lõi từng đích, không phải query tìm V1 từ S hoặc tìm tác động lên B.
+
+### Bổ sung điểm nối từ quyết định Use Case ngày 20/11/2026
+
+| Điểm nối | Dữ liệu và hành vi cần bàn giao |
+| --- | --- |
+| Tiếp nhận/giải quyết đích → UI | Phạm vi có căn cứ, ứng viên phiên bản, dấu hiệu V1 không khớp và danh sách nguồn còn thiếu. UI cho thay file hoặc chọn “Hiện tại không có tài liệu”. |
+| Phân tích thiếu V1 → Tổng hợp cấp S | Chỉ dẫn S, nguồn hợp lệ đã dùng, nhận định có căn cứ, phần trước/sau hoặc tác động chưa xác định. Liên kết về yêu cầu chưa giải quyết; giữ kết quả đích khác. Kiểu dữ liệu và validator cấp S cần review. |
+| Tổng hợp → UI | Đếm riêng văn bản, yêu cầu và điều khoản đủ/thiếu nguồn; chuỗi căn cứ của từng nhận định và các vai trò ngữ cảnh/đối tượng tác động. Người làm UI chọn cách làm nổi bật có nhãn. |
+| Bổ sung/thử lại → Điều phối | Lượt bổ sung là lượt phân tích mới. E4 kiểm tra dữ liệu hợp lệ còn lưu trước khi tiếp tục, hoặc chạy mới nếu đã cleanup. Giữ báo cáo trước khi lượt mới lỗi và tránh gửi lặp. |
+| UI → Kết thúc phiên | Xóa báo cáo, trạng thái và lựa chọn giữ trên UI. Trước thao tác đó, vẫn xem bằng chứng đã trả dù backend dọn tài nguyên tạm. |
+
+Thành công chức năng không phụ thuộc vào nhận xét. Độ đúng của đầu ra vẫn phải kiểm tra trong nghiệm thu. E6 hủy khi đang xử lý tiếp tục là đề xuất theo SRS §4.2. Các yêu cầu này cần fixture mới và đầu ra thật để kiểm tra điểm nối.
 
 ## 5. Phối hợp triển khai bán song song
 
-Theo [Workflow](workflow.md): owner đề xuất và tự kiểm tra; bên nhận chạy fixture; ghi quyết định rồi cập nhật đặc tả/schema/fixture và tích hợp. D-01/D-02 cần rõ trước ghép dữ liệu; có thể thử D-03/D-04/D-05/D-07 song song bằng mẫu. Không cần mọi quyết định hoàn tất trước khi làm phần độc lập.
+Thực hiện quy trình chốt → code song song → kiểm thử chéo → tích hợp theo [workflow.md](workflow.md). Các cặp cụ thể theo LK-02 trong module-owner-decisions-hci.md. File này xác định nhiệm vụ/đầu ra từng module, không định nghĩa một quy trình vận hành khác.
 
 ## 6. Kiểm thử và điều kiện hoàn thành
 
-Task hoàn thành khi có đầu ra, kiểm tra phù hợp, cách chạy, kết quả và giới hạn; bên nhận dùng được. Đức Anh chủ trì kiểm thử tích hợp; Nam chủ trì đánh giá kỹ thuật; Dũng chủ trì dùng thử và thu ý kiến; Tùng Dương kiểm tra giao diện/phiên. Kế hoạch chi tiết ở [Test Evaluation Plan](test_evaluation_plan.md); ca nghiệm thu AT-01–AT-13 theo SRS.
+Checklist, trách nhiệm hai bên, cách báo lỗi và điều kiện merge theo [workflow.md](workflow.md). Bàn giao module vẫn cần code, input/output mẫu, lệnh/kết quả kiểm tra và giới hạn. Các điều kiện đặc thù trong mục 3 là căn cứ kiểm tra, không thay quy trình kiểm thử chung. Thiết kế đánh giá và phép đo theo [Kế hoạch kiểm thử và đánh giá](test_evaluation_plan.md).
 
 ## 7. Trạng thái hoàn thiện
 
-| Hạng mục | Trạng thái theo tài liệu nguồn | Phần chờ |
-| --- | --- | --- |
-| Contract HCI và ReviewRecord frontend | Có baseline trong SRS | Fixture hiện tại và các quyết định D-02/D-06/D-08 |
-| Converter/Parser và API/Pipeline nền | Được mô tả đã có ở bộ code nền trước đó | Đã đối chiếu mã main tại 01b98ce, chưa chạy test trong đợt này; còn lệch contract HCI |
-| Linker/context/phân tích/frontend/evaluation | Chưa có bản hoàn chỉnh được xác nhận | Owner đề xuất/hiện thực theo D-ID liên quan |
-| LightRAG | Phương án B tạm chọn | D-04/D-05/D-09/D-13 |
-| document_processing/ owner chung | Chưa quyết định | Dũng/Đức Anh đã có phạm vi chức năng riêng; cần làm rõ nếu nhóm muốn một owner folder |
-| Kế hoạch đánh giá chung | Đã có bản khung, đang hoàn thiện | Dũng tổng hợp; Nam phần kỹ thuật; Dũng phần người dùng; Đức Anh kiểm thử tích hợp |
+File này chỉ được coi hoàn thiện khi toàn bộ quyết định có liên quan trong module-owner-decisions-hci.md đã chốt và kết luận được phản ánh đúng vào đặc tả module. Một module có thể đủ đặc tả trước các module khác nếu các quyết định ảnh hưởng trực tiếp đã chốt; không được xem phần còn chờ là phương án chính thức.
 
-Đủ đặc tả, đã hiện thực và đã tích hợp/kiểm tra là các trạng thái khác nhau. Không chuyển các D-ID đang chờ owner thành đã chốt chỉ bằng việc bổ sung tài liệu này.
+Phân biệt ba trạng thái: đủ đặc tả, đã hiện thực và đã tích hợp/kiểm thử. Việc chốt tài liệu không tự xác nhận code đã có hoặc kiểm tra đã đạt.
+
+| Hạng mục | Trạng thái hiện tại | Việc cần hoàn thiện |
+| --- | --- | --- |
+| Folder chính và danh sách file chính | Đã có cấu trúc làm căn cứ | Review phạm vi file và giữ ổn định đường dẫn |
+| LightRAG qua HTTP | Đã chốt phương án | CN-03/CN-04 và LK-13 còn chi tiết kỹ thuật |
+| Semantic Diff và Scorer giao Nam; bỏ Evaluator riêng | Đã chốt phân công chức năng | Hoàn thiện contract/fixture và trách nhiệm test |
+| Phân công change_analysis/AI Adapter | Đã chốt theo chức năng | LK-01; CN-05/CN-06/CN-07/CN-08 còn lựa chọn triển khai |
+| Người gọi/tích hợp LightRAG | Đã chốt Đức Anh | Chi tiết kỹ thuật còn chờ CN-04/LK-13; LK-13 chốt sau các quyết định còn lại |
+| Hợp đồng dữ liệu và báo cáo | Đã chốt dùng schema chung | LK-08 đến LK-11 đã ghi nhận; adapter/wiring, thuật toán, rubric và API chi tiết còn chờ |
+| Phương pháp nội bộ từng owner | Chờ owner điền lựa chọn | Các quyết định CN liên quan |
+
+Khi chốt phiên, Dũng và Đức Anh có thể ghi thêm trạng thái của đầu ra hoặc điểm nối có thay đổi. Dùng các mốc xác nhận trong [Workflow §5](workflow.md) và ghi theo mẫu: **đầu ra hoặc điểm nối | trạng thái | PR/SHA | ca và kết quả kiểm tra | việc còn lại và owner**. Với kiểm thử mô phỏng, ghi rõ phần còn cần chạy với đầu ra thật. Dẫn về PR hoặc issue để tra chi tiết.
+
+Khi thêm/xóa một quyết định, rà lại các mã phụ thuộc tại đây. Nếu quyết định đã chốt bị thay thế, không tiếp tục dùng đặc tả cũ cho các module nhận dữ liệu.

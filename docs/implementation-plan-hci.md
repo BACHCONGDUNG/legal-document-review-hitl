@@ -1,169 +1,58 @@
-# Kế hoạch triển khai dự án HCI
+# KẾ HOẠCH TRIỂN KHAI HCI THEO PHIÊN CODE
 
-**Học phần và nhóm:** 2627I_INT2041_1 Nhóm 6
-**Đề tài:** Hệ thống hỗ trợ đối chiếu thay đổi văn bản pháp luật với AI có giải thích và có sự kiểm chứng của người dùng
-**Nhóm trưởng:** Bạch Công Dũng
-**Thành viên:** Bạch Công Dũng, Dương Đức Anh, Lê Tùng Dương, Vương Thành Nam
-**Phiên bản:** HCI 1.2.0
-**Thời gian:** Tuần 6–14 của học phần; hoàn thành nội bộ cuối tuần 13, tuần 14 dành cho dự phòng và bàn giao theo lịch học phần.
-**Tài liệu liên quan:** [BRD](brd.md), [SRS](srs.md), [Architecture](architecture.md), [Nghiên cứu người dùng](user-research.md), [Hướng dẫn dữ liệu và gán nhãn](data-annotation-guide-hci.md).
+**HCI, Nhóm 6 — cập nhật 22/11/2026.** Phạm vi chỉ S, kho dân sự, nhiều đích và tác động gián tiếp là thiết kế mục tiêu. Hiện trạng mã và kết quả kiểm tra HCI được ghi tại [nền HCI](common-baseline.md). Phân công theo [module](module.md). Công việc nghiên cứu ngắn hạn được theo dõi trong tài liệu tiến độ của nhóm.
 
-Kế hoạch xác định người chịu trách nhiệm, thứ tự triển khai, đầu ra và điểm bàn giao. Mỗi thành viên dùng tài liệu chuyên trách để triển khai yêu cầu; các mốc dưới đây là kế hoạch, không xác nhận chức năng đã hoàn thành.
 
-### Baseline tài liệu
+Phạm vi nghiệp vụ lấy từ [BRD](brd.md), yêu cầu và dữ liệu từ [SRS](srs.md), cấu trúc và luồng chạy từ [Architecture](architecture.md). Xem [Decision](module-owner-decisions-hci.md) để tra các quyết định đã chốt và [Workflow](workflow.md) để thực hiện quy trình làm việc.
 
-Kế hoạch tuần 6–14 mô tả các mốc học phần.
+## Phạm vi kế hoạch sau cập nhật nghiệp vụ ngày 20/11/2026
 
-Dùng V1–S, tám nhóm phân tích theo SRS và ReviewRecord ở frontend. Sinh viên Luật là người dùng chính. Giữ luồng PDF → DOCX → Parser và retrieval qua LightRAG HTTP.
+Ba phiên phía dưới là kế hoạch lõi V1–S trước thay đổi nghiệp vụ, không phải toàn bộ công việc để nghiệm thu hệ thống chỉ S. Điểm ghép query từ Text Diff ở bridge cần xác nhận trên HCI; các câu coi đó là việc tương lai đọc theo mốc lịch sử. Giữ kế hoạch và phân công này làm tham khảo, không tự gán thêm task/deadline bằng đợt cập nhật tài liệu.
 
-[Module Owner Decisions](module-owner-decisions-hci.md) là danh sách duy nhất quản lý việc cần chốt. Trình tự: owner đề xuất trên mẫu → tự kiểm tra → bên nhận/reviewer chạy fixture → ghi quyết định → cập nhật tài liệu sở hữu → tích hợp. Review chung và một người kiểm thử không thay trách nhiệm tự kiểm tra của owner.
+Luồng mục tiêu và phụ thuộc mới ở Architecture/Module: chuẩn bị kho dân sự và mapping nguồn → trích yêu cầu từ S, xác định đích/phiên bản → tái sử dụng lõi từng đích → kiểm chứng tác động gián tiếp → báo cáo cấp S. Các bên có thể phát triển song song bằng fixture đã review, không bắt chờ toàn module. Phải chốt contract của các điểm nối mới trước khi triển khai phần phụ thuộc. Owner, phạm vi phiên và thời hạn mới cần nhóm xác nhận từ tiến độ thật.
 
-## 1. Phân công thành viên
+### Phạm vi bổ sung sau khi đối chiếu Use Case
 
-### 1.1. Bạch Công Dũng
+Các yêu cầu mục tiêu ở SRS UI-01–UI-10 được triển khai cùng các điểm nối cấp S: bổ sung/thay V1, phân tích từ S khi thiếu V1, kiểm tra phạm vi theo từng đích, coverage nhiều đích, chuỗi căn cứ, lượt bổ sung mới trong cùng UI, kết thúc phiên và thử lại E4. Nhóm cần hoàn thiện hợp đồng và fixture trước phần phụ thuộc, dùng các ca UC-M/UC-A/UC-E trong kế hoạch kiểm thử làm tiêu chí. E6 tiếp tục là đề xuất. Các dòng phân công và ba phiên lõi phía dưới được đọc theo mốc lịch sử.
 
-**Phụ trách nền tảng tài liệu, dữ liệu và xử lý đầu vào; tổ chức nghiên cứu và đánh giá sản phẩm với người dùng.**
+## 1. Phiên 1 — Hoàn thiện luồng cơ sở V1–S
 
-Giai đoạn chuẩn bị:
+**Điểm bắt đầu đã có:** [nền DOCX](common-baseline.md) chạy bằng `backend.demo:app`; không triển khai lại từ khung hoặc chờ AI để merge nền. Bảng dưới là đích hoàn thiện của phiên. Trước merge chỉ yêu cầu phạm vi DOCX hiện tại, lỗi chặn đã sửa và fixture/tài liệu thống nhất; ADD/REPEAL/nhiều đích, query từ Text Diff và dịch vụ thật tiếp tục sau merge. Nếu thử mock, giữ riêng trong test và ghi rõ, không đưa đáp án fixture vào demo thật.
 
-- Hoàn thiện tài liệu tổng quát, kế hoạch, phân công; tổng hợp nghiên cứu người dùng, persona, kịch bản và tác vụ làm căn cứ thiết kế.
-- Thu thập V1, S và tài liệu tham chiếu; kiểm tra quan hệ sửa đổi, trạng thái nền, nguồn và chất lượng file; quản lý manifest và hướng dẫn nhãn.
-- Xây dựng module nhận DOCX/PDF có lớp chữ, chuyển PDF sang DOCX và kiểm tra chất lượng chuyển đổi. Giữ bản gốc, liên hệ giữa file gốc và file chuyển đổi; báo rõ phần không bảo đảm chất lượng.
-- Đọc DOCX, giữ thứ tự đoạn/bảng và vị trí nguồn; tách Điều/Khoản/Điểm của V1. Với S và tài liệu tham chiếu, bàn giao nội dung đọc được cùng vị trí nguồn cho bước xử lý tiếp theo.
-- Chuẩn bị mẫu và đáp án tham chiếu ban đầu, phối hợp Nam review phần ngữ nghĩa/mức tác động; chuẩn bị tác vụ và đáp án kiểm chứng.
-- Bàn giao mã nguồn xử lý đầu vào, dữ liệu mẫu, hướng dẫn chạy, hợp đồng đầu ra và giới hạn để các thành viên sử dụng độc lập.
+Mục tiêu là chạy được một lượt so sánh từ V1, S và tài liệu tham chiếu nếu có đến báo cáo có trước/sau và bằng chứng. Các module dùng [fixture bàn giao](../data/module_handoff_fixtures/README.md) để làm bán song song. Ca có thật đi qua bộ đọc và Parser. Đường gọi LightRAG hoặc mô hình có thể dùng đầu ra mô phỏng tại các điểm nối trong phiên này.
 
-Sau khi sản phẩm vượt qua kiểm thử kỹ thuật: hoàn thiện tác vụ theo bản chạy thật; tổ chức dùng thử, thu thập ý kiến và kết quả tác vụ; tổng hợp số liệu, phân tích vấn đề, đề xuất cải tiến và hoàn thiện báo cáo đánh giá. Trong giai đoạn phát triển, Dũng duy trì điều phối và sửa lỗi thuộc dữ liệu/module đầu vào đã bàn giao.
-
-### 1.2. Dương Đức Anh
-
-**Phụ trách backend, xử lý chỉ dẫn sửa đổi và tích hợp các module thành luồng phân tích hoàn chỉnh.**
-
-- Xây dựng API, schema và Pipeline; tích hợp module chuẩn bị đầu vào, phân tích và frontend.
-- Xử lý chỉ dẫn trong S, xác định văn bản/vị trí đích và thao tác sửa đổi; giữ quan hệ đổi số/gộp–tách và phần liên kết chưa chắc chắn.
-- Chuẩn bị nội dung trước–sau cục bộ, ngữ cảnh, thông tin hiệu lực/chuyển tiếp và yêu cầu tài liệu tham chiếu cho phân tích.
-- Tổng hợp báo cáo có bằng chứng, cảnh báo và phần chưa xác định; hiện thực bổ sung tài liệu/phân tích lại, cung cấp dữ liệu đối chiếu lượt chạy.
-- Kiểm thử backend và tích hợp, quản lý cấu hình, tài nguyên/file tạm và đóng gói môi trường chạy.
-
-### 1.3. Lê Tùng Dương
-
-**Phụ trách thiết kế tương tác và frontend; xây dựng giao diện đối chiếu, kiểm chứng và quản lý nhận xét trong phiên.**
-
-- Phát triển wireframe, prototype và luồng thao tác từ nghiên cứu, kịch bản và tác vụ đã thống nhất.
-- Xây dựng giao diện chọn file, theo dõi xử lý, đối chiếu trước–sau, xem giải thích, truy nguồn, lọc và thông báo lỗi.
-- Hiện thực nhận xét, ghi chú, tổng hợp trạng thái rà soát và quản lý dữ liệu trong phiên.
-- Xử lý trạng thái sau phân tích lại: mục mới, mục cần kiểm tra lại và nhận xét cũ chưa đối chiếu được.
-- Kiểm thử giao diện/tích hợp API; sửa vấn đề giao diện từ đánh giá người dùng và lưu minh chứng thay đổi thiết kế.
-
-### 1.4. Vương Thành Nam
-
-**Phụ trách so sánh và phân tích thay đổi; bảo đảm chất lượng diễn giải, bằng chứng và mức tác động.**
-
-- Triển khai, tích hợp và hiệu chỉnh Text Diff, Semantic Diff, AI Adapter và Scorer trên dữ liệu trước–sau/ngữ cảnh được bàn giao.
-- Tạo các khía cạnh, giải thích và mức tác động có căn cứ; giữ kết quả chưa xác định cùng lý do.
-- Kiểm tra cấu trúc phản hồi AI, trích dẫn và tính phù hợp của giải thích với nguồn.
-- Phối hợp Dũng review nhãn, đáp án và ca đúng/sai/thiếu căn cứ phục vụ kiểm thử, kiểm chứng AI.
-- Xây dựng công cụ đánh giá kỹ thuật, chạy phép đo và phân tích lỗi; tổng hợp giới hạn, sửa lỗi thuộc module phụ trách.
-
-## 2. Giai đoạn và mốc hoàn thành
-
-### 2.1. Đầu ra và điều kiện hoàn thành
-
-| Mốc | Trọng tâm và đầu ra | Điều kiện chuyển bước |
+| Người phụ trách | File hoặc phạm vi hoàn thiện | Đầu ra của phiên |
 | --- | --- | --- |
-| G1 — Chuẩn bị và bàn giao nền tảng | Tài liệu đủ triển khai; hợp đồng/fixture thống nhất; bộ nguồn, DOCX chuẩn hóa, cấu trúc V1 và module đầu vào; kịch bản/tác vụ ban đầu | Đức Anh chạy được đầu ra của Dũng; Nam có mẫu và đáp án thử phân tích; Tùng Dương có kịch bản và báo cáo mẫu để thiết kế |
-| G2 — Phát triển song song và tích hợp | Backend, phân tích, prototype/frontend; luồng tải file → xem nguồn → ghi nhận xét; bổ sung tài liệu và phân tích lại | Có luồng chạy trên file thật; đầu ra chưa xử lý được có cảnh báo; các module bàn giao đúng hợp đồng |
-| G3 — Kiểm thử kỹ thuật | Kết quả kiểm thử module, đầu-cuối và chất lượng phân tích; phiên bản ổn định, cấu hình, bộ mẫu và giới hạn | Các ca nghiệm thu trọng tâm đã có kết quả; không còn lỗi chặn tác vụ dùng thử; Dũng chạy lại được phiên bản bàn giao |
-| G4 — Dùng thử và cải tiến | Dũng tổ chức thử nghiệm, thu thập ý kiến và tổng hợp vấn đề; chủ module sửa phần được giao | Có kết quả gắn với phiên bản; các cải tiến được kiểm tra lại, thử lại tác vụ bị ảnh hưởng khi cần; còn hạn chế thì ghi rõ |
-| G5 — Hoàn thiện và bàn giao | Bản chạy cuối, hướng dẫn, dữ liệu mẫu, kết quả kiểm thử/đánh giá, báo cáo, slide và minh chứng đóng góp | Chạy được theo hướng dẫn; nội dung trình bày khớp phiên bản, số liệu và giới hạn công bố |
+| Dũng (đầu vào/adapter), Đức Anh (linker) | `backend/app/document_processing/pdf_to_docx.py`, `parser/legal_structure_parser.py` trong cùng thư mục, `document_adapter.py`, `amendment_linker.py` | Dùng converter/Parser hiện có, bổ sung phần thiếu nếu kiểm thử phát hiện lỗi. Trả tài liệu chuẩn hóa, căn cứ nguồn và đủ đích. Tạo hai bản toàn văn của đơn vị đối chiếu. |
+| Nam | `backend/app/change_analysis/text_diff.py` | Trả đúng các vùng chữ đổi và offset. Đối chiếu khả năng dựng lại đoạn sau từ kết quả diff. |
+| Đức Anh | `backend/app/context/chunk_builder.py`, `source_registry.py`, `context_builder.py` | Chuẩn bị nguồn và ngữ cảnh cơ sở. Ghép đầu ra Text Diff với dữ liệu chỉ mục mô phỏng và đối chiếu ứng viên bằng chứng với nguồn thật. |
+| Nam | `backend/app/change_analysis/semantic_diff.py`, `scorer.py` | Chạy rule trên ca chuẩn, giữ khía cạnh và căn cứ, ghi phần chưa thể chấm. |
+| Tùng Dương | Phần giao diện trong `frontend/` | Hiện trước/sau, trạng thái và bằng chứng từ báo cáo. Xử lý và hiển thị lỗi, cảnh báo và kết quả từng phần do Pipeline/API trả về. |
+| Đức Anh | `backend/app/pipeline.py`, `backend/app/api/compare.py` và nối điểm vào trong `backend/main.py` khi cần | Ghép module, kiểm tra báo cáo và nguồn, trả báo cáo qua API hiện có, giữ chỉ dẫn chưa xử lý cùng lý do. |
+| Đức Anh | Hợp đồng vào/ra của `backend/app/context/lightrag_client.py`, `backend/app/change_analysis/ai_adapter.py` và cấu hình liên quan | Thử điểm nối bằng mock và ghi dữ liệu cần xác nhận khi chuyển sang dịch vụ thật. |
+| Dũng, Đức Anh và các owner | `data/module_handoff_fixtures/` và ca kiểm thử theo [kế hoạch đánh giá](test_evaluation_plan.md) | Dũng chuẩn bị ca và nhãn tham chiếu. Hai bên của từng điểm nối đối chiếu kỳ vọng. Đức Anh điều phối tổng hợp kết quả. |
 
-Sau khi thống nhất hợp đồng và fixture, các thành viên có thể phát triển bằng dữ liệu mẫu trong G1. Dũng tập trung chuẩn bị đầu vào và bàn giao ở G1; trong G2–G3 hỗ trợ phần mình sở hữu; ở G4 chủ trì đánh giá người dùng. Đức Anh điều phối kỹ thuật G2–G3; Tùng Dương và Nam tự kiểm tra phần phụ trách trước tích hợp.
+**Đầu ra khi kết thúc phiên:** Một ca chạy xuyên luồng có báo cáo qua validator và hiển thị được bằng chứng. Ghi rõ bước nào dùng đầu ra thật hoặc mô phỏng. Mỗi owner nộp kết quả chạy, lỗi có thể tái hiện và phần hợp đồng cần làm rõ. Đức Anh điều phối chốt nội dung phiên tiếp theo từ kết quả đó.
 
-### 2.2. Kế hoạch theo tuần
+### Việc chuyển sang phiên sau
 
-**Lưu ý tái lập tiến độ:** bảng là lịch mục tiêu ban đầu. Dũng thu trạng thái thực tế và thời gian owner dự kiến sau khi nhận đề xuất, rồi cập nhật mốc bị ảnh hưởng; chưa chuyển các tuần trước thành “đã xong”.
+Khi chốt một phiên theo [Workflow §6](workflow.md), Dũng và Đức Anh đưa các việc đã thống nhất vào phạm vi phiên tiếp theo. Mỗi việc ghi **đầu ra còn thiếu hoặc lỗi cần xử lý | owner | phụ thuộc hoặc điều kiện bắt đầu | điều kiện hoàn thành | link PR/issue**. Dùng PR hoặc issue gốc để theo dõi cách tái hiện và bản sửa.
 
-Tuần được tính theo lịch học phần. Hạn hoàn thành nội bộ là **cuối tuần 13**, bao gồm sản phẩm, đánh giá người dùng, cải tiến và hồ sơ bàn giao. **Tuần 14 là thời gian dự phòng**, không phải thời điểm bắt đầu đánh giá người dùng; lịch nộp và bảo vệ thực hiện theo thông báo của giảng viên.
+## 2. Phiên 2 — Tích hợp các đầu ra thật
 
-| Tuần | Mốc | Công việc và người phụ trách | Đầu ra cần bàn giao |
-| --- | --- | --- | --- |
-| 6 | G1 | Dũng chốt tài liệu, bộ nguồn mẫu và triển khai chuyển đổi/Reader; Đức Anh chốt hợp đồng và fixture với các bên; Tùng Dương dựng prototype; Nam review nhãn và thử phương pháp phân tích trên fixture | Phạm vi triển khai, schema/fixture và bộ nguồn mẫu có thể dùng để phát triển song song |
-| 7 | G1 | Dũng hoàn thiện chuyển đổi, Reader DOCX, cấu trúc V1 và đáp án ban đầu; Đức Anh kiểm tra tiếp nhận đầu ra; Nam review đáp án; Tùng Dương hoàn thiện prototype theo tác vụ | Cuối tuần 7: module đầu vào và dữ liệu bàn giao được; người nhận chạy được mẫu; prototype được review |
-| 8 | G2 | Đức Anh triển khai chỉ dẫn S, liên kết đích và trước–sau cục bộ; Nam phát triển diff/AI/scorer; Tùng Dương phát triển frontend theo fixture; Dũng sửa lỗi đầu vào khi phát hiện | Đầu ra HCI-07 trên mẫu thật; các module có bản chạy ban đầu và bắt đầu nối luồng tích hợp |
-| 9 | G2 | Đức Anh tích hợp API/Pipeline; Nam bàn giao phân tích có bằng chứng; Tùng Dương nối giao diện với API và trạng thái phiên | Cuối tuần 9: chạy đầu-cuối trên dữ liệu thật, gồm xem nguồn, nhận xét, thiếu tài liệu và phân tích lại |
-| 10 | G3 | Đức Anh chủ trì kiểm thử tích hợp; Nam hoàn tất đánh giá kỹ thuật; từng chủ module sửa lỗi; Dũng nhận bản dùng thử, chốt tác vụ/chỉ số và sắp lịch người dùng | Cuối tuần 10: bản dùng thử ổn định, không còn lỗi chặn tác vụ; Dũng chạy lại được và sẵn sàng tổ chức đánh giá |
-| 11 | G4 | Dũng tổ chức dùng thử, thu thập kết quả tác vụ và phản hồi; các chủ module hỗ trợ xử lý sự cố thuộc phần mình | Kết quả gắn với phiên bản, tổng hợp vấn đề và thứ tự ưu tiên cải tiến |
-| 12 | G4 | Dũng phân công và theo dõi cải tiến; Đức Anh, Tùng Dương, Nam và Dũng sửa module tương ứng; Dũng tổ chức kiểm tra/thử lại tác vụ bị ảnh hưởng | Cuối tuần 12: bản cải tiến được kiểm tra lại, số liệu và minh chứng trước–sau, báo cáo đánh giá người dùng |
-| 13 | G5 | Đức Anh đóng gói bản chạy; Tùng Dương và Nam hoàn tất minh chứng phần mình; Dũng tổng hợp báo cáo, hướng dẫn, dữ liệu, slide; cả nhóm chạy thử và tập trình bày | Cuối tuần 13: bộ sản phẩm bàn giao nội bộ hoàn chỉnh, đã bao gồm kết quả kiểm thử và đánh giá người dùng |
-| 14 | Dự phòng và bàn giao | Cả nhóm xử lý lỗi còn lại theo chủ module, kiểm tra lại bản sửa và nộp/bảo vệ theo lịch học phần | Bản bàn giao chính thức, tài liệu và số liệu thống nhất với phiên bản cuối |
+Phạm vi dự kiến được xác nhận sau phiên 1.
 
-Cuối mỗi tuần, chủ task cập nhật đầu ra, vấn đề và khả năng đáp ứng hạn; Dũng tổng hợp tiến độ, Đức Anh rà soát phụ thuộc kỹ thuật. Nếu có nguy cơ trễ, nhóm ưu tiên luồng và tác vụ nghiệm thu chính, điều chỉnh phần mở rộng và ghi rõ thay đổi. Không đưa bản còn lỗi chặn tác vụ vào đánh giá người dùng chỉ để giữ lịch; mọi điều chỉnh phải bảo vệ thời gian đánh giá, cải tiến và kiểm tra lại trước bàn giao.
+| File hoặc phạm vi | Đầu ra dự kiến |
+| --- | --- |
+| `backend/app/context/lightrag_client.py`, `chunk_builder.py`, `source_registry.py`, `context_builder.py`, `backend/app/config.py` | Nối LightRAG qua HTTP. Kiểm chứng nhập chỉ mục, truy vấn, ánh xạ nguồn, vòng đời dữ liệu và hành vi lỗi theo các quyết định mới từ phiên 1. |
+| `backend/app/change_analysis/ai_adapter.py`, `semantic_diff.py`, `scorer.py` | Hoàn thiện phần phân tích còn thiếu. Nối model khi kết quả phiên 1 cho thấy cần thiết. Kiểm tra output theo schema và rubric được nhóm duyệt. |
+| `backend/app/pipeline.py`, `backend/app/api/compare.py`, `backend/main.py`, `frontend/` | Chạy lại API và giao diện với dữ liệu thật. Kiểm tra luồng chuẩn, thiếu đích và bằng chứng sau cleanup. |
+| `data/module_handoff_fixtures/`, `test/` | Hoàn thiện các bộ ca theo cùng danh sách tại chín điểm nối. Kiểm thử hồi quy các lỗi được ghi nhận trong phiên 1. |
 
-## 3. Danh mục công việc và phụ thuộc
+**Đầu ra dự kiến:** Chạy xuyên luồng với các module thật thuộc phạm vi đã chốt, có bằng chứng kiểm thử và mô tả các giới hạn còn lại.
 
-Mỗi task có một người chủ trì. Phụ thuộc là điều kiện dùng đầu ra thật; fixture là dữ liệu đầu vào–đầu ra mẫu để phát triển trước khi phần phụ thuộc hoàn thành. Hạn trong bảng là thời điểm bàn giao và được bên nhận kiểm tra; công việc có thể bắt đầu sớm trên fixture. HCI-04 bàn giao mẫu Reader từ đầu tuần 7 để HCI-05 triển khai nối tiếp; HCI-09 và HCI-11 tích hợp dần trong tuần 8–9, không đợi đến hạn cuối mới nối module. Tài liệu và dữ liệu được duy trì khi có thay đổi sau lần bàn giao đầu tiên.
+## 3. Phiên 3 — Kiểm thử, đánh giá và bàn giao
 
-| Mã | Công việc | Chủ trì | Đầu ra | Phụ thuộc để hoàn thành | Mốc | Hạn hoàn thành |
-| --- | --- | --- | --- | --- | --- | --- |
-| HCI-01 | Tài liệu và kế hoạch | Dũng | Phạm vi, trách nhiệm và mốc bàn giao rõ | Chủ module review phần liên quan | G1 | Cuối tuần 6 |
-| HCI-02 | Hợp đồng và fixture | Đức Anh | Mẫu dữ liệu đầu vào, phân tích, báo cáo, lỗi và nguồn | HCI-01; các bên cung cấp/nhận cùng thử | G1 | Cuối tuần 6 |
-| HCI-03 | Nguồn dữ liệu và manifest | Dũng | Bộ V1–S/tham chiếu có nguồn và giới hạn | HCI-01 | G1 | Mẫu ban đầu cuối tuần 6; bộ bàn giao cuối tuần 7 |
-| HCI-04 | Chuyển đổi và đọc tài liệu | Dũng | PDF → DOCX; Reader DOCX, nguồn và lỗi chuyển đổi | HCI-02, HCI-03 | G1 | Giữa tuần 7 |
-| HCI-05 | Cấu trúc V1 | Dũng | Điều/Khoản/Điểm, bảng, nội dung ngoài Điều và cảnh báo | HCI-04 | G1 | Cuối tuần 7 |
-| HCI-06 | Nhãn và đáp án ban đầu | Dũng | Nhãn được review, ca đủ/thiếu căn cứ và tác vụ ban đầu | HCI-03; Nam review phân tích, Dũng đối chiếu nguồn | G1 | Cuối tuần 7 |
-| HCI-07 | Chỉ dẫn, liên kết và ngữ cảnh | Đức Anh | Đích, thao tác, trước–sau, ngữ cảnh, tham chiếu/hiệu lực | HCI-02, HCI-04, HCI-05 | G2 | Cuối tuần 8 |
-| HCI-08 | Diff, AI Adapter và Scorer | Nam | Phân tích có bằng chứng, mức tác động và cảnh báo | HCI-02, HCI-07; dùng HCI-06 để kiểm tra | G2 | Giữa tuần 9 |
-| HCI-09 | API, Pipeline và báo cáo | Đức Anh | Luồng backend, nguồn, lỗi và lượt phân tích lại | HCI-02, HCI-04, HCI-05, HCI-07, HCI-08 | G2 | Cuối tuần 9 |
-| HCI-10 | Prototype và luồng thao tác | Tùng Dương | Prototype được review theo tác vụ | HCI-01, HCI-02; kịch bản từ Dũng | G1–G2 | Cuối tuần 7 |
-| HCI-11 | Frontend và quản lý phiên | Tùng Dương | Giao diện, nhận xét, trạng thái sau phân tích lại | HCI-10; HCI-09 để tích hợp thật | G2 | Cuối tuần 9 |
-| HCI-12 | Đánh giá kỹ thuật phân tích | Nam | Công cụ đo, kết quả, lỗi và giới hạn | HCI-06, HCI-08; quy tắc đo đã thống nhất | G2–G3 | Giữa tuần 10 |
-| HCI-13 | Kiểm thử và bản dùng thử | Đức Anh | Kết quả đầu-cuối và gói chạy ổn định | HCI-09, HCI-11, HCI-12; chủ module sửa lỗi | G3 | Cuối tuần 10 |
-| HCI-14 | Dùng thử và thu thập ý kiến | Dũng | Kết quả tác vụ, phản hồi và báo cáo vấn đề | HCI-06, HCI-13; tác vụ cập nhật theo bản chạy | G4 | Cuối tuần 11 |
-| HCI-15 | Cải tiến và kiểm tra lại | Dũng | Danh sách cải tiến được giao, minh chứng sửa và kết quả kiểm tra lại | HCI-14; mỗi chủ module thực hiện phần được giao | G4 | Cuối tuần 12 |
-| HCI-16 | Hoàn thiện sản phẩm bàn giao | Dũng | Bộ sản phẩm, báo cáo và minh chứng đóng góp | HCI-15; từng thành viên bàn giao phần mình, Đức Anh đóng gói bản chạy | G5 | Cuối tuần 13 |
+Phạm vi dự kiến được cập nhật từ kết quả phiên 2. Hoàn thiện các file còn lỗi chặn luồng. Chạy ca tích hợp trong `test/` và đánh giá độc lập theo [kế hoạch kiểm thử](test_evaluation_plan.md). Ghi kết quả chất lượng, lỗi, độ trễ và chi phí nếu có gọi dịch vụ. Cập nhật `README.md` và `docs/schema-integration.md` theo cách chạy thực tế. Hoàn thiện dữ liệu được phép bàn giao, báo cáo đánh giá và slide.
 
-### 3.1. Thứ tự tiếp nhận quyết định và tích hợp tiếp theo
-
-| Đợt | Công việc | Owner chính theo phân công | Đầu ra kiểm tra |
-| --- | --- | --- | --- |
-| A — điểm bàn giao | D-01/D-02: contract và nguồn; rà dữ liệu mẫu D-10 | Đức Anh / Dũng theo từng quyết định | Một fixture HCI dùng được cho Nam và Tùng Dương; liệt kê delta với code nền |
-| B — phần có thể thử riêng | D-03/D-04: linker/context/Server; D-05/D-06: AI và mapping/rubric; D-07: UI | Đức Anh / Nam / Tùng Dương theo module | Mỗi owner có mẫu thật hoặc fixture, giới hạn và kết quả tự kiểm tra; không cần đợi mọi module xong |
-| C — tích hợp phiên | D-08/D-09/D-13: nhận xét sau phân tích lại, giới hạn và môi trường | Tùng Dương / Đức Anh | Hai lượt report, giữ/đánh dấu lại nhận xét đúng; lỗi và lifecycle được kiểm tra |
-| D — chốt phép đo trước đánh giá | D-11/D-12: kỹ thuật và người dùng | Nam / Dũng | Kế hoạch đo, đáp án/nguồn, phiên bản và quy tắc đã cố định trước thu kết quả |
-
-Một hàng có nhiều module, không có nghĩa một issue có hai owner. Mỗi D-ID trong register có đúng một người tổng hợp đề xuất và người review xác định. Chưa tự đặt deadline ngày cụ thể; hạn phụ thuộc được ghi để nhóm yêu cầu owner ước lượng và gắn lịch học. Không cần chốt mọi tham số nội bộ trước khi làm bằng fixture.
-
-## 4. Phối hợp và bàn giao
-
-| Điểm phối hợp | Thành viên | Quyết định cần thống nhất | Minh chứng bàn giao |
-| --- | --- | --- | --- |
-| DOCX và vị trí nguồn | Dũng + Đức Anh | Hợp đồng đầu ra Reader; cách giữ đoạn/bảng, nhận diện file gốc/file chuyển đổi và truy nguồn; khi nào phải dừng vì chuyển đổi không bảo đảm | Cả PDF và DOCX đi qua luồng DOCX hiện có; nguồn block/quote đúng, ghi rõ khi chưa mapping PDF; lỗi không trở thành nội dung rỗng thành công |
-| Cấu trúc V1 và chỉ dẫn S | Dũng + Đức Anh | Dũng tách V1; Đức Anh xử lý chỉ dẫn S. Thống nhất cấu trúc lồng nhau, nhãn đặc biệt, phần chưa rõ và truy xuất nội dung | Một mẫu cấu trúc V1 cùng chỉ dẫn sửa đổi được Đức Anh dùng xác định đúng đích |
-| Đầu vào ngữ nghĩa | Đức Anh + Nam | Phạm vi trước–sau, nội dung trích/suy ra, ngữ cảnh cần dùng, tham chiếu còn thiếu và cảnh báo | Nam chạy được fixture và mẫu thật; không phải suy đoán trường còn thiếu |
-| Nhãn và đáp án | Dũng + Nam | Ranh giới nhận định/khía cạnh, bằng chứng, rubric và cách ghi chưa đủ căn cứ; ánh xạ nhãn sang kết quả trình bày | Bộ nhãn có review, ca ranh giới và đáp án phù hợp bộ căn cứ được cung cấp |
-| Prototype và tác vụ | Dũng + Tùng Dương | Luồng kiểm chứng, nội dung cần đọc, cách mở nguồn và thao tác nhận xét | Prototype thực hiện được kịch bản; vấn đề review có người sửa |
-| Báo cáo và trạng thái phiên | Đức Anh + Tùng Dương | Fixture API, truy nguồn, lỗi, định danh mục và đối chiếu lượt chạy; giữ nhận xét khi kết quả thay đổi/không ghép được | Ca thành công, thiếu tài liệu, phân tích lại và thất bại hiển thị đúng; không gắn nhầm nhận xét |
-| Nội dung phân tích trên giao diện | Nam + Tùng Dương | Cách trình bày nhiều khía cạnh, câu giải thích, bằng chứng và phần chưa rõ | Một kết quả có nhiều khía cạnh/cảnh báo được hiển thị đủ, truy đúng nguồn |
-| Bản dùng thử | Đức Anh + Nam + Tùng Dương bàn giao cho Dũng | Phiên bản, cấu hình, bộ mẫu, kết quả kỹ thuật và giới hạn; tách đầu ra thử nghiệm cố định với kết quả chạy thực tế | Dũng chạy lại được tác vụ; phiên bản và dữ liệu dùng thử được ghi nhận |
-
-Chốt hợp đồng ở HCI-02 phải bao gồm cách chuẩn hóa DOCX, ranh giới xử lý cấu trúc và cách đưa nhãn phân tích lên giao diện. Các mô tả chưa thống nhất trong SRS, Architecture hoặc hướng dẫn dữ liệu phải được cập nhật trước khi tích hợp task liên quan; hợp đồng đã chốt và fixture là căn cứ thực hiện.
-
-Thống nhất cụ thể cách truy bằng chứng từ PDF gốc sau chuyển đổi; không gán số trang PDF theo thứ tự đoạn DOCX hoặc sao chép vị trí giữa hai định dạng khi chưa xác minh. Phương pháp hiện thực thuộc chủ module, các trường dữ liệu chung do bên giao/bên nhận chốt với Đức Anh.
-
-## 5. Điều kiện hoàn thành và quản lý thay đổi
-
-**Hoàn thành task:** có đầu ra theo bảng công việc, ví dụ/kiểm tra phù hợp, hướng dẫn sử dụng và giới hạn; người nhận chạy được phần được bàn giao. Mỗi người tự viết mô tả, lệnh chạy và kết quả kiểm thử của module mình. Dũng tổng hợp tài liệu chung.
-
-**Sẵn sàng dùng thử:** có bản chạy gắn commit/phiên bản, kết quả các ca nghiệm thu trọng tâm, dữ liệu/đáp án đã review và giới hạn đã biết; không còn lỗi chặn tác vụ. Phương pháp, chỉ số và quy mô thử nghiệm được xác định trong kế hoạch đánh giá trước khi thu thập kết quả. Nhận xét người dùng được lưu riêng với nhãn tham chiếu và kết quả AI.
-
-**Xử lý vấn đề:** người phát hiện ghi đầu vào, phiên bản, kết quả mong đợi/thực tế và minh chứng. Dũng phân loại, theo dõi các vấn đề từ dùng thử; chủ module sửa lỗi của mình. Lỗi liên module do Đức Anh phối hợp xác định ranh giới; thay đổi thiết kế do Tùng Dương thực hiện, lỗi phân tích do Nam xử lý, lỗi nguồn/chuyển đổi/cấu trúc V1 do Dũng xử lý. Bản sửa được kiểm tra lại theo tác động, kết quả đánh giá ghi rõ phiên bản trước/sau.
-
-**Thay đổi hợp đồng hoặc kế hoạch:** bên cung cấp và bên nhận thử trên một mẫu cụ thể, ghi quyết định, người sửa và ảnh hưởng. Đức Anh quản lý schema/fixture chung; Dũng cập nhật phạm vi, phân công và mốc với người liên quan. Đổi nội bộ do chủ module quyết định và kiểm tra; đổi giao diện bàn giao phải cập nhật tài liệu và bên nhận trước tích hợp. Quy tắc nhãn thay đổi phải rà lại mẫu chịu ảnh hưởng cùng Nam.
-
-**Bàn giao cuối:** mã nguồn, cấu hình/dependency, hướng dẫn chạy, dữ liệu mẫu có nguồn, tài liệu thiết kế, kết quả kiểm thử/đánh giá, báo cáo, slide và minh chứng đóng góp thực tế. Đức Anh chuẩn bị gói chạy; Tùng Dương bàn giao thiết kế và minh chứng giao diện; Nam bàn giao phương pháp/kết quả kỹ thuật; Dũng tổng hợp dữ liệu, nghiên cứu người dùng và báo cáo chung. Bộ sản phẩm phải chạy lại được và truy được số liệu về đúng phiên bản.
-
-## 6. Tài liệu còn phải hoàn thiện sau đề xuất owner
-
-`api-contract.md` và `development-guide.md` do Dũng + Đức Anh cùng biên soạn theo D-01/D-13; hai file này chưa có trong gói. [test_evaluation_plan.md](test_evaluation_plan.md) đã có bản khung, đang hoàn thiện; Dũng tổng hợp kế hoạch và báo cáo đánh giá chung, Nam phụ trách kỹ thuật theo D-11, Dũng phụ trách người dùng theo D-12. Đức Anh chủ trì kiểm thử tích hợp. Không coi bản khung là kế hoạch hoặc kết quả đánh giá đã hoàn tất.
-
-Lựa chọn đã chốt được ghi tại register cùng bằng chứng, người review và tài liệu đã cập nhật. Bản đổi contract phải có schema + fixture + bên nhận; thay mô hình không tự làm thay đổi nhãn gold hoặc dữ liệu nghiên cứu người dùng.
+**Đầu ra kết thúc:** Một phiên bản chạy lại được với dữ liệu mẫu, kết quả kiểm thử gắn commit, giới hạn được công bố và minh chứng để nhóm bảo vệ.

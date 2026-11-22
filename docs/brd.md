@@ -1,56 +1,75 @@
-# BRD — Hệ thống hỗ trợ đối chiếu thay đổi văn bản pháp luật
+# BRD — Hệ thống phân tích thay đổi văn bản pháp lý
+
+**HCI, Nhóm 6 — cập nhật 22/11/2026.** Phạm vi chỉ S, kho dân sự, nhiều đích và tác động gián tiếp là thiết kế mục tiêu. Hiện trạng mã và kết quả kiểm tra HCI được ghi tại [nền HCI](common-baseline.md). Phân công theo [module](module.md). Công việc nghiên cứu ngắn hạn được theo dõi trong tài liệu tiến độ của nhóm.
+
 
 **Dự án:** Legal Document Change Detection
-**Học phần và nhóm:** 2627I_INT2041_1 Nhóm 6
-**Thành viên:** Bạch Công Dũng, Dương Đức Anh, Lê Tùng Dương, Vương Thành Nam
-**Phiên bản tài liệu:** HCI 1.1.0
-**Phạm vi phiên bản đầu:** Phân tích văn bản quy phạm pháp luật tiếng Việt ban đầu (V1) và văn bản sửa đổi (S), kèm tài liệu tham chiếu do người dùng cung cấp khi cần.
+**Nhóm:** Nhóm 6
+**Phiên bản tài liệu:** 1.3.0
+**Phạm vi phiên bản đầu:** Người dùng nộp một văn bản sửa đổi (S). Hệ thống truy xuất văn bản bị sửa và phân tích thay đổi trực tiếp, tác động gián tiếp trong kho văn bản quy phạm pháp luật tiếng Việt thuộc lĩnh vực dân sự.
+
+**Trạng thái ngày 20/11/2026:** phạm vi chỉ S/kho dân sự là mục tiêu phát triển. Demo HCI vẫn nhận V1 + S, chưa có truy xuất đích hoặc tác động gián tiếp thật. Tài liệu không xác nhận các chức năng này đã hoàn thành.
 
 ## 1. Mục đích tài liệu
 
-BRD mô tả vấn đề nghiệp vụ, người sử dụng, giá trị mong đợi, phạm vi, yêu cầu nghiệp vụ và tiêu chí đánh giá của hệ thống. Tài liệu tập trung vào sinh viên Luật cần hiểu và kiểm chứng thay đổi phục vụ học tập hoặc nghiên cứu.
+BRD mô tả mục tiêu sản phẩm. Nền DOCX chuẩn bị merge hỗ trợ dạng sửa hẹp theo [common-baseline.md](common-baseline.md); thêm/bãi bỏ, nhiều đích, LightRAG/model thật và đánh giá chất lượng tiếp tục sau merge. Không coi demo đã hoàn thành toàn bộ BRD.
+
+BRD mô tả vấn đề nghiệp vụ, người sử dụng, giá trị mong đợi, phạm vi, yêu cầu nghiệp vụ và tiêu chí đánh giá của hệ thống. Tài liệu tập trung vào nhu cầu của luật sư, người làm công việc pháp chế và sinh viên luật.
 
 BRD là căn cứ để nhóm xây dựng yêu cầu phần mềm trong SRS và lựa chọn thiết kế trong Architecture. Các cấu trúc dữ liệu, endpoint API, thư viện, mô hình và thuật toán được quy định trong các tài liệu kỹ thuật tương ứng.
 
-Căn cứ người dùng ban đầu là kết quả trao đổi với hai sinh viên vừa vào năm 3 và tra cứu trên mạng xã hội, được tổng hợp trong [Nghiên cứu người dùng](user-research.md). Người dùng mô tả cách đọc S, quay lại phần liên quan trong V1, đối chiếu trước–sau và tìm tài liệu dẫn chiếu theo tên/số hiệu. Họ dùng kết quả tự phân tích để đối chiếu AI nhưng chưa nêu tiêu chí kiểm chứng cụ thể. Các chức năng kiểm chứng, trạng thái rà soát và cảnh báo dưới đây là đề xuất của nhóm theo định hướng học phần; hiệu quả cần được đánh giá, không mặc định đã được hai người xác nhận.
+Các nhu cầu người dùng và tiêu chí phân loại dưới đây là đề xuất của dự án, cần được rà soát qua trao đổi với giảng viên hoặc người có chuyên môn pháp luật. Tài liệu không khẳng định nhóm đã thực hiện khảo sát người dùng thực tế.
 
 ## 2. Bối cảnh và vấn đề nghiệp vụ
 
-Khi nghiên cứu hoặc thực hiện công việc pháp lý, người dùng cần đối chiếu yêu cầu trong văn bản sửa đổi với nội dung tương ứng của văn bản ban đầu. Họ cần biết những quy định nào được thêm, xóa hoặc sửa; sự thay đổi có ảnh hưởng đến nội dung quy định hay chỉ là thay đổi cách diễn đạt; và những nội dung nào cần được kiểm tra trước.
+Khi một văn bản sửa đổi (S) xuất hiện, người dùng cần biết văn bản và phiên bản nào bị sửa, quy định nào thay đổi, nội dung sau sửa đổi có ý nghĩa gì và những quy định nào trong các văn bản khác có thể chịu tác động.
 
-Ngoài cách làm đã ghi nhận, nhóm xác định các vấn đề thiết kế cần xử lý và kiểm tra qua thử nghiệm:
+Việc đọc và so sánh thủ công có thể gặp các khó khăn sau:
 
-- Văn bản có thể dài và nhiều nội dung liên quan; cần hỗ trợ truy lại nguồn và xem ngữ cảnh để kiểm tra nhận định.
+- Văn bản dài, nhiều Điều và nhiều nội dung tương tự, khiến người dùng dễ bỏ sót khác biệt nhỏ.
 - Một thay đổi ngắn như từ phủ định, đối tượng áp dụng, thời hạn hoặc điều kiện có thể làm thay đổi đáng kể nội dung quy định.
-- Hệ thống phải theo đúng chỉ dẫn sửa đổi trong S, thể hiện phần nội dung thay đổi và phân biệt trường hợp chỉ đổi cách diễn đạt hoặc số thứ tự.
+- Thay đổi định dạng, cách diễn đạt hoặc đánh lại số Điều có thể tạo nhiều khác biệt bề mặt, làm mất thời gian rà soát.
 - Chỉ liệt kê phần chữ thay đổi chưa đủ để người dùng hiểu nội dung pháp lý nào cần chú ý.
 - Người dùng cần kiểm chứng kết quả bằng đoạn trích cũ, đoạn trích mới và vị trí trong tài liệu gốc.
-- Một số thay đổi cần kiến thức hoặc văn bản liên quan ngoài hai tài liệu đầu vào để kết luận; hệ thống phải thể hiện sự chưa chắc chắn.
+- Một văn bản khác (B) có thể dựa vào quy định bị sửa dù S và văn bản bị sửa (V1) đều không nhắc tên B. Người dùng cần tìm được B và kiểm tra căn cứ của mối liên hệ.
 
-**Ví dụ giả định:** Nếu thời hạn đổi từ “30 ngày” thành “15 ngày”, người dùng cần nhận biết thời hạn được rút ngắn, xác định hoạt động, chủ thể, cách tính và điều kiện liên quan từ nguồn. Không suy ra dụng ý của cơ quan ban hành hoặc toàn bộ tác động pháp lý chỉ từ việc thay con số.
+**Ví dụ giả định:** S giảm một thời hạn trong V1 từ 30 ngày xuống 15 ngày. Người dùng cần xác định chủ thể, công việc và mốc tính thời hạn. Nếu một quy định của B dựa vào thời hạn này, người dùng cần biết điều khoản nào của B có thể chịu tác động và căn cứ nào cho thấy mối liên hệ.
 
 Hệ thống được xây dựng để hỗ trợ tìm kiếm, đối chiếu và ưu tiên rà soát các thay đổi. Người dùng tiếp tục chịu trách nhiệm kiểm tra văn bản nguồn và đưa ra kết luận cho công việc của mình.
 
 ## 3. Người dùng và các bên liên quan
 
-### 3.1. Sinh viên Luật — nhóm người dùng chính
+Sinh viên luật và người nghiên cứu là nhóm ưu tiên; luật sư và người làm pháp chế, gồm pháp vụ doanh nghiệp, là nhóm bổ sung. Khi trực tiếp gửi S, bổ sung tài liệu và xem báo cáo, họ cùng đóng vai trò actor chính của Use Case. Mức ưu tiên nhóm người dùng được ghi theo mục tiêu sản phẩm.
 
-**Công việc cần hỗ trợ:** Đối chiếu văn bản gốc và chỉ dẫn sửa đổi để giải thích thay đổi phục vụ bài tập hoặc nghiên cứu, đồng thời kiểm tra nhận định bằng nguồn.
+### 3.1. Luật sư và người làm pháp chế — nhóm sử dụng bổ sung
 
-**Nhu cầu có căn cứ ban đầu từ trao đổi:**
+**Công việc cần hỗ trợ:** Rà soát sự thay đổi của quy định trước khi cập nhật tài liệu nghiên cứu, quy trình nội bộ hoặc chuẩn bị nội dung tư vấn.
 
-1. Đọc S, tìm phần V1 bị tác động và xem nội dung trước–sau để hình thành nhận xét.
-2. Nắm mục đích chính của V1, tập trung phần sửa và đọc thêm ngữ cảnh liên quan khi cần.
-3. Tìm văn bản dẫn chiếu theo tên/số hiệu và đọc phần liên quan.
-4. Đối chiếu gợi ý AI với kết quả tự phân tích.
+**Nhu cầu cụ thể:**
 
-**Nhu cầu hỗ trợ do nhóm đề xuất:** Truy cập bằng chứng thuận tiện; biết căn cứ còn thiếu; ghi nhận đồng ý, không đồng ý hoặc chưa đủ căn cứ; theo dõi phần đã kiểm tra và kiểm tra lại khi kết quả cập nhật. Các đề xuất này cần được đánh giá trong thiết kế tương tác và thử nghiệm usability.
+1. Từ S, tìm văn bản, phiên bản và các điều, khoản, điểm bị sửa trong kho.
+2. Nhận biết thay đổi về chủ thể, phạm vi áp dụng, quyền, nghĩa vụ, điều kiện, thủ tục, thời hạn và chế tài dựa trên văn bản gốc, văn bản sửa đổi và nguồn liên quan.
+3. Đọc nội dung cũ và mới cạnh nhau để xác minh nhận định của hệ thống.
+4. Có lý do cho việc phân loại và mức độ ưu tiên rà soát.
+5. Biết những trường hợp liên kết yêu cầu sửa đổi hoặc diễn giải thay đổi còn chưa chắc chắn.
+6. Biết phần nào chưa được xử lý và phạm vi kho đã được phân tích.
+7. Tìm quy định trong văn bản khác có thể chịu tác động và kiểm tra căn cứ liên hệ với thay đổi trực tiếp.
 
-**Giá trị mong đợi:** Người dùng mô tả đúng thay đổi cụ thể, chỉ ra bằng chứng, nhận ra giới hạn và quản lý được việc rà soát trong phiên. Chưa khẳng định giảm thời gian hoặc giảm lỗi trước khi đo.
+**Giá trị mong đợi:** Giảm công sức tìm khác biệt và giúp tập trung vào thay đổi đáng chú ý. Mức độ tiết kiệm thời gian cần được đo bằng thử nghiệm, không được mặc định coi là đã đạt.
 
-### 3.2. Luật sư và người làm pháp chế — nhóm tham vấn nếu tiếp cận được
+### 3.2. Sinh viên luật và người nghiên cứu — nhóm sử dụng ưu tiên
 
-Nhóm có thể tham vấn người có chuyên môn về ví dụ, cách diễn giải, bằng chứng và nhãn mức tác động. Họ không phải nhóm người dùng chính của thử nghiệm HCI trong phiên bản này. Việc trao đổi với hai sinh viên không thay thế việc review chuyên môn pháp luật và không được coi là đại diện cho nhu cầu hành nghề.
+**Công việc cần hỗ trợ:** Từ S, học và nghiên cứu thay đổi qua nội dung trước–sau và các quy định liên quan.
+
+**Nhu cầu cụ thể:**
+
+1. Nhìn thấy phần thêm, xóa hoặc sửa một cách rõ ràng.
+2. Hiểu vì sao một thay đổi có thể ảnh hưởng đến nội dung quy định.
+3. Phân biệt thay đổi cách diễn đạt với thay đổi quyền, nghĩa vụ hoặc điều kiện áp dụng.
+4. Có đoạn trích và vị trí nguồn để tự đọc lại, thảo luận và kiểm chứng.
+5. Nhận biết giới hạn của kết quả, đặc biệt khi cần đọc định nghĩa, dẫn chiếu hoặc tài liệu khác.
+
+**Giá trị mong đợi:** Hỗ trợ đọc có định hướng và hình thành nhận xét có căn cứ. Hệ thống không thay thế hoạt động học, đọc văn bản và phân tích của sinh viên.
 
 ### 3.3. Các bên liên quan khác
 
@@ -65,88 +84,103 @@ Việc liệt kê vai trò không có nghĩa dự án đã tuyển được ngư
 
 ## 4. Mục tiêu nghiệp vụ
 
-| Mã | Mục tiêu | Biểu hiện mong đợi ở người dùng |
+| Mã | Mục tiêu | Biểu hiện mong đợi |
 | --- | --- | --- |
-| BG-01 | Xác định nội dung bị sửa | Tìm đúng phần liên quan trong V1 từ chỉ dẫn trong S và phân biệt thêm, bãi bỏ, sửa nội dung. |
-| BG-02 | Hiểu thay đổi cụ thể | Diễn đạt được nội dung trước–sau thuộc các nhóm ưu tiên, giữ đúng chủ thể, điều kiện và ngoại lệ có liên quan. |
-| BG-03 | Kiểm chứng gợi ý AI | Chỉ ra nguồn hỗ trợ hoặc mâu thuẫn với nhận định; không chỉ lặp lại nhãn của AI. |
-| BG-04 | Nhận biết giới hạn | Phân biệt liên kết không chắc chắn, thiếu căn cứ và phần chưa xử lý; biết khi nào chưa thể kết luận. |
-| BG-05 | Ghi nhận và tiếp tục rà soát | Biết mục nào đã kiểm tra, nhận xét của mình là gì và mục nào cần xem lại trong phiên. |
-| BG-06 | Bổ sung căn cứ và kiểm tra lại | Hiểu tài liệu cần bổ sung, cung cấp được tài liệu phù hợp và nhận biết kết quả thay đổi sau phân tích lại. |
-| BG-07 | Ưu tiên kiểm tra có căn cứ | Hiểu mức tác động và lý do khi có, sử dụng để chọn mục xem trước mà không coi đó là kết luận pháp lý cuối cùng. |
+| BG-01 | Tự tìm văn bản và quy định bị sửa | Từ S, người dùng nhận được danh sách văn bản đích, phiên bản được dùng và quy định bị sửa trong phạm vi kho. |
+| BG-02 | Hỗ trợ nhận biết thay đổi nội dung quy định | Báo cáo mô tả nội dung thay đổi và phân biệt với khác biệt về cách diễn đạt khi có đủ căn cứ. |
+| BG-03 | Hỗ trợ ưu tiên rà soát | Những thay đổi được đánh giá quan trọng có mức độ và lý do để người dùng xem trước. |
+| BG-04 | Cho phép kiểm chứng | Người dùng đối chiếu được nhận định với nội dung cũ, mới và vị trí nguồn. |
+| BG-05 | Hỗ trợ học tập và nghiên cứu | Sinh viên có thể giải thích thay đổi bằng bằng chứng, thay vì chỉ đọc một nhãn kết luận. |
+| BG-06 | Thể hiện giới hạn rõ ràng | Báo cáo chỉ rõ nội dung cần kiểm tra, phạm vi kho, phần chưa xử lý và lỗi ảnh hưởng đến kết quả. |
+| BG-07 | Hỗ trợ rà soát tác động gián tiếp | Người dùng thấy văn bản và quy định có thể chịu tác động, thay đổi trực tiếp liên quan và căn cứ để kiểm chứng. |
 
 ## 5. Phạm vi nghiệp vụ
 
 ### 5.1. Đầu vào
 
-- Bản đầu xử lý một cặp V1–S mỗi lượt; chưa tự động phân tích toàn bộ chuỗi nhiều văn bản sửa đổi theo thời gian. V1 cần phản ánh nội dung trước lần sửa đang xét; thiếu sửa đổi trước có liên quan phải được ghi rõ.
-- Hai tài liệu chính: văn bản ban đầu (V1) và văn bản sửa đổi (S) có nội dung tác động đến V1. S không phải bản đầy đủ sau sửa đổi (V2).
-- DOCX là định dạng chính; hỗ trợ PDF có lớp văn bản đọc được. Không hỗ trợ PDF scan/ảnh.
-- Người dùng cung cấp tài liệu tham chiếu bổ sung khi việc phân tích cần nội dung ngoài V1 và S; có thể tải ngay từ đầu hoặc bổ sung theo yêu cầu cụ thể của hệ thống.
-- Người dùng chịu trách nhiệm chọn đúng văn bản gốc, văn bản sửa đổi, phiên bản tài liệu tham chiếu và kiểm tra nguồn tài liệu.
-- Hệ thống kiểm tra khả năng đọc và sự phù hợp của tài liệu với nội dung được dẫn chiếu trong giới hạn hỗ trợ; không mặc định xác minh được tính chính thức, tính đầy đủ hoặc hiệu lực pháp lý thực tế.
+- Người dùng nộp một văn bản sửa đổi (S). Có thể kèm bối cảnh hoặc vấn đề cần quan tâm.
+- DOCX là định dạng chính. Hỗ trợ PDF có lớp văn bản đọc được.
+- Hệ thống tự tìm một hoặc nhiều văn bản bị sửa, phiên bản làm căn cứ trước sửa đổi (V1) cho từng thay đổi và tài liệu liên quan trong kho đã chuẩn bị. S cung cấp chỉ dẫn sửa đổi, còn V1 cung cấp nội dung trước sửa đổi.
+- Kho gồm văn bản quy phạm pháp luật tiếng Việt thuộc lĩnh vực dân sự do nhóm chuẩn bị. Danh mục văn bản, nguồn và các phiên bản được lập chỉ mục cần được chốt trong kế hoạch dữ liệu. Báo cáo nêu phần vượt phạm vi kho hoặc thiếu phiên bản; phiên bản đầu chưa tự tìm thêm trên Internet. Chọn V1 phải có căn cứ về phiên bản và thời điểm; khi mơ hồ giữ ứng viên, không tự chọn bản mới nhất.
+- Khi thiếu V1 hoặc phần nguồn cần thiết sau truy xuất, hệ thống chỉ rõ văn bản, phiên bản và điều khoản cần bổ sung, rồi cho người dùng chọn “Bổ sung tài liệu” hoặc “Hiện tại không có tài liệu”.
+- Nếu chưa thể bổ sung, hệ thống tiếp tục phân tích chỉ dẫn trong S và các nguồn hợp lệ sẵn có. Nhận định được gắn căn cứ và giới hạn tương ứng; nội dung trước sửa đổi chưa xác định được ghi rõ. Các đích khác vẫn giữ kết quả.
+- Tài liệu trong lĩnh vực dân sự nhưng chưa có trong kho được xử lý như thiếu nguồn. Kiểm tra phạm vi hỗ trợ có căn cứ riêng; khi chưa chắc chắn, hệ thống yêu cầu làm rõ. Với S nhiều lĩnh vực, hệ thống ghi lý do bỏ qua từng đích ngoài phạm vi và tiếp tục phần dân sự đủ căn cứ.
 
 ### 5.2. Đơn vị đối chiếu
 
-Đơn vị phân tích là từng yêu cầu sửa đổi, bổ sung hoặc bãi bỏ trong S, liên kết với đúng văn bản và Điều/Khoản/Điểm hoặc cụm từ bị tác động trong V1. Số Điều trong S không phải số Điều đích trong V1.
+Đơn vị phân tích trực tiếp là từng yêu cầu sửa đổi, bổ sung hoặc bãi bỏ trong S, liên kết với phiên bản và Điều/Khoản/Điểm hoặc cụm từ đích. Số Điều trong S có thể khác số Điều đích. Đơn vị ghi nhận tác động gián tiếp là quy định có thể chịu tác động và thay đổi trực tiếp làm phát sinh nhận định đó.
 
-Một Điều của S có thể chứa nhiều yêu cầu; một Điều của V1 có thể chịu nhiều thay đổi. Không ghép toàn bộ hai văn bản theo quy tắc một–một và không xem phần V1 không được nhắc đến trong S là bị xóa.
+Một Điều của S có thể chứa nhiều yêu cầu, tác động đến một hoặc nhiều văn bản. Một Điều của V1 có thể chịu nhiều thay đổi. Chỉ xác định bổ sung, sửa đổi hoặc bãi bỏ dựa trên chỉ dẫn và bằng chứng liên quan.
 
-Phân tích tập trung vào phần thay đổi, sử dụng thông tin tổng quát của V1 về phạm vi, đối tượng và mục đích điều chỉnh cùng ngữ cảnh liên quan như định nghĩa, điều kiện, ngoại lệ. Không bắt buộc dựng V2 đầy đủ hoặc phân tích ngữ nghĩa từng đoạn không thay đổi.
+Hệ thống dựng nội dung sau sửa đổi ở cấp quy định bị tác động, dùng phạm vi, đối tượng, định nghĩa, điều kiện và ngoại lệ liên quan để diễn giải. Việc hợp nhất toàn văn nằm ngoài phạm vi phiên bản đầu.
 
 ### 5.3. Đầu ra
 
-- Danh sách yêu cầu sửa đổi, bổ sung, bãi bỏ và vị trí bị tác động trong V1.
-- Nội dung trước thay đổi, nội dung hoặc chỉ dẫn sửa đổi trong S và phần chữ khác biệt khi xác định được.
-- Nhận định về thay đổi nội dung quy định, nhóm nội dung thay đổi, mức độ và lý do khi có đủ căn cứ.
-- Bằng chứng và vị trí nguồn trong V1, S và tài liệu tham chiếu được sử dụng.
-- Thông tin hiệu lực và chuyển tiếp được nêu trong S, kèm phạm vi áp dụng và căn cứ; phần chưa xác định phải được đánh dấu.
-- Danh sách tài liệu/nội dung tham chiếu còn thiếu, cảnh báo và lỗi xử lý.
-- Nhận xét, ghi chú và trạng thái rà soát do người dùng ghi nhận trong phiên, tách riêng khỏi đầu ra AI.
+- Danh sách văn bản đích, phiên bản V1 được dùng và căn cứ xác định.
+- Danh sách yêu cầu sửa đổi, bổ sung hoặc bãi bỏ, vị trí đích, nội dung trước–sau và phần chữ khác biệt khi xác định được.
+- Nhận định về thay đổi cách diễn đạt hoặc thay đổi ý nghĩa, nhóm nội dung, mức độ quan trọng và lý do theo tiêu chí áp dụng cho lĩnh vực dân sự.
+- Danh sách quy định trong các văn bản khác có thể chịu tác động, thay đổi trực tiếp liên quan, giải thích tác động có thể xảy ra và căn cứ cho mối liên hệ.
+- Trích dẫn nguồn, phân biệt nguyên văn với nội dung được dựng hoặc suy ra. Thể hiện thông tin hiệu lực, chuyển tiếp và phạm vi áp dụng khi có căn cứ.
+- Phạm vi đã rà soát, phiên bản hoặc tài liệu còn thiếu, nhận định cần kiểm chứng và lỗi xử lý.
+
+Có quan hệ với V1 không đồng nghĩa B chịu tác động; nhận định phải giải thích đúng phần quy định B phụ thuộc vào phần V1 bị sửa. Không tự kết luận B bị sửa hoặc hết hiệu lực. Một đích chưa xử lý được không làm mất kết quả hữu ích của các đích khác.
 
 ### 5.4. Phạm vi bao phủ
 
-Hệ thống xử lý những yêu cầu trong S tác động đến V1 được chọn, cùng thông tin hiệu lực và chuyển tiếp liên quan. Yêu cầu sửa văn bản khác phải được phân biệt và ghi rõ nằm ngoài đối tượng phân tích.
+Hệ thống rà soát các văn bản S trực tiếp sửa và tìm tác động gián tiếp trên kho dân sự cùng nguồn bổ sung được kiểm tra hợp lệ. Với văn bản hoặc phiên bản đích ngoài kho, báo cáo nêu yêu cầu sửa đổi đã nhận diện và phần chưa phân tích được. Kết quả tác động gián tiếp phụ thuộc vào dữ liệu và căn cứ truy xuất được.
 
-Phần mở đầu, chữ ký và phụ lục không được so sánh toàn diện trong phiên bản đầu. Nội dung đọc được ở các phần này, bao gồm bảng được dẫn chiếu, có thể làm ngữ cảnh hoặc bằng chứng. Nội dung không xử lý được phải được báo rõ; không mặc định suy ra toàn bộ văn bản không thay đổi.
+Phần mở đầu, chữ ký và phụ lục có thể cung cấp ngữ cảnh hoặc bằng chứng khi đọc được. Báo cáo nêu rõ phần liên quan chưa xử lý được.
 
 ## 6. Tình huống sử dụng
 
-### 6.1. UC-01 — Sinh viên tìm hiểu một thay đổi
+### 6.1. UC-01 — Luật sư rà soát văn bản sửa đổi
 
-**Mục đích:** Hiểu nội dung trước–sau và xác định bằng chứng liên quan.
+**Mục đích:** Xác định quy định thay đổi và các văn bản cần rà soát thêm.
 
-**Điều kiện:** Người dùng có V1 và S phù hợp, đọc được.
+1. Người dùng nộp S và có thể kèm bối cảnh.
+2. Hệ thống đọc các yêu cầu sửa đổi, tìm văn bản đích và phiên bản V1 trong kho dân sự, rồi xác định vị trí bị sửa.
+3. Hệ thống dựng nội dung trước–sau, phân tích ý nghĩa và mức độ quan trọng của thay đổi.
+4. Hệ thống tìm quy định ở văn bản khác có thể chịu tác động và giải thích mối liên hệ bằng trích dẫn.
+5. Người dùng xem các thay đổi ưu tiên, tác động có thể có, bằng chứng và phần cần rà soát thêm.
 
-1. Người dùng chọn V1, S và tài liệu tham chiếu nếu có.
-2. Hệ thống trình bày thông tin tổng quát, danh sách chỉ dẫn tác động đến V1 và phạm vi xử lý.
-3. Người dùng chọn một thay đổi, xem nội dung gốc, chỉ dẫn/nội dung sửa đổi và ngữ cảnh liên quan.
-4. Người dùng đọc gợi ý phân tích, mở nguồn và diễn đạt thay đổi bằng lời của mình.
+**Ngoại lệ:** Khi phiên bản chưa xác định được, tài liệu nằm ngoài kho hoặc một phần xử lý thất bại, báo cáo nêu rõ phần bị ảnh hưởng và hiển thị các kết quả còn đủ căn cứ.
 
-**Kết quả mong đợi:** Xác định đúng nội dung thay đổi và dẫn được nguồn. Nếu xử lý một phần thì biết phần còn thiếu; nếu thất bại thì có lý do rõ, không nhận danh sách rỗng như kết luận không thay đổi.
+### 6.2. UC-02 — Sinh viên nghiên cứu sự thay đổi
 
-### 6.2. UC-02 — Kiểm chứng AI và ghi nhận nhận xét
+**Mục đích:** Hiểu một quy định đã thay đổi như thế nào và học cách lập luận từ bằng chứng.
 
-**Mục đích:** Đối chiếu gợi ý với nguồn và quản lý kết quả rà soát trong phiên.
+**Luồng chính:**
 
-1. Người dùng xem nhận định cụ thể và bằng chứng của AI.
-2. Người dùng đối chiếu với nội dung tự phân tích, đọc thêm ngữ cảnh khi cần.
-3. Người dùng ghi nhận đồng ý, không đồng ý hoặc chưa đủ căn cứ, kèm ghi chú nếu muốn.
-4. Hệ thống giữ nhận xét riêng với kết quả AI và thể hiện trạng thái rà soát.
-5. Người dùng xem tổng hợp, lọc các mục chưa kiểm tra hoặc cần xem lại để tiếp tục.
+1. Sinh viên nộp S và có thể nêu bối cảnh nghiên cứu.
+2. Hệ thống tự tìm V1 và hiển thị yêu cầu sửa đổi cùng vị trí bị tác động.
+3. Sinh viên chọn một thay đổi và đọc nội dung trước, sau.
+4. Sinh viên xem giải thích về đối tượng, quyền, nghĩa vụ, điều kiện hoặc thời hạn bị thay đổi, nếu hệ thống xác định được.
+5. Sinh viên mở lại đoạn nguồn, kiểm tra nhận định và ghi nhận giới hạn cần nghiên cứu thêm.
 
-**Kết quả mong đợi:** Người dùng biết mình đã kiểm tra những gì và có nhận xét nào. Không đồng ý không tự sửa đầu ra AI; đồng ý không có nghĩa kết quả đã được xác nhận đúng về pháp luật. Phản hồi không tự huấn luyện lại mô hình trong phiên bản đầu.
+**Kết quả mong đợi:** Sinh viên mô tả được thay đổi và kiểm chứng bằng chứng, kể cả căn cứ liên hệ với văn bản khác nếu được báo cáo.
 
-### 6.3. UC-03 — Bổ sung căn cứ và kiểm tra kết quả cập nhật
+### 6.3. UC-03 — Rà soát trường hợp chưa chắc chắn
 
-**Mục đích:** Tiếp tục phân tích khi thiếu tài liệu dẫn chiếu cần thiết.
+**Mục đích:** Tránh sử dụng một kết luận thiếu căn cứ.
 
-1. Hệ thống trình bày kết quả đã có cùng tài liệu/phần nội dung còn thiếu, lý do và nhận định bị ảnh hưởng.
-2. Người dùng tìm tài liệu theo tên/số hiệu, bổ sung và chủ động yêu cầu phân tích lại.
-3. Hệ thống cho biết kết quả nào được cập nhật và còn thiếu căn cứ nào.
-4. Người dùng kiểm tra lại phần cập nhật. Nhận xét cũ gắn với kết quả đã thay đổi được đánh dấu cần kiểm tra lại, không tự coi là xác nhận cho kết quả mới.
+**Tình huống kích hoạt:** Có nhiều phiên bản V1 khả dĩ, thiếu văn bản hoặc vị trí đích, nội dung có dấu hiệu tách/gộp, hoặc căn cứ cho tác động gián tiếp chưa đủ.
 
-**Ngoại lệ:** Nếu không bổ sung hoặc tài liệu mới không đáp ứng, kết quả đã xác định vẫn được giữ cùng giới hạn. Liên kết chưa chắc chắn được trình bày với lý do; bản đầu không bắt buộc cho người dùng sửa trực tiếp liên kết.
+**Luồng chính:**
+
+1. Hệ thống đánh dấu kết quả cần kiểm tra và ghi lý do.
+2. Người dùng xem nội dung hai bên và vị trí nguồn.
+3. Hệ thống chỉ rõ tài liệu và Điều/Khoản/bảng còn thiếu khi xác định được.
+4. Người dùng có thể bổ sung V1 hoặc nguồn còn thiếu. Hệ thống kiểm tra định dạng, phạm vi, định danh, phiên bản và quan hệ V1–S. Nếu V1 không khớp, hệ thống nêu dấu hiệu và yêu cầu thay file. Nếu người dùng chọn “Hiện tại không có tài liệu”, tiếp tục với S và nguồn sẵn có, hiển thị phần chưa xác định.
+5. Bổ sung hoặc thay file tạo lượt phân tích mới trong cùng trải nghiệm trên UI, giữ báo cáo trước trong khi chờ. Lượt lỗi vẫn cho phép xem báo cáo trước.
+6. Sau khi có báo cáo, người dùng có thể mở bằng chứng nhiều lần. “Kết thúc phiên” xóa trạng thái, báo cáo và lựa chọn đang giữ trên UI.
+
+**Kết quả mong đợi:** Người dùng biết nhận định nào cần kiểm chứng, lý do và tài liệu có thể bổ sung.
+
+### 6.4. Bao phủ nhiều đích và điều kiện hoàn tất
+
+Hệ thống liệt kê các văn bản mà chỉ dẫn trong S xác định là đích sửa đổi, kèm phiên bản đã chọn hoặc ứng viên cần làm rõ. Báo cáo đếm riêng văn bản đích, yêu cầu sửa đổi và điều khoản đã có/thiếu nguồn. Ví dụ có 8 điều khoản đích nhưng mới có nguồn cho 3 điều khoản thì hiển thị danh sách 5 điều khoản còn thiếu. Bổ sung được phần nào thì phân tích lại phần đó cùng các nguồn cần thiết. Trường hợp nhiều phiên bản của cùng văn bản phải được giải quyết bằng căn cứ lựa chọn.
+
+Hoàn tất Use Case xét theo kết quả đúng phạm vi, bằng chứng xem được và giới hạn được hiển thị. Người dùng có thể chọn dừng thay vì bổ sung nguồn; kết thúc tương tác theo yêu cầu của họ và giữ rõ phạm vi kết quả đã cung cấp. Nhận xét của người dùng là chức năng mở rộng. Trạng thái chạy và chất lượng đúng/sai được kiểm tra riêng khi nghiệm thu.
 
 ## 7. Yêu cầu nghiệp vụ
 
@@ -154,26 +188,23 @@ Tất cả yêu cầu trong bảng là yêu cầu của phiên bản đầu tron
 
 | Mã | Yêu cầu | Điều kiện đáp ứng từ góc nhìn người dùng |
 | --- | --- | --- |
-| BR-01 | Phân biệt vai trò tài liệu | Người dùng nhận diện rõ V1, S và tài liệu tham chiếu; S không được trình bày như bản V2 đầy đủ. |
-| BR-02 | Liên kết yêu cầu sửa đổi với nội dung gốc | Báo cáo chỉ rõ văn bản và Điều/Khoản/Điểm bị tác động; liên kết chưa chắc chắn có cảnh báo. |
+| BR-01 | Tiếp nhận S và xác định văn bản đích | Người dùng có thể bắt đầu chỉ với S. Báo cáo phân biệt S, các phiên bản V1 được tìm thấy và tài liệu liên quan. |
+| BR-02 | Liên kết yêu cầu sửa đổi với nội dung gốc | Báo cáo chỉ rõ văn bản, phiên bản và Điều/Khoản/Điểm bị tác động. Liên kết chưa chắc chắn có cảnh báo. |
 | BR-03 | Nhận biết thêm, xóa và sửa | Người dùng phân biệt được nội dung được bổ sung, bãi bỏ và sửa đổi. |
 | BR-04 | Hiển thị khác biệt văn bản | Người dùng thấy đoạn chữ thay đổi trong tiêu đề hoặc nội dung, cùng ngữ cảnh của Điều. |
 | BR-05 | Phân biệt thay đổi ý nghĩa và cách diễn đạt | Nhận định có lý do; thiếu căn cứ thì đánh dấu chưa chắc chắn, không suy ra không đổi nghĩa chỉ vì thiếu từ khóa. |
-| BR-06 | Mô tả các nội dung quy định bị thay đổi | Khi có căn cứ trong đầu vào, báo cáo chỉ ra thay đổi liên quan đến bốn nhóm ưu tiên: thời hạn; giá trị định lượng; điều kiện/ngoại lệ; chủ thể và quyền/nghĩa vụ. |
+| BR-06 | Mô tả nội dung quy định bị thay đổi | Khi có căn cứ, báo cáo chỉ ra thay đổi liên quan đến chủ thể, phạm vi, quyền, nghĩa vụ, điều kiện, thủ tục, thời hạn hoặc chế tài. |
 | BR-07 | Giữ bằng chứng và vị trí nguồn | Người dùng đọc được bằng chứng trong V1, chỉ dẫn sửa đổi trong S và tài liệu tham chiếu nếu sử dụng; phân biệt nội dung nguồn với nội dung sau sửa đổi được suy ra. |
-| BR-08 | Phân loại mức độ và giải thích | Mức độ được gắn với từng thay đổi được nhận diện, có lý do và theo tiêu chí chung; không chỉ dựa vào số chữ đổi. |
+| BR-08 | Phân loại mức độ và giải thích | Mức độ được gắn với từng thay đổi, có lý do theo tiêu chí của lĩnh vực dân sự. |
 | BR-09 | Biểu diễn nhiều thay đổi trong cùng Điều | Một Điều có thể có nhiều nhận định riêng; không ép toàn bộ nội dung thành một thay đổi duy nhất. |
 | BR-10 | Thể hiện nhu cầu kiểm tra của con người | Cảnh báo cho biết điều gì chưa chắc chắn và vì sao; người dùng vẫn xem được bằng chứng có sẵn. |
 | BR-11 | Thể hiện trạng thái và phạm vi xử lý | Người dùng phân biệt kết quả xử lý đầy đủ, một phần và thất bại, đồng thời biết phần bị ảnh hưởng. |
-| BR-12 | Dùng ngôn ngữ dễ hiểu | Giải thích tập trung vào nội dung cũ/mới và tác động trực tiếp được suy ra từ các tài liệu được cung cấp; tránh kết luận rộng hơn bằng chứng. |
+| BR-12 | Dùng ngôn ngữ dễ hiểu | Giải thích thay đổi trực tiếp và tác động có thể có bằng nội dung và căn cứ mà người dùng kiểm tra được. |
 | BR-13 | Bảo vệ nội dung tài liệu đầu vào | Nội dung không được công khai hoặc ghi toàn văn vào log vận hành; việc xử lý tệp tạm tuân theo chính sách được mô tả trong tài liệu kỹ thuật. |
 | BR-14 | Bổ sung tài liệu tham chiếu | Hệ thống chỉ rõ căn cứ còn thiếu; người dùng có thể tải bổ sung. Thiếu tài liệu chỉ giới hạn nhận định bị ảnh hưởng, không che mất kết quả khác. |
-| BR-15 | Thể hiện hiệu lực và chuyển tiếp | Báo cáo giữ nội dung, phạm vi áp dụng và nguồn của thông tin hiệu lực/chuyển tiếp trong S; chưa đủ căn cứ thì không tự áp một thời điểm cho mọi thay đổi. |
-| BR-16 | Ghi nhận nhận xét trong phiên | Người dùng lưu đồng ý, không đồng ý hoặc chưa đủ căn cứ và ghi chú; kết quả AI không bị ghi đè. |
-| BR-17 | Theo dõi trạng thái rà soát | Phân biệt chưa kiểm tra, đã kiểm tra và cần kiểm tra lại với nhận xét và trạng thái chắc chắn của AI. |
-| BR-18 | Rà soát sau cập nhật | Nhận biết phần kết quả thay đổi sau bổ sung; xác nhận cũ không tự áp dụng cho nội dung đã đổi. |
-| BR-19 | Xem tổng hợp việc kiểm tra | Xem và lọc các mục theo trạng thái để tiếp tục rà soát trong phiên. |
-
+| BR-15 | Thể hiện hiệu lực và chuyển tiếp | Báo cáo giữ nội dung, phạm vi áp dụng và nguồn của thông tin hiệu lực/chuyển tiếp. Thời điểm chưa đủ căn cứ được đánh dấu. |
+| BR-16 | Phát hiện tác động gián tiếp | Báo cáo chỉ rõ văn bản và quy định có thể chịu tác động, quy định bị sửa có liên quan, căn cứ nối hai quy định và tác động có thể xảy ra. B có thể được tìm thấy dù S và V1 không nhắc tên B. |
+| BR-17 | Thể hiện phạm vi truy xuất | Người dùng biết những văn bản hoặc phiên bản nào chưa tìm được, phần vượt phạm vi kho dân sự và phần chưa đủ căn cứ. |
 
 ## 8. Quy tắc nghiệp vụ
 
@@ -182,35 +213,42 @@ Tất cả yêu cầu trong bảng là yêu cầu của phiên bản đầu tron
 Khác biệt về ký tự chưa đồng nghĩa với thay đổi nội dung quy định. Ngược lại, thay đổi ít ký tự vẫn có thể ảnh hưởng đáng kể đến quyền, nghĩa vụ hoặc điều kiện.
 
 - **Thay đổi cách diễn đạt:** Có khác biệt câu chữ nhưng nội dung quy định được đánh giá là không thay đổi, với căn cứ đủ để giải thích.
-- **Thay đổi ý nghĩa:** Có thay đổi nội dung quy định thể hiện trong văn bản gốc, văn bản sửa đổi và tài liệu tham chiếu được cung cấp, chẳng hạn chủ thể, quyền, nghĩa vụ, điều kiện hoặc thời hạn.
+- **Thay đổi ý nghĩa:** Có thay đổi nội dung quy định thể hiện qua nội dung trước–sau và nguồn liên quan, chẳng hạn chủ thể, quyền, nghĩa vụ, điều kiện hoặc thời hạn.
 - **Chưa xác định:** Chưa đủ căn cứ để phân biệt hai trường hợp trên. Hệ thống phải ghi nhận nhu cầu kiểm tra thay vì mặc định là thay đổi cách diễn đạt.
 
-### 8.2. Nhóm nội dung ưu tiên
+### 8.2. Nhóm nội dung cần chú ý
 
-| Nhóm | Nội dung người dùng cần hiểu và kiểm chứng |
+| Nhóm | Câu hỏi nghiệp vụ khi đối chiếu |
 | --- | --- |
-| Thời hạn | Khoảng thời gian, mốc tính, hoạt động chịu thời hạn và điều kiện liên quan thay đổi thế nào? |
-| Giá trị định lượng | Số tiền, tỷ lệ, số lượng hoặc ngưỡng cùng đơn vị và phạm vi áp dụng thay đổi thế nào? |
-| Điều kiện và ngoại lệ | Trường hợp áp dụng, miễn trừ hoặc ngoại lệ được thêm, bỏ hay sửa thế nào? |
-| Chủ thể và quyền/nghĩa vụ | Ai chịu tác động; quyền, yêu cầu bắt buộc hoặc hành vi bị cấm thay đổi thế nào? |
+| Chủ thể và phạm vi áp dụng | Quy định áp dụng cho ai, cho hoạt động hoặc trường hợp nào? Phạm vi có mở rộng hay thu hẹp không? |
+| Quyền | Chủ thể có thêm, mất hoặc bị giới hạn quyền nào được thể hiện trong Điều? |
+| Nghĩa vụ và hành vi bị cấm | Yêu cầu bắt buộc hoặc hành vi bị cấm có thay đổi không? |
+| Điều kiện và ngoại lệ | Điều kiện thực hiện, miễn trừ hoặc ngoại lệ có được thêm, bỏ hoặc sửa không? |
+| Thủ tục và thẩm quyền | Hồ sơ, trình tự, cơ quan hoặc chủ thể thực hiện có thay đổi không? |
+| Thời hạn, số lượng và ngưỡng | Giá trị, đơn vị, thời điểm bắt đầu hoặc cách tính có thay đổi không? |
+| Chế tài và trách nhiệm | Biện pháp xử lý hoặc trách nhiệm được mô tả có thay đổi không? |
+| Dẫn chiếu và định nghĩa | Dẫn chiếu hoặc cách gọi có thay đổi và có cần đọc thêm ngữ cảnh không? |
 
-Một thay đổi có thể thuộc nhiều nhóm. Dẫn chiếu và định nghĩa là căn cứ cần đọc khi liên quan; thay đổi dẫn chiếu không tự chứng minh tác động thực chất. Bản HCI không cam kết hiểu toàn bộ ý nghĩa pháp lý; nội dung ngoài bốn nhóm được báo giới hạn và giữ nguồn để kiểm tra. Mã nhãn và ví dụ được quy định trong SRS/hướng dẫn gán nhãn tương ứng.
+Một thay đổi có thể liên quan nhiều nhóm. Nhóm cần cụ thể hóa các tiêu chí và ví dụ gán nhãn theo lĩnh vực dân sự, kể cả trường hợp chưa đủ căn cứ.
 
-### 8.3. Mức tác động và trạng thái kiểm chứng
+### 8.3. Mức độ nghiêm trọng
 
-Mức tác động hỗ trợ ưu tiên rà soát theo tiêu chí thống nhất, có lý do và bằng chứng. Nếu sử dụng LOW, MEDIUM, HIGH, CRITICAL thì ranh giới và ví dụ được quản lý trong hướng dẫn gán nhãn; không tự gán mức cao nhất chỉ vì thêm/xóa Điều hoặc đổi thời hạn. Thiếu căn cứ thì để chưa xác định, không ép thành LOW.
+Mức độ giúp người dùng ưu tiên rà soát theo tiêu chí và ví dụ đã thống nhất cho lĩnh vực dân sự.
 
-Phân biệt ba loại thông tin:
+| Mức | Tiêu chí đề xuất |
+| --- | --- |
+| LOW | Khác biệt về cách diễn đạt hoặc hình thức được xác định không làm thay đổi nội dung quy định. |
+| MEDIUM | Thay đổi nội dung quy định có phạm vi tác động tương đối hạn chế theo bộ tiêu chí và ví dụ đã thống nhất. |
+| HIGH | Thay đổi đáng kể về chủ thể, quyền, nghĩa vụ, điều kiện, thủ tục, thời hạn hoặc chế tài, có căn cứ để ưu tiên rà soát. |
+| CRITICAL | Thay đổi đáp ứng tiêu chí quan trọng nhất trong hướng dẫn gán nhãn: có bằng chứng cho thấy đảo chiều, loại bỏ hoặc thay đổi trọng yếu nội dung quy định và cần được rà soát ưu tiên cao nhất. |
 
-- **Kết quả hệ thống:** nhận định, mức tác động và lý do còn chưa chắc chắn nếu có.
-- **Nhận xét người dùng:** đồng ý, không đồng ý hoặc chưa đủ căn cứ; có thể kèm ghi chú.
-- **Trạng thái rà soát:** chưa kiểm tra, đã kiểm tra hoặc cần kiểm tra lại. Mục đã kiểm tra vẫn có thể mang nhận xét chưa đủ căn cứ.
+Nhóm phải bổ sung ví dụ ranh giới giữa MEDIUM, HIGH và CRITICAL trong hướng dẫn gán nhãn trước khi dùng để đánh giá. Không được coi mọi thay đổi về thời hạn, quyền hoặc nghĩa vụ là CRITICAL. Nếu chưa đủ căn cứ để gán mức độ, để trạng thái chưa xác định và yêu cầu kiểm tra; không ép thành LOW.
 
-Mức tác động không tự xác định quy định áp dụng cho vụ việc, mức độ thiệt hại hoặc dụng ý của cơ quan ban hành. Tự động thay đổi kết quả không được làm mất dấu nhận xét cũ hay tạo hiểu nhầm rằng người dùng đã xác nhận nội dung mới.
+**Quy tắc nhất quán:** Thay đổi chỉ được đánh dấu critical khi mức độ đã xác định là CRITICAL. Điều thêm hoặc xóa không tự động đồng nghĩa với CRITICAL. Cần xem xét nội dung và tiêu chí đã thống nhất.
 
 ### 8.4. Liên kết và bao phủ kết quả
 
-- Mỗi yêu cầu sửa đổi liên quan đến V1 phải có kết quả hoặc lý do chưa xử lý; tránh bỏ sót và tính trùng.
+- Mỗi yêu cầu sửa đổi đã nhận diện trong S có kết quả hoặc lý do chưa xử lý, kể cả khi liên quan nhiều văn bản đích.
 - Liên kết dựa trên văn bản đích, Điều/Khoản/Điểm và nội dung; không ghép theo số Điều của S với số Điều của V1.
 - Với tách/gộp hoặc vị trí đích mơ hồ, yêu cầu kiểm tra; không tự khẳng định thêm hoặc bãi bỏ chỉ vì không tìm thấy đoạn tương ứng.
 - Không phân tích phần thay đổi tách rời ngữ cảnh giữ nguyên có ảnh hưởng đến cách hiểu.
@@ -218,22 +256,23 @@ Mức tác động không tự xác định quy định áp dụng cho vụ vi�
 
 ### 8.5. Kết luận không phát hiện thay đổi
 
-Chỉ thông báo “Không tìm thấy yêu cầu sửa đổi đối với V1 trong S đã cung cấp” khi đã xử lý đầy đủ S trong phạm vi hỗ trợ, không còn nội dung chưa xác định và không tìm thấy yêu cầu liên quan. Kết luận này không khẳng định V1 chưa từng được sửa đổi bởi văn bản khác.
+Chỉ thông báo không tìm thấy yêu cầu sửa đổi thuộc phạm vi phân tích khi đã xử lý đầy đủ S trong giới hạn hỗ trợ và có đủ căn cứ để kết luận về phạm vi đó. Yêu cầu chưa xác định được văn bản đích hoặc tác động vẫn phải được hiển thị cùng lý do.
 
-Có yêu cầu sửa đổi nhưng chưa xác định tác động thì vẫn phải hiển thị yêu cầu đó. Không dùng kết quả Text Diff rỗng, lỗi hoặc thiếu tài liệu làm căn cứ kết luận không có thay đổi.
+Với tác động gián tiếp, nếu quá trình rà soát chưa tìm thấy mối liên hệ đủ căn cứ, báo cáo nêu kết quả trong phạm vi kho đã rà soát và ghi rõ phần dữ liệu còn thiếu.
 
 ### 8.6. Dẫn chiếu, hiệu lực và căn cứ phân tích
 
-- Khi dẫn chiếu chuyển từ nội dung A sang B, phân biệt việc xác định đổi dẫn chiếu với việc xác định tác động thực chất. Phân tích tác động trước–sau cần nội dung A và B cùng ngữ cảnh áp dụng liên quan, nếu chưa có trong đầu vào.
-- Người dùng cung cấp tài liệu còn thiếu; hệ thống không tự thu thập hoặc duy trì kho văn bản pháp luật. Chỉ kết luận trong phạm vi bằng chứng có sẵn.
-- Ưu tiên dẫn chiếu trực tiếp liên quan đến thay đổi; nếu còn phụ thuộc chưa được giải quyết, ghi rõ giới hạn thay vì suy luận không có căn cứ.
-- Thông tin hiệu lực và chuyển tiếp được trích từ S và gắn với thay đổi khi có căn cứ. Việc trích xuất không đồng nghĩa với xác minh hiệu lực pháp lý thực tế tại mọi thời điểm.
+- Ưu tiên truy xuất văn bản, phiên bản và quy định liên quan từ kho dân sự. Báo cáo nêu căn cứ chọn phiên bản trước sửa đổi, hoặc các khả năng còn mơ hồ khi chưa thể xác định.
+- Khi S đổi dẫn chiếu, phân tích tác động thực chất dựa trên nội dung trước–sau của quy định được dẫn chiếu và ngữ cảnh áp dụng.
+- Tìm và rà soát quy định trong B có thể dựa vào quy định đã thay đổi trong V1, kể cả khi S và V1 không nhắc tên B. Một dẫn chiếu hoặc nội dung tương tự là căn cứ để rà soát. Khi nêu tác động, báo cáo cần giải thích phần thay đổi có liên quan đến cách B sử dụng quy định đó như thế nào.
+- Với mối liên hệ hoặc tác động chưa đủ căn cứ, báo cáo ghi rõ nội dung cần kiểm chứng và nguồn còn thiếu. Cách phát hiện và kiểm chứng các quan hệ gián tiếp là nội dung nghiên cứu cần hoàn thiện.
+- Trích thông tin hiệu lực và chuyển tiếp từ S, gắn với từng thay đổi khi có căn cứ. Báo cáo nêu giới hạn về khả năng xác minh hiệu lực.
 
 ## 9. Yêu cầu đối với báo cáo và trải nghiệm sử dụng
 
 Một báo cáo có ích cần trả lời được các câu hỏi sau:
 
-1. Văn bản nào là V1, văn bản nào là S và tài liệu tham chiếu nào đã được sử dụng?
+1. S trực tiếp sửa văn bản nào, hệ thống dùng phiên bản nào và dựa vào căn cứ gì?
 2. Những Điều nào thêm, xóa hoặc sửa?
 3. Nội dung trước và sau khác nhau ở đâu?
 4. Hệ thống nhận định nội dung quy định đã thay đổi như thế nào, dựa trên bằng chứng nào?
@@ -241,56 +280,59 @@ Một báo cáo có ích cần trả lời được các câu hỏi sau:
 6. Kết quả nào chưa chắc chắn hoặc chưa được xử lý đầy đủ?
 7. Phạm vi nào nằm ngoài báo cáo?
 8. Thông tin hiệu lực/chuyển tiếp nào liên quan và cần bổ sung tài liệu nào?
-9. Tôi đã kiểm tra mục nào, ghi nhận nhận xét gì và mục nào cần kiểm tra lại sau cập nhật?
+9. Văn bản nào khác có thể chịu tác động, điều khoản nào của B liên quan đến thay đổi nào trong V1 và bằng chứng là gì?
 
-Kết quả cần hiển thị nội dung cũ/mới cạnh nhau hoặc theo cách đối chiếu rõ ràng; phần chữ thay đổi phải dễ nhận biết. Không chỉ dùng màu sắc để truyền đạt loại thay đổi, mức độ hoặc cảnh báo.
+Kết quả cần hiển thị nội dung cũ/mới cạnh nhau hoặc theo cách đối chiếu rõ ràng; phần chữ thay đổi phải dễ nhận biết. Người làm UI chọn tô nền, chữ đậm hoặc đánh dấu kèm nhãn để thể hiện phần liên quan và hỗ trợ nhận biết ngoài màu sắc. Mỗi nhận định hiển thị đường căn cứ có thể kiểm chứng: căn cứ chọn V1 → điều khoản trước/sau → nhận định thay đổi → căn cứ liên hệ B khi có → kết luận và giới hạn. Với dữ liệu thiếu, hiển thị mắt xích chưa xác định.
 
 Tóm tắt báo cáo phải nhất quán với kết quả chi tiết. Không dùng tổng số Điều thay đổi thay thế cho tổng số thay đổi nội dung quy định mà không ghi rõ đơn vị đếm.
 
-Phiên bản đầu không bắt buộc xuất báo cáo thành PDF/DOCX, quản lý tài khoản, lưu lịch sử dài hạn hoặc cung cấp chức năng cộng tác.
+Phiên bản đầu không bắt buộc xuất báo cáo thành PDF/DOCX, quản lý tài khoản, lưu lịch sử hoặc cung cấp chức năng cộng tác.
+
+Người dùng có thể yêu cầu thử lại sau lỗi dịch vụ. Hệ thống dùng lại dữ liệu trung gian còn hợp lệ nếu còn lưu, hoặc tạo lượt phân tích mới với nguồn cần thiết nếu đã cleanup. Hủy chủ động trước khi có kết quả theo E6 tiếp tục là đề xuất; đưa vào bản đầu cần đặc tả hành vi dừng bước tiếp theo, tác vụ còn chạy và cleanup.
 
 ## 10. Tiêu chí thành công và nghiệm thu
 
 ### 10.1. Mức độ đáp ứng công việc người dùng
 
-Đánh giá dự kiến với khoảng 5–10 sinh viên Luật phù hợp nhóm mục tiêu, dùng tác vụ và đáp án đã rà soát. Hai người đã trao đổi ban đầu là nguồn nghiên cứu nhu cầu; chưa được tính là đã tham gia thử nghiệm sản phẩm.
+Nhóm kiểm tra trên bộ ca bắt đầu từ S và kho dân sự đã chuẩn bị. Đáp án tham chiếu ghi văn bản đích, phiên bản V1, thay đổi trực tiếp và các quan hệ gián tiếp đã được rà soát cho từng ca.
 
-| Mục tiêu | Tác vụ đánh giá | Kết quả mong đợi |
+| Đối tượng | Nhiệm vụ kiểm tra | Kết quả mong đợi |
 | --- | --- | --- |
-| BG-01, BG-02 | Tìm và giải thích thay đổi thuộc nhóm ưu tiên | Đúng nội dung trước–sau, chủ thể/điều kiện liên quan và vị trí nguồn. |
-| BG-03 | Kiểm tra một gợi ý AI | Nêu được căn cứ đồng ý/bất đồng hoặc lý do chưa đủ căn cứ; nhận ra gợi ý sai trong tác vụ có đáp án kiểm soát. |
-| BG-04 | Đọc cảnh báo hoặc báo cáo một phần | Hiểu giới hạn, không nhầm chưa xác định với không thay đổi hoặc tác động thấp. |
-| BG-05 | Ghi nhận và tiếp tục rà soát | Tìm lại nhận xét và phân biệt mục đã/chưa kiểm tra. |
-| BG-06 | Bổ sung tài liệu và phân tích lại | Chọn được tài liệu mẫu phù hợp, nhận ra phần cập nhật và kiểm tra lại nhận xét bị ảnh hưởng. |
-| BG-07 | Xem một mức tác động có lý do | Hiểu lý do ưu tiên và giới hạn của mức tác động. |
+| Luật sư/pháp chế hoặc người đánh giá theo vai trò này | Tìm một thay đổi được yêu cầu và kiểm tra bằng chứng | Xác định đúng Điều và đọc được nội dung cũ/mới liên quan. |
+| Luật sư/pháp chế hoặc người đánh giá theo vai trò này | Xem một thay đổi ưu tiên cao | Hiểu được mức độ và lý do; nhận ra trường hợp cần xác minh thêm. |
+| Sinh viên hoặc người đánh giá theo vai trò này | Giải thích một thay đổi | Mô tả được nội dung trước/sau và chỉ ra bằng chứng, không chỉ lặp lại nhãn. |
+| Cả hai nhóm | Đọc báo cáo có cảnh báo hoặc xử lý một phần | Nhận biết được phạm vi kho, phần chưa xử lý và dữ liệu thiếu. |
+| Người đánh giá | Nộp riêng S và kiểm tra một kết quả về B | Xác định đúng văn bản và phiên bản đích trong ca có đáp án, kiểm tra quy định của B, đường liên hệ với thay đổi trực tiếp và căn cứ. |
 
-Ghi nhận tỷ lệ hoàn thành đúng, thời gian, lỗi, khả năng phát hiện/chấp nhận gợi ý sai, SUS và phản hồi định tính. Mục tiêu là hỗ trợ thực hiện tác vụ đúng và kiểm chứng có căn cứ; không đặt mục tiêu tăng niềm tin hoặc tăng tỷ lệ đồng ý với AI bằng mọi giá.
+Nhóm ghi nhận số nhiệm vụ hoàn thành đúng, thời gian thực hiện, lỗi diễn giải và phản hồi. Quy mô, người tham gia, phương pháp và tiêu chí đánh giá của thử nghiệm được hoàn thiện trong test_evaluation_plan.md. Nếu sử dụng thành viên nhóm đóng vai người dùng, báo cáo phải nêu rõ giới hạn này.
 
-Kế hoạch usability quy định chi tiết tác vụ, tiêu chí chấm và cách so sánh giao diện. Có thể so sánh giao diện đối chiếu cơ bản với giao diện thêm giải thích/bằng chứng trên cùng đầu ra cố định và tác vụ tương đương. Quy mô nhỏ được báo rõ, không khái quát cho mọi sinh viên Luật.
+### 10.2. Mục tiêu chất lượng phát hiện
 
-### 10.2. Chất lượng thành phần xử lý
+- **Change F1 ≥ 90% (dự tính):** Mục tiêu phát hiện các thay đổi có ý nghĩa theo đáp án tham chiếu.
+- **Critical Change Recall ≥ 95% (dự tính):** Mục tiêu phát hiện các thay đổi được gán nhãn CRITICAL trong đáp án tham chiếu và đánh dấu critical đúng.
 
-Vẫn đánh giá khả năng liên kết chỉ dẫn, phát hiện thay đổi, độ phù hợp của giải thích và bằng chứng, cảnh báo thiếu căn cứ và mức tác động khi có nhãn đủ tin cậy. Chỉ số, ngưỡng và quy tắc đối chiếu được chốt trong SRS và kế hoạch đánh giá kỹ thuật của HCI.
-
-Mỗi chỉ tiêu kỹ thuật phải gắn với bộ dữ liệu, phạm vi nhãn và điều kiện đo đã chốt. Báo cáo phân biệt chất lượng AI với hiệu quả của giao diện, không suy từ một kết quả sang kết quả còn lại.
+Hai ngưỡng trên là mục tiêu dự tính cho phát hiện thay đổi trực tiếp. Đánh giá đầu cuối bắt đầu từ S và tính cả lỗi truy xuất làm mất thay đổi. Kế hoạch đánh giá cần bổ sung phép đo truy xuất đúng văn bản và phiên bản. Với tác động gián tiếp, cần đo phát hiện sai và bỏ sót trên các ca đã rà soát, đồng thời kiểm tra căn cứ và giải thích cho từng tác động. Ngưỡng nghiệm thu cho truy xuất và tác động gián tiếp còn cần xác nhận.
 
 ### 10.3. Nguyên tắc đánh giá
 
-- Có đáp án tác vụ, hướng dẫn nhãn và cách xử lý bất đồng; tìm nguồn review chuyên môn nếu tiếp cận được và công bố giới hạn nếu chưa có.
-- Tách dữ liệu phát triển khỏi kiểm thử độc lập; tính cả phát hiện sai, bỏ sót và lỗi từ các bước đầu vào/liên kết.
-- Công bố số mẫu, người tham gia, trường hợp thiếu căn cứ và chỉ số không tính được; không tự quy đổi kết quả chưa xác định thành kết quả đúng.
-- Đánh giá quy trình sử dụng hoàn chỉnh, không chỉ mức hài lòng hoặc chất lượng mô hình.
-- Kết quả nghiên cứu nhu cầu, giả định thiết kế và bằng chứng thử nghiệm được trình bày riêng; ghi nhận cải tiến sau đánh giá.
+- Có hướng dẫn gán nhãn, tiêu chí mức độ và quy trình xử lý bất đồng.
+- Tách dữ liệu phát triển/validation khỏi tập test độc lập; không dùng tập test cuối để điều chỉnh thuật toán hoặc ngưỡng.
+- Khóa dữ liệu test và quy tắc đối chiếu trước khi đánh giá cuối.
+- Đánh giá theo đáp án tham chiếu đã review, tính cả phát hiện sai và bỏ sót. Xem [kế hoạch kiểm thử](test_evaluation_plan.md) để tra cách đối chiếu và chia tập.
+- Phải tính cả phát hiện sai và bỏ sót, kể cả thay đổi bị mất do đọc tài liệu, tách cấu trúc, trích yêu cầu sửa đổi hoặc liên kết sai.
+- Kết quả chưa chắc chắn không tự được tính là phát hiện đúng. Cách xử lý phải theo SRS và test_evaluation_plan.md.
+- Khi không có mẫu phù hợp để tính một chỉ số, ghi không xác định và lý do, không tự ghi 100%.
+- Báo cáo số ca S, số văn bản và phiên bản đích, số thay đổi, số mẫu CRITICAL, số quan hệ gián tiếp đã rà soát và giới hạn dữ liệu.
 
 ### 10.4. Điều kiện nghiệm thu chức năng
 
-1. Có luồng chạy hoàn chỉnh: tải V1/S → xem thay đổi → đọc nguồn và giải thích → ghi nhận nhận xét → xem tổng hợp.
-2. Có ví dụ đủ bốn nhóm ưu tiên, thay đổi cách diễn đạt và thiếu căn cứ; nội dung có nguồn/nhãn tham chiếu rõ.
-3. Có tình huống chỉ dẫn tới Khoản/Điểm, S sửa nhiều văn bản, đổi số/gộp–tách chưa chắc chắn; không bắt buộc tự giải quyết mọi trường hợp nhưng phải báo giới hạn.
-4. Bổ sung tài liệu và phân tích lại được; kết quả thay đổi được đánh dấu cần kiểm tra lại.
-5. Nhận xét người dùng, trạng thái rà soát, mức tác động và sự chưa chắc chắn không bị nhập làm một.
-6. Đầu vào lỗi hoặc báo cáo một phần không được trình bày như không có thay đổi.
-7. Có kết quả kiểm thử kỹ thuật, đánh giá người dùng, hướng dẫn sử dụng và giới hạn thực tế.
+1. Xử lý được S dạng DOCX hoặc PDF có lớp văn bản trong giới hạn công bố, với S là tài liệu bắt buộc duy nhất.
+2. Tìm đúng văn bản đích, phiên bản V1 và Điều/Khoản/Điểm trong các ca nghiệm thu đã chọn. Có ca S sửa nhiều văn bản, thiếu phiên bản hoặc có đích ngoài kho.
+3. Trình bày trước–sau, trích dẫn, loại thay đổi và lý do đánh giá mức độ. Có ca thay đổi ý nghĩa, thay đổi cách diễn đạt và hiệu lực/chuyển tiếp.
+4. Có ca tìm đúng B dù S và V1 đều không nhắc tên B. Báo cáo chỉ rõ quy định của B, quy định V1 bị sửa, căn cứ liên hệ và tác động có thể xảy ra.
+5. Có ca B có liên hệ nhưng thay đổi đang xét không ảnh hưởng đến quy định của B, và ca thiếu căn cứ để kết luận. Kiểm tra việc tránh kết luận sai và thể hiện sự chưa chắc chắn.
+6. Báo cáo thể hiện phần đã xử lý và phần còn thiếu khi truy xuất hoặc phân tích chỉ thành công một phần.
+7. Có báo cáo thực nghiệm, hướng dẫn sử dụng và phạm vi kho đã đánh giá.
 
 ## 11. Ngoài phạm vi phiên bản đầu
 
@@ -299,29 +341,29 @@ Mỗi chỉ tiêu kỹ thuật phải gắn với bộ dữ liệu, phạm vi nh
 - Tự tái dựng phiên bản đầy đủ từ văn bản chỉ liệt kê nội dung sửa đổi, bổ sung.
 - Tự động giải quyết đầy đủ mọi trường hợp tách/gộp hoặc yêu cầu sửa đổi không xác định được vị trí đích.
 - So sánh toàn diện phần mở đầu, chữ ký và phụ lục; các phần đọc được vẫn có thể cung cấp ngữ cảnh hoặc bằng chứng liên quan.
-- Tự tải, cập nhật hoặc duy trì kho văn bản pháp luật dùng chung.
+- Bao phủ toàn bộ pháp luật Việt Nam hoặc tự động thu thập, cập nhật và duy trì kho. Phiên bản đầu sử dụng kho dân sự do nhóm chuẩn bị.
 - Tự xác minh hiệu lực, tính chính thức, tính xác thực hoặc tính đầy đủ của văn bản đầu vào.
 - Tự xác định quy định áp dụng cho một vụ việc cụ thể.
-- Suy luận toàn bộ tác động từ các văn bản được dẫn chiếu nhưng chưa được cung cấp.
+- Bảo đảm phát hiện tất cả tác động gián tiếp ngoài phạm vi kho hoặc suy ra tác động khi thiếu nguồn cần thiết.
 - Cung cấp ý kiến tư vấn pháp lý cuối cùng hoặc bảo đảm không bỏ sót mọi thay đổi.
-- Quản lý tài khoản, lịch sử dài hạn, cơ sở dữ liệu nghiệp vụ hoặc chức năng cộng tác; nhận xét và ghi chú trong phiên thuộc phạm vi.
-- Tự động huấn luyện lại mô hình từ phản hồi của người dùng hoặc sửa trực tiếp liên kết bằng giao diện.
+- Quản lý tài khoản, lịch sử so sánh, cơ sở dữ liệu nghiệp vụ hoặc chức năng cộng tác.
 
 ## 12. Giả định và phụ thuộc
 
-1. Người dùng cung cấp đúng V1, S và tài liệu tham chiếu cần thiết trong phạm vi hỗ trợ.
+1. Người dùng cung cấp S đọc được. Nhóm chuẩn bị kho dân sự có nguồn, thông tin phiên bản và cấu trúc đủ để truy xuất đến quy định cần phân tích.
 2. Tài liệu có nội dung đọc được và cấu trúc đủ để nhận diện các Điều; mức độ hỗ trợ bố cục cụ thể được kiểm chứng qua bộ mẫu.
-3. Nhóm có các cặp tài liệu có nguồn và quyền sử dụng phù hợp cho phát triển, gán nhãn và đánh giá.
-4. Có tiêu chí phân loại được thống nhất; sự tham gia của người có chuyên môn pháp luật là nguồn lực cần tìm kiếm và xác nhận.
+3. Nhóm có dữ liệu phát triển và các ca đánh giá bắt đầu từ S, với đáp án tham chiếu cho văn bản đích, thay đổi trực tiếp và các quan hệ gián tiếp đã rà soát.
+4. Nhóm cần thống nhất tiêu chí phân loại và mức độ theo lĩnh vực dân sự, đồng thời xác nhận nguồn lực chuyên môn để rà soát tiêu chí và các ca tác động gián tiếp.
 5. Giới hạn kích thước, độ dài, số Điều và thời gian xử lý được công bố theo thiết kế và số đo thực tế. BRD không tự đặt một cam kết hiệu năng chưa đo.
-6. Cần tìm người dùng phù hợp để đánh giá; việc họ có hiểu cảnh báo và kiểm chứng được hay không là nội dung phải kiểm tra, không phải giả định đã đúng.
+6. Người dùng đọc cảnh báo và kiểm chứng trước khi sử dụng kết quả vào công việc pháp lý.
 
 ## 13. Rủi ro và biện pháp xử lý
 
 | Rủi ro | Ảnh hưởng nghiệp vụ | Biện pháp |
 | --- | --- | --- |
-| Chọn sai V1, S hoặc phiên bản tài liệu tham chiếu | Diễn giải nhầm thêm/xóa, hiểu sai chiều thay đổi | Hiển thị rõ vai trò của các tài liệu; hướng dẫn người dùng kiểm tra trước khi xử lý. |
-| Nguồn không chính thức hoặc tài liệu thiếu | Báo cáo không phản ánh đúng nội dung cần nghiên cứu | Dữ liệu đánh giá có nguồn; người dùng kiểm tra đầu vào; không coi đọc thành công là xác minh pháp lý thành công. |
+| Truy xuất sai V1 hoặc phiên bản | Đối chiếu sai nội dung trước–sau | Hiển thị căn cứ chọn phiên bản, cảnh báo khi mơ hồ và kiểm thử bằng các ca có nhiều phiên bản. |
+| Nguồn thiếu hoặc kho dân sự chưa bao phủ đủ | Bỏ sót văn bản đích hoặc văn bản B | Ghi nhận nguồn, phạm vi kho, phần thiếu và ảnh hưởng đến kết quả. |
+| Suy diễn quá mức từ dẫn chiếu hoặc nội dung tương tự | Báo sai tác động lên B | Kiểm tra phần quy định B thực sự sử dụng, trích dẫn nguồn và đánh dấu khi chưa đủ căn cứ. |
 | Bố cục phức tạp, bảng hoặc nhiều trang | Mất chữ, đảo thứ tự, tách Điều sai | Kiểm thử tài liệu thực tế; giữ vị trí nguồn; báo lỗi hoặc giới hạn khi nhận diện được vấn đề. |
 | Đánh lại số, tách/gộp hoặc liên kết sai vị trí đích | Nhận định sai về thêm/xóa hoặc sửa | Kiểm tra nhiều tín hiệu đối chiếu; cảnh báo mơ hồ; đưa các tình huống này vào bộ kiểm thử. |
 | Thiếu định nghĩa hoặc ngữ cảnh dẫn chiếu | Giải thích vượt quá căn cứ | Chỉ rõ tài liệu/nội dung cần bổ sung; cho phép tải thêm; không khẳng định tác động chưa có bằng chứng. |
@@ -331,38 +373,22 @@ Mỗi chỉ tiêu kỹ thuật phải gắn với bộ dữ liệu, phạm vi nh
 | Người dùng tin tuyệt đối vào kết quả | Sử dụng nhận định thiếu kiểm chứng | Nhắc rõ vai trò hỗ trợ, lý do và phần chưa xác định trong báo cáo. |
 | Lộ nội dung tài liệu qua log hoặc tệp tạm | Ảnh hưởng tính riêng tư của dữ liệu | Không log toàn văn; kiểm soát truy cập và vòng đời tệp tạm theo thiết kế triển khai. |
 
-## 14. Ví dụ nghiệp vụ để xây dựng bộ kiểm thử
+## 14. Ví dụ nghiệp vụ
 
-**Toàn bộ ví dụ trong mục này là giả định, không trích dẫn quy định pháp luật hiện hành.** Nội dung cũ lấy từ V1; nội dung mới hoặc chỉ dẫn sửa đổi lấy từ S. Mức độ cụ thể chỉ được gán sau khi đối chiếu hướng dẫn gán nhãn đã chốt.
+- Thời hạn đổi từ 30 xuống 15 ngày. Người dùng cần thấy công việc nào bị ảnh hưởng, mốc bắt đầu tính hạn và nguồn quy định.
+- Cụm “có thể cung cấp” đổi thành “phải cung cấp”. Người dùng cần thấy sự thay đổi về nghĩa vụ và điều kiện hoặc ngoại lệ liên quan.
+- B quy định một thủ tục dựa trên thời hạn tại điều khoản của V1. Nếu S sửa thời hạn đó, hệ thống cần tìm được B dù B không được nêu trong S hoặc V1, rồi giải thích phần thủ tục nào có thể cần rà soát và trích căn cứ.
 
-| Mã | Nội dung cũ → mới | Điều cần kiểm tra |
-| --- | --- | --- |
-| EX-01 | “Trong thời hạn 30 ngày” → “Trong thời hạn 15 ngày” | Nhận biết giảm thời hạn; xác định hoạt động và chủ thể liên quan từ ngữ cảnh; không chỉ báo thay số. |
-| EX-02 | “Có thể cung cấp” → “Phải cung cấp” | Nhận biết khả năng chuyển từ lựa chọn sang nghĩa vụ; đọc đầy đủ điều kiện và ngoại lệ. |
-| EX-03 | “Áp dụng đối với tổ chức” → “Áp dụng đối với tổ chức và cá nhân” | Nhận biết mở rộng đối tượng; giữ đúng bằng chứng. |
-| EX-04 | Một câu được viết lại nhưng nội dung được người gán nhãn xác nhận tương đương | Phát hiện khác biệt chữ và giải thích căn cứ không đổi nội dung quy định. |
-| EX-05 | Điều 5 cũ thành Điều 6 mới, nội dung giữ nguyên | Nhận diện chỉ dẫn đánh lại số trong S; không tự diễn giải thành bãi bỏ và bổ sung nội dung. |
-| EX-06 | Một Điều cũ được phân thành hai Điều mới | Liên kết chỉ dẫn tách/gộp với Điều gốc; cảnh báo nếu chưa xác định đủ nội dung bị tác động. |
-| EX-07 | Một đoạn không đọc được hoặc một giai đoạn xử lý bị lỗi | Báo phần bị ảnh hưởng; không kết luận toàn bộ không thay đổi. |
-| EX-08 | Sửa một dẫn chiếu nhưng tài liệu được dẫn chiếu không có trong đầu vào | Chỉ ra thay đổi dẫn chiếu, yêu cầu tài liệu bổ sung và giới hạn kết luận; phân tích lại khi đủ nội dung trước/sau. |
+Xem [các ca tham chiếu trong hướng dẫn gán nhãn](data-annotation-guide-hci.md) và [kế hoạch kiểm thử](test_evaluation_plan.md) để tra ví dụ và kỳ vọng chi tiết.
 
 ## 15. Liên kết và thống nhất tài liệu
 
+Các tài liệu kỹ thuật cần được cập nhật theo phạm vi nghiệp vụ của phiên bản BRD này.
+
 | Tài liệu | Trách nhiệm |
 | --- | --- |
-| BRD HCI | Người dùng, nhu cầu, giá trị, phạm vi và quy tắc nghiệp vụ của sản phẩm HCI. |
-| [Nghiên cứu người dùng](user-research.md) | Kết quả trao đổi, căn cứ nhu cầu, persona/scenario và giới hạn nghiên cứu. |
-| SRS HCI | Cụ thể hóa chức năng, dữ liệu, trạng thái kiểm chứng và điều kiện kiểm tra. |
-| Architecture | Module, luồng xử lý và quyết định triển khai theo phạm vi đã chốt. |
-| Thiết kế tương tác | Luồng thao tác, prototype, trạng thái giao diện và lý do thiết kế. |
-| Kế hoạch đánh giá usability | Tác vụ, người tham gia, cách đo và phân tích kết quả sử dụng. |
-| Hướng dẫn gán nhãn và kế hoạch đánh giá kỹ thuật | Tiêu chí nhãn/mức tác động, đáp án tham chiếu, phương pháp và chỉ số kỹ thuật. |
-| README | Giới thiệu, hiện trạng, cách chạy và chỉ dẫn tài liệu. |
-
-SRS dùng AmendmentResult và tám nhóm field_group quy định trong SRS. Bốn nhóm nghiệp vụ ưu tiên của BRD dùng để chọn tác vụ nghiên cứu HCI.
-
-Các file hiện có được gọi thống nhất là [SRS](srs.md), [Architecture](architecture.md), [Implementation Plan HCI](implementation-plan-hci.md), [Data Annotation Guide HCI](data-annotation-guide-hci.md) và [User Research](user-research.md). [Module Owner Decisions](module-owner-decisions-hci.md) tập trung các lựa chọn còn mở; không dùng danh sách quyết định đó để khẳng định đã triển khai hoặc đã có kết quả người dùng.
-
-Việc tạm chọn LightRAG Server riêng là hướng triển khai trong Architecture, không thay phạm vi người dùng, bốn nhóm ưu tiên hay chức năng kiểm chứng của BRD. HTTP nội bộ không tự tạo yêu cầu Internet; nơi chạy mô hình được chốt ở cấu hình và hướng dẫn vận hành.
-
-Bản cập nhật này chỉ đồng bộ tài liệu. Chưa bổ sung phỏng vấn, kết quả usability, số đo chất lượng AI hoặc thay thời hạn học phần.
+| BRD | Người dùng, mục tiêu, phạm vi dân sự, yêu cầu nghiệp vụ và tiêu chí nghiệm thu. |
+| SRS | Yêu cầu có thể kiểm thử cho luồng bắt đầu từ S, truy xuất phiên bản, đối chiếu và phân tích tác động. |
+| Architecture | Thiết kế luồng agent dùng LightRAG và kho tri thức để truy xuất, dùng LLM cùng bộ quy tắc lĩnh vực dân sự để phân tích. Cách tìm và kiểm chứng quan hệ gián tiếp cần được hoàn thiện qua nghiên cứu và thử nghiệm. |
+| README | Phạm vi và trạng thái triển khai thực tế. |
+| Hướng dẫn gán nhãn và kế hoạch đánh giá | Đáp án tham chiếu và cách đo chất lượng truy xuất, thay đổi trực tiếp và tác động gián tiếp. |

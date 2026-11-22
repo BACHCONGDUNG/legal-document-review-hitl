@@ -1,819 +1,156 @@
-# Module Owner Decisions — HCI
+# DECISION — Quyết định triển khai và hợp đồng module
 
-**Học phần và nhóm:** 2627I_INT2041_1 — Nhóm 6
-**Nhóm trưởng:** Bạch Công Dũng
-**Phiên bản:** Bản chia hai phần quyết định
-**Trạng thái:** Đã xác nhận trách nhiệm quyết định và phối hợp tài liệu; phương án kỹ thuật cụ thể vẫn chờ owner đề xuất và review
-**Liên quan:** [SRS](srs.md), [Architecture](architecture.md), [Implementation Plan](implementation-plan-hci.md), [Data Guide](data-annotation-guide-hci.md), [User Research](user-research.md)
+**HCI, Nhóm 6 — cập nhật 22/11/2026.** Phạm vi chỉ S, kho dân sự, nhiều đích và tác động gián tiếp là thiết kế mục tiêu. Hiện trạng mã và kết quả kiểm tra HCI được ghi tại [nền HCI](common-baseline.md). Phân công theo [module](module.md). Công việc nghiên cứu ngắn hạn được theo dõi trong tài liệu tiến độ của nhóm.
 
-**Mục đích và baseline dùng chung**
 
-Đây là nơi duy nhất theo dõi lựa chọn còn mở. Mỗi D-ID có một owner tổng hợp đề xuất, bên nhận/reviewer và đầu ra cần kiểm chứng. Owner được ghi theo phân công HCI đang có; việc có tên trong quyết định không xác nhận người đó đã nhận hoặc thực hiện một phương án cụ thể. Chưa đặt hạn ngày thay nhóm: mục “trước khi” là điểm phụ thuộc để owner ước lượng và nhóm gắn vào lịch học.
+Tài liệu ghi các quyết định đã chốt và phạm vi áp dụng của chúng. Quy ước chạy thử được ghi ngay tại mục liên quan. Sau phiên 1, nhóm cập nhật những quyết định mới dựa trên báo cáo chạy thật. [Workflow](workflow.md) quy định cách đề xuất, review và ghi nhận thay đổi.
 
-Bản tài liệu đồng bộ dùng baseline sau để các bên cùng trao đổi:
+## Phạm vi cập nhật ngày 20/11/2026
 
-- Sinh viên Luật là người dùng chính; bài toán V1–S cùng tham chiếu đã cung cấp; không bắt buộc dựng V2.
-- HCI tập trung hiểu, kiểm chứng, nhận xét và kiểm tra lại; chất lượng AI và usability là hai phép đánh giá khác nhau.
-- POST `/api/compare` nhận multipart `doc_v1`, `doc_s` và `reference_files` tùy chọn. `ComparisonReport` gồm `comparison_id`, `base_document`, `amendment_document`, `reference_documents`, `status`, `results`, `warnings` và `errors`. Mỗi phần tử `results` là một `AmendmentResult`.
-- Schema, validator và fixture dùng tám nhóm field_group theo SRS. ReviewRecord là dữ liệu riêng của frontend HCI.
-- Giữ converter và Parser hiện có, qua adapter; PDF → DOCX → Parser trước mắt. Nguồn block:N/DOCX chuyển đổi không được tự coi là trang PDF.
-- Tạm chọn B cho retrieval: LightRAG Server riêng được gọi HTTP. Có thể cùng máy localhost; chưa chọn model, release/API, prompt, chunk, ngưỡng hoặc cam kết offline.
-- Nhận xét lưu trong phiên frontend, không tự thành gold/nhãn huấn luyện. Giữ request đồng bộ, không bổ sung account/kho lịch sử/job người dùng ở đợt này.
-- Giữ tên thực tế backend/app/ và test/. Tên tài liệu có hậu tố -hci phải được dẫn đúng.
+1. Đầu vào mục tiêu là một S, bối cảnh và nguồn bổ sung tùy chọn. Phân tích trên kho dân sự nhóm chọn và nguồn người dùng bổ sung được kiểm tra hợp lệ; chưa tự tìm Internet. Ngoài kho hoặc thiếu nguồn thì giữ yêu cầu và báo giới hạn/yêu cầu bổ sung.
+2. Một S có thể sửa nhiều văn bản. Phân tích từng đích rồi tổng hợp; một đích chưa xử lý không làm mất kết quả hữu ích của đích khác.
+3. Chọn phiên bản V1 theo định danh, nguồn và căn cứ thời điểm/phạm vi áp dụng. Không tự chọn bản mới nhất; thiếu căn cứ hoặc nhiều ứng viên thì giữ ứng viên/lý do cần kiểm tra.
+4. Tác động gián tiếp phải chỉ ra điều khoản B sử dụng phần nào của V1, phần sửa đổi ảnh hưởng cách hiểu/áp dụng B thế nào và bằng chứng. Có liên quan chưa phải có tác động; không tự kết luận B bị sửa hoặc hết hiệu lực.
+5. Ba mục đích retrieval: tìm đích/phiên bản từ S, tìm ngữ cảnh trước Semantic, tìm B để kiểm chứng tác động. Tra cứu định danh chính xác trước, retrieval bổ sung ứng viên; kiểm tra nguồn trước suy luận và kiểm tra đầu ra trước báo cáo.
+6. Kho nguồn/chỉ mục kho được giữ qua các lượt; S/nguồn bổ sung/index tạm cách ly theo lượt và dọn riêng. Không xóa kho dùng chung khi cleanup một comparison. Client hiện tại chưa đáp ứng vòng đời kho bền vững.
 
-Baseline thống nhất tài liệu không thay nghiệm thu code hoặc review của owner. Đề xuất thay yêu cầu/contract phải nêu rõ phần bị ảnh hưởng và được bên giao/bên nhận kiểm tra trước khi cập nhật nguồn sở hữu.
+Phân công LK-01 giữ nguyên; owner/task và hợp đồng chi tiết của chức năng mới cần thống nhất với bên giao/nhận. Chưa chọn thêm database, model, đa agent, API polling hoặc ngưỡng nghiệm thu. Cách biểu diễn đầy đủ báo cáo cấp S và validator cần triển khai theo SRS §1.8; không thêm trường vào schema cũ trong đợt này.
 
-**Cách đọc và phạm vi quyết định**
+## Yêu cầu tương tác và các nhánh Use Case
 
-Giữ nguyên mã D-01–D-13, phạm vi, owner, bên review và đầu ra tối thiểu của tài liệu HCI. Nam quyết định chính D-05; Đức Anh quyết định chính D-04/D-13; Tùng Dương quyết định cơ chế giữ/đọc bằng chứng thuộc D-07. Dũng + Đức Anh cùng biên soạn api-contract.md và development-guide.md theo D-01/D-13.
+| Mục nguồn | Quyết định áp dụng |
+| --- | --- |
+| 1 | Giữ nhóm ưu tiên/bổ sung theo BRD. Những người trực tiếp dùng hệ thống là actor chính tương ứng với vai trò tương tác. |
+| 2, 5 | Thiếu V1 thì yêu cầu bổ sung. V1 sai thì nêu dấu hiệu, yêu cầu thay file và kiểm tra lại. Khi người dùng chọn “Hiện tại không có tài liệu”, tiếp tục phân tích từ S và nguồn hợp lệ sẵn có, giữ kết luận có căn cứ và giới hạn, đồng thời giữ kết quả đích khác. |
+| 3, 4 | Phân biệt thiếu nguồn dân sự trong kho với ngoài phạm vi hỗ trợ. Phạm vi cần có căn cứ; chưa chắc chắn thì yêu cầu làm rõ. S nhiều lĩnh vực được xử lý theo từng đích, tiếp tục phần dân sự đủ căn cứ. |
+| 6 | Liệt kê văn bản đích và báo mức đủ/thiếu nguồn theo văn bản, yêu cầu và điều khoản. Nhiều phiên bản ứng viên của cùng văn bản cần căn cứ lựa chọn riêng. |
+| 7 | Tài liệu ngữ cảnh và B có hai vai trò, một nguồn có thể mang cả hai. Tác động cần chỉ rõ quy định B sử dụng phần nào của V1, ảnh hưởng và bằng chứng. |
+| 8, 9 | UI chọn tô nền/chữ đậm/đánh dấu kèm nhãn, hỗ trợ nhận biết ngoài màu sắc. Hiển thị chuỗi căn cứ chọn V1, trước/sau, nhận định, liên hệ B khi có, kết luận và giới hạn. |
+| 10, 11 | Bổ sung tạo lượt phân tích mới trong cùng trải nghiệm UI. Cleanup tài nguyên backend vẫn cho phép xem báo cáo/bằng chứng nhiều lần. “Kết thúc phiên” xóa trạng thái, báo cáo và lựa chọn trên UI. |
+| 12, 13 | Nhận xét là mở rộng. Hoàn tất xét theo đầu ra đúng phạm vi, bằng chứng và giới hạn. Nghiệm thu chất lượng đúng/sai độc lập với trạng thái chạy SUCCESS/PARTIAL/FAILED. |
+| 14 | Bổ sung E4 cho thử lại chủ động. Dùng dữ liệu trung gian hợp lệ còn lưu để tiếp tục; nếu đã cleanup hoặc không còn hợp lệ thì chạy lượt mới. Cần đặc tả điểm tiếp tục, tác vụ còn chạy và kiểm soát gửi trùng. |
+| 15 | E6 giữ ở mức đề xuất như DOCX và ý Đức Anh. Nếu đưa vào bản đầu, chốt hành vi dừng, trạng thái tác vụ còn chạy và cleanup trước khi nghiệm thu. |
+| 16 | Mỗi luồng/nhánh đã chốt có đầu vào và kết quả kỳ vọng trong kế hoạch kiểm thử. Nhánh chưa được chốt giữ trạng thái đề xuất. Khi cả hai chưa có ý kiến về một hành vi, ưu tiên nội dung DOCX, gồm cả trạng thái đề xuất ghi trong đó. |
 
-Mỗi quyết định có hai phương án nền do người soạn đề xuất theo phạm vi hiện tại. Đây là điểm bắt đầu trao đổi, không phải hai lựa chọn duy nhất, không phải kết quả thử nghiệm và không thay lựa chọn owner. Hai phương án tập trung một hướng triển khai chính; các chi tiết còn lại vẫn phải được điền ở các trường nhỏ bên dưới. Phương án nào làm thay đổi yêu cầu/contract phải được review trước khi áp dụng.
+SRS §4.1–4.2 cụ thể hóa tương tác; kế hoạch kiểm thử ánh xạ về M1–M11, A1–A3 và E1–E6. Kết quả từ S khi thiếu V1 cần hợp đồng cấp S hỗ trợ nguồn và giới hạn; contract cục bộ tiếp tục được kiểm tra theo validator hiện có.
 
-**Phân quyền trong từng quyết định:** “Phần owner tự quyết định” áp dụng cho lựa chọn nội bộ trong baseline, không thay contract, phạm vi hay nguồn lực chung. “Phần cần nhiều bên thống nhất” chỉ yêu cầu các bên thực sự bị ảnh hưởng xác nhận; không mặc định mọi quyết định đều cần cả nhóm duyệt. Owner vẫn tự kiểm tra và bên nhận vẫn review đầu ra. Hai phần xác định quyền và trách nhiệm, không xác nhận phương án đã được chọn hoặc đã chốt.
+## Quyết định dùng schema chung làm hợp đồng chung
 
-**Trạng thái phương án kỹ thuật hiện tại:** CHỜ OWNER ĐỀ XUẤT. Có phương án nền trong tài liệu không đồng nghĩa owner đã đề xuất, đã chọn hoặc đã chốt.
+## A. Quyết định của owner về cách triển khai
 
-Tài liệu có đúng hai phần chính. **Phần A** ghi quyền lựa chọn nội bộ và hai phương án nền của owner; **phần B** ghi hợp đồng/điều kiện phải thống nhất với các bên liên quan. Giữ mã D-01–D-13 ở cả hai phần để đối chiếu cùng một quyết định; không tạo mã quyết định mới. Trạng thái và kết luận phải được đọc theo đúng phạm vi A hoặc B, không coi chốt nội bộ là đã chốt toàn bộ D-ID.
+### CN-01 — Đọc/chuyển đổi và parse tài liệu
 
-Vấn đề cần chốt ở phần A được giữ làm bối cảnh chung của D-ID, không mở rộng quyền cá nhân sang các nội dung phải thống nhất ở phần B. Phương án nền có ảnh hưởng đầu vào/đầu ra, nguồn lực hoặc bên sử dụng chỉ được áp dụng sau khi phần B tương ứng được xác nhận.
+Dùng bộ chuyển PDF và Parser DOCX hiện có làm nền phiên 1. Adapter xử lý ánh xạ sang schema chung theo LK-03.
 
-## A. Quyết định thuộc phạm vi owner
+### CN-03 — Chunking, query và chọn ngữ cảnh
 
-Owner lựa chọn cách hiện thực trong baseline và tự kiểm tra. Hai phương án nền dưới mỗi D-ID được giữ nguyên để cân nhắc; không tự chốt thay owner. Các điều kiện có nhiều bên cùng quyết định nằm ở phần B cùng mã.
+Trong lõi từng đích, chuẩn bị nguồn/index tạm song song với Linker/Text Diff và ghép query ngữ cảnh khi đủ dữ liệu theo LK-06. Truy xuất đích từ S và tìm B là hai bước khác, không phụ thuộc TextDiffResult. Kho dùng chung được lập chỉ mục trước lượt chạy; không nhập lại toàn kho cho mỗi item.
 
-### D-01 — Contract API schema và báo cáo — Phần A
+### CN-04 — Cấu hình LightRAG và tài nguyên
 
-**Trạng thái:** Đã chốt hợp đồng API cho bản nền HCI. Còn bước kiểm tra và bàn giao.
+Dũng và Đức Anh phụ trách tích hợp LightRAG Server qua HTTP theo LK-13.
 
-**Chủ trì:** Dương Đức Anh
+### CN-06 — Phương pháp Semantic Diff
 
-**Phần owner tự quyết định:** Đức Anh chọn cách tổ chức router, schema/validator và adapter nội bộ, miễn giữ đúng baseline và hợp đồng đã thống nhất.
+Nam phụ trách Semantic Diff. Semantic Diff dùng rule trước, model khi cần. Kết luận phải kèm căn cứ hoặc ghi rõ phần chưa xác định.
 
-**Quyết định tích hợp:** Dùng API, schema, validator và fixture nêu trong SRS.
+### CN-08 — AI Adapter và tổ chức gọi mô hình
 
-**Việc tiếp theo:** Đức Anh phối hợp Dũng và Tùng Dương kiểm tra upload, báo cáo, lỗi HTTP và lỗi trong báo cáo. Các thay đổi sau baseline được review theo phần B.
+Dũng và Đức Anh phụ trách AI Adapter. Adapter là điểm gọi mô hình và kiểm tra đầu ra theo hợp đồng dùng chung.
 
-### D-02 — Đầu vào Parser adapter và truy nguồn — Phần A
+### CN-10 — Cách tự kiểm chứng implementation
 
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
+Các owner dùng kiểm thử module, kiểm thử chéo và kiểm thử toàn luồng. Evaluator độc lập nằm ngoài phạm vi triển khai. Đức Anh điều phối kế hoạch đánh giá.
 
-**Chủ trì:** Bạch Công Dũng
+### Quyết định sẽ bổ sung sau phiên 1
 
-**Phần owner tự quyết định:** Dũng chọn cách đọc/chuyển đổi, xử lý cây và hiện thực adapter trong phần đầu vào; giữ dữ liệu, nguồn và giới hạn đã cam kết.
+Các mã CN-02 (Linker), CN-05 (Text Diff), CN-07 (Scorer) và chi tiết thuật toán, mô hình, rubric, môi trường của các CN liên quan sẽ được cập nhật từ báo cáo chạy của owner. Phiên 1 thực hiện theo phạm vi và fixture đã giao trong [Implementation Plan](implementation-plan-hci.md).
 
-**Vấn đề cần chốt:** Đầu ra native/adapter; quy ước ID, block/spans, bảng/outside/quotation; mapping DOCX chuyển đổi → PDF có thể bảo đảm đến đâu? Quy ước Unicode offsets?
+## B. Quyết định liên kết và hợp đồng giữa các module
 
-**Hai phương án nền để cân nhắc:**
+### LK-01 — Phân công theo module/chức năng
 
-1. **Adapter tạo biểu diễn bàn giao chuẩn hóa.** Giữ Parser hiện có; adapter tạo đối tượng gồm định danh/vai trò, danh sách khối nguồn có thứ tự, cấu trúc Điều/Khoản/Điểm tham chiếu tới khối và cảnh báo. Bên nhận ít phụ thuộc dict native; cần kiểm tra không mất bảng, outside, span hoặc nội dung trích dẫn.
-2. **Giữ cây native và cung cấp lớp truy cập nguồn ổn định.** Bàn giao cây Parser được kiểm tra cùng các thao tác đọc đơn vị/khối/đoạn nguồn theo contract cố định. Giảm chuyển đổi dữ liệu, nhưng cần kiểm soát thay đổi native và không để bên nhận tự đoán đường dẫn trường. Fixture lưu snapshot có thể đọc/kiểm tra lại.
+| Phạm vi/module/chức năng | Người phụ trách | Ghi chú |
+| --- | --- | --- |
+| Dữ liệu + docs | Dũng | Dữ liệu, nghiệp vụ, tài liệu và phối hợp fixture/nhãn |
+| Xử lý dữ liệu/tài liệu | Dũng (đầu vào/adapter), Đức Anh (linker) | Chuyển đổi, Parser, adapter, trích và liên kết chỉ dẫn sửa đổi |
+| Text Diff | Nam | Phân tích phần chữ thay đổi |
+| Semantic Change/Semantic Diff | Nam | Phân tích thay đổi nghĩa và tạo nhận định có bằng chứng |
+| Classifier & Scorer | Nam | Phân loại và chấm mức tác động theo kết quả ngữ nghĩa |
+| Tích hợp + API | Đức Anh | Pipeline, tổng hợp đầu ra và API nghiệp vụ; không đồng nhất với phần gọi LightRAG |
+| AI Adapter/gọi mô hình | Nam | Theo người chủ trì CN-08; phân chia công việc nội bộ sẽ được điền tại CN-08 |
+| Gọi/tích hợp LightRAG | Đức Anh | Phụ trách gọi/tích hợp dịch vụ theo phương án HTTP đã chốt |
+| Context | Đức Anh | Chuẩn bị chunk, truy vấn, chọn và kiểm tra ngữ cảnh/căn cứ |
+| Điều phối kế hoạch đánh giá | Đức Anh | Tổng hợp yêu cầu từ thành viên, tổ chức hoàn thiện kế hoạch và theo dõi thực hiện |
 
-**Phương án owner đề xuất:** [Chọn, điều chỉnh hoặc đề xuất phương án khác.]
+Tùng Dương phụ trách UI, gồm hiển thị báo cáo và xử lý lỗi, cảnh báo, trạng thái nhận từ Pipeline/API. Các module phát hiện và báo lỗi của phần mình. Pipeline/API tổng hợp và trả về frontend. Vai trò từng đầu ra và bên nhận được cụ thể hóa trong [Module](module.md).
 
-**Lý do và đánh đổi:** [Điền lý do, chi phí/giới hạn và ví dụ kiểm chứng.]
+### LK-02 — Các cặp liên kết và giao diện giữa module/chức năng
 
-**Kết luận hiện có:** Chưa chốt phương án kỹ thuật; giữ baseline và trách nhiệm đã xác nhận. Hai phương án nền chưa là quyết định của owner.
+Dùng hợp đồng TypedDict của schema đã merge. Module trong backend bàn giao dict/list theo schema. LightRAG dùng HTTP qua client riêng. Chín điểm nối và fixture tương ứng nằm trong [Module §4](module.md).
 
-**Phần phối hợp liên quan:** Xem D-02 ở phần B; không dùng lựa chọn nội bộ để tự đổi contract hoặc điều kiện chung.
+### LK-03 — Parser → Adapter/Linker/Context
 
-### D-03 — Chỉ dẫn vị trí đích và nội dung trước sau — Phần A
+Adapter ánh xạ đầu ra native của Parser sang `ExtractedDocument`, `SourceBlock` và `Clause`. Giữ nguyên văn và khả năng tra nguồn. Parser tiếp tục tự đọc DOCX. Xem [Schema Integration](schema-integration.md).
 
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
+### LK-04 — Định danh, nguồn và offset
 
-**Chủ trì:** Dương Đức Anh
+Trong mỗi ComparisonReport cục bộ dùng `v1`/BASE, `s`/AMENDMENT và ID riêng cho từng REFERENCE. Cấp S cần ánh xạ (target_id, ID nguồn cục bộ) về định danh văn bản/phiên bản thật và snapshot kho; filename/số Điều không phải khóa toàn kho. `EvidenceRef` chứa `document_id`, `source_refs`, `quote`. Giữ `block:N` khi trỏ đúng khối và quote khớp nguồn. Text Diff dùng offset ký tự Python theo khoảng nửa mở trên đúng chuỗi trước/sau.
 
-**Phần owner tự quyết định:** Đức Anh chọn thuật toán trích chỉ dẫn, tìm ứng viên đích và dựng nội dung cục bộ trong phạm vi đã giao.
+### LK-05 — Chỉ dẫn sửa đổi và nội dung trước/sau
 
-**Vấn đề cần chốt:** Phương pháp trích chỉ dẫn, tìm văn bản/đích, dựng before/after, hiệu lực và nhận diện căn cứ cần thiết; xử lý mơ hồ ra sao?
+Phiên 1 giữ toàn văn cùng một đơn vị đối chiếu ở cả hai trạng thái. Với sửa nội dung của Điểm, Khoản hoặc Điều hiện có, đơn vị đối chiếu là toàn văn đơn vị đó. Khi thêm hoặc bãi bỏ cả một đơn vị, dùng đơn vị chứa nhỏ nhất còn tồn tại ở hai phía, ví dụ toàn Điều khi thêm hoặc bãi bỏ một Khoản. Vị trí đích vẫn ghi chính xác Điểm, Khoản hoặc Điều mà S chỉ ra. Nếu chỉ dẫn có nhiều đích, giữ đủ đích và căn cứ cho từng đích.
 
-**Hai phương án nền để cân nhắc:**
+Quy ước triển khai thử phiên 1 là một `AmendmentItem` cho mỗi đích có thể áp dụng độc lập. Các item cùng chỉ dẫn trỏ về cùng bằng chứng S. Với chỉ dẫn có đích chồng lấn hoặc thao tác phụ thuộc lẫn nhau, ghi nhận giới hạn và đưa ví dụ vào báo cáo phiên 1 để nhóm chốt cách xử lý.
 
-1. **Liên kết theo chỉ dẫn và cấu trúc pháp lý.** Nhận diện số hiệu, Điều/Khoản/Điểm và thao tác bằng quy tắc; áp chỉ dẫn vào đơn vị đã parse. Ưu tiên khả năng truy nguyên; gặp chỉ dẫn mơ hồ thì giữ ứng viên/UNRESOLVED thay vì đoán.
-2. **Liên kết cấu trúc kết hợp đối chiếu nội dung.** Dùng quy tắc xác định phạm vi, sau đó đối chiếu cụm từ/nội dung để chọn giữa các ứng viên khi đánh số hoặc bố cục khó. Có thể xử lý thêm ca khó nhưng cần tiêu chí chấp nhận đã thử trên mẫu; không ép liên kết khi nhiều ứng viên còn hợp lý.
+Chỉ dùng `QUOTED` khi toàn bộ đoạn sau là nguyên văn từ S. Dùng `DERIVED` khi dựng lại đơn vị đối chiếu từ V1 và chỉ dẫn S. Phía đã xác định vắng mặt và phía chưa biết được biểu diễn theo [SRS §1.2](srs.md).
 
-**Phương án owner đề xuất:** [Chọn, điều chỉnh hoặc đề xuất phương án khác.]
+**Giới hạn nền trước merge:** quy tắc thêm/bãi bỏ và nhiều đích là mục tiêu sau merge. Linker demo hiện hỗ trợ sửa cụm từ duy nhất hoặc đoạn thay thế trích nguyên văn tại một đích. Chưa đủ căn cứ xác minh văn bản đích phải giữ `UNRESOLVED`, không mặc định `v1`. Thao tác chưa hỗ trợ giữ chỉ dẫn, nguồn, lý do và bỏ qua phân tích phụ thuộc; không tự đổi thành `AMEND`. Đích đã xác minh là V1 dùng document_id `v1`. Khi chưa xác minh, code giữ chuỗi gợi ý từ nguồn hoặc chuỗi rỗng; OTHER_DOCUMENT giữ số hiệu khác được xác minh từ nguồn. Các chuỗi nhãn ngoài V1 không phải ID tài liệu đã nhập, bên nhận luôn kiểm tra applicability trước; cách mở rộng định danh ngoài V1 được review khi triển khai, không thêm ID giả.
 
-**Lý do và đánh đổi:** [Điền lý do, chi phí/giới hạn và ví dụ kiểm chứng.]
+### LK-06 — Context song song Text Diff, ghép query trước Semantic Diff
 
-**Kết luận hiện có:** Chưa chốt phương án kỹ thuật; giữ baseline và trách nhiệm đã xác nhận. Hai phương án nền chưa là quyết định của owner.
+Đoạn này áp dụng query ngữ cảnh của lõi từng đích, sau khi đã tìm đúng V1. Chuẩn bị Context và chỉ mục tạm song song với Linker → Text Diff; kiểm tra readiness của chỉ mục kho đã có, không nhập lại toàn kho. Khi hai nhánh có đủ dữ liệu, ghép chỉ dẫn, trước/sau và vùng chữ đổi để truy xuất, kiểm tra nguồn và cung cấp `AnalysisContext` cho Semantic Diff. [Architecture §4.1](architecture.md) giữ sơ đồ chi tiết.
 
-**Phần phối hợp liên quan:** Xem D-03 ở phần B; không dùng lựa chọn nội bộ để tự đổi contract hoặc điều kiện chung.
+Bridge hiện tách `context_prepare(item)` để chuẩn bị chỉ mục song song Text Diff, rồi gọi `context_work(item, text_diff)` để truy vấn sau khi cả hai hoàn tất. Query nhận chỉ dẫn, trước/sau và vùng chữ đổi; kiểm tra ID, offset và nội dung diff tại điểm nối nội bộ, không đổi schema/validator chung. Nếu index lỗi, bỏ qua query và giữ cảnh báo cho Semantic. Việc chuẩn bị chỉ mục từ Adapter song song cả Linker vẫn thuộc tích hợp Pipeline tiếp theo; demo hiện tắt retrieval. Kiểm thử HTTP mô phỏng không xác nhận hoàn thành LK-13 hoặc dịch vụ thật.
 
-### D-04 — Retrieval ngữ cảnh và vòng đời LightRAG — Phần A
+### LK-07 — Text Diff → Semantic Diff
 
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
+Text Diff trả `TextDiffResult` theo cùng `amendment_id`. Các đoạn INSERT/DELETE/REPLACE có offset khớp hai chuỗi trước/sau. Semantic nhận phần chữ đổi cùng ngữ cảnh đã kiểm chứng.
 
-**Chủ trì:** Dương Đức Anh — quyền quyết định chính
+### LK-08 — Cấu trúc Semantic Change
 
-**Phần owner tự quyết định:** Đức Anh quyết định chính cách hiện thực client, chunk/query và điều phối truy xuất trong phương án tạm chọn, đáp ứng contract và ngân sách đã thống nhất.
+Dùng `SemanticDiffResult`, `SemanticChange` và `ChangeAspect` trong schema hiện có. Giữ bằng chứng, cảnh báo và trạng thái cần kiểm tra theo [SRS §1.3](srs.md).
 
-**Vấn đề cần chốt:** Release/API LightRAG; cách nhập/chia đoạn/query; registry; đợi index; cách ly và dọn dữ liệu; context đủ nghĩa và ngân sách truy xuất?
+### LK-09 — Tám nhóm field_group, category và ranh giới nhãn
 
-**Hai phương án nền để cân nhắc:**
+Dùng tám `field_group` đã có. Với thay đổi nghĩa, category khác null phải thuộc một nhóm có trong aspects. Thay đổi chỉ về diễn đạt dùng `WORDING_ONLY` theo schema. Review ca giao thoa bằng văn bản nguồn trước khi chốt ranh giới nhãn.
 
-1. **Chunk theo đơn vị cấu trúc và truy xuất trong một lượt.** Tạo chunk theo Điều/Khoản/Điểm có câu dẫn cần thiết; giữ registry nguồn; nhập bộ tài liệu một lần theo comparison, đợi sẵn sàng rồi query từng chỉ dẫn. Luồng đơn giản hơn để kiểm tra; phải thử giới hạn đơn vị quá dài và mất ngữ cảnh giữa đơn vị.
-2. **Chunk theo cấu trúc kết hợp cửa sổ ngữ cảnh có giới hạn.** Giữ đoạn cấu trúc làm lõi, bổ sung đoạn lân cận/dẫn chiếu khi có căn cứ; query bổ sung chỉ trong ngân sách đã định. Linh hoạt hơn với ngữ cảnh phân tán nhưng tăng lượng xử lý và yêu cầu kiểm tra mapping/trùng lặp. Cả hai phương án phải kiểm chứng cách ly và dọn dữ liệu trên API/release thực tế.
+### LK-10 — Semantic Diff → Classifier & Scorer
 
-**Phương án owner đề xuất:** [Chọn, điều chỉnh hoặc đề xuất phương án khác.]
+Nam phụ trách Scorer. `ScoringResult` nối tới thay đổi bằng `change_id`. Khi có căn cứ gán nhóm khía cạnh nhưng chưa đủ căn cứ chấm mức độ, giữ nhóm đã xác định, dùng `significance = null`, `is_critical = null`, `needs_review = true` và ghi lý do. Rubric chi tiết và cách xử lý lỗi theo bước sẽ được cập nhật từ báo cáo của các thành viên sau lần chạy phiên 1.
 
-**Lý do và đánh đổi:** [Điền lý do, chi phí/giới hạn và ví dụ kiểm chứng.]
+Ca fixture chung `deadline_reduction` (30 → 15 ngày) dùng mức độ `null`, không lấy `MEDIUM` hoặc `HIGH` làm nhãn đã duyệt. Report của ca chung dùng `PARTIAL` cùng lý do chờ review; kết quả Semantic có trong fixture là kỳ vọng kỹ thuật giả định, không phải output được baseline hiện tại xác nhận.
 
-**Kết luận hiện có:** Chưa chốt phương án kỹ thuật; giữ baseline và trách nhiệm đã xác nhận. Hai phương án nền chưa là quyết định của owner.
+### LK-11 — Báo cáo Pipeline → API/frontend
 
-**Phần phối hợp liên quan:** Xem D-04 ở phần B; không dùng lựa chọn nội bộ để tự đổi contract hoặc điều kiện chung.
+API đang chạy trả `ComparisonReport` gồm kết quả theo `AmendmentResult`. Đầu vào hiện dùng `doc_v1`, `doc_s` và `reference_files` nếu có. Frontend hiện đoạn trích và vị trí từ bằng chứng trong báo cáo của lượt đang mở. Xem [Architecture §4.3](architecture.md) về vòng đời nguồn.
 
-### D-05 — Mô hình prompt validation và fallback — Phần A
+API mục tiêu nhận S và trả báo cáo cấp S theo SRS §1.8, bao các ComparisonReport cục bộ, yêu cầu chưa giải quyết, tác động gián tiếp và phạm vi. Endpoint/payload/schema/validator/fixture cấp S chưa được triển khai; phải review trước khi đổi bên giao/nhận. API cũ không tự trở thành API chỉ S khi tài liệu được merge.
 
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
+Điểm chạy nền chung là `backend.demo:app` (HTML/CSS/JavaScript, DOCX). `backend.main:app` vẫn chưa gắn runner. Không yêu cầu nối lại main hoặc chuyển sang React trước merge nền; hướng frontend chính thức giữ theo SRS, việc mở rộng thực hiện sau.
 
-**Chủ trì:** Vương Thành Nam — quyền quyết định chính
+### LK-12 — Null, rỗng, cảnh báo, lỗi và trạng thái
 
-**Phần owner tự quyết định:** Nam quyết định chính phương pháp phân tích, prompt, kiểm tra nội bộ/fallback và lựa chọn LLM/embedding trong phạm vi, giao diện và nguồn lực đã thống nhất. Review không biến mọi chỉnh prompt nội bộ thành việc cả nhóm phải duyệt.
+Khi chưa xác định được đích, giữ chỉ dẫn, thao tác đã nhận diện và bằng chứng. Dùng `applicability = UNRESOLVED`, `needs_review = true` và lý do. Giữ mục trong báo cáo và để các kết quả phân tích chưa chạy là `null`.
 
-**Vấn đề cần chốt:** LLM/embedding cho các vai trò, nơi chạy local/ngoài, prompt, kiểm tra đầu ra, fallback; dùng retrieval thế nào trong phân tích?
+Các module báo lỗi và cảnh báo của phần mình. Đức Anh tổng hợp và trả qua Pipeline/API. Tùng Dương xử lý và hiển thị lỗi, cảnh báo và trạng thái trả về trên UI.
 
-**Hai phương án nền để cân nhắc:**
+`SUCCESS`: các bước bắt buộc đã hoàn thành và không còn trạng thái cần kiểm tra. `PARTIAL`: có kết quả dùng được nhưng còn phần thiếu/chưa xác nhận. `FAILED`: không tạo được mục phân tích dùng được; vẫn giữ các chỉ dẫn đã nhận diện, nguồn và lý do. Trong demo AMEND hiện tại, một cặp trước/sau có Text Diff được tính là kết quả dùng được, kể cả diff rỗng; không từ đó suy ra toàn văn không đổi nghĩa. Fixture chung dùng `PARTIAL`; `SUCCESS` chỉ dùng cho ca riêng hoàn tất mọi bước bắt buộc, không gắn cho demo để che phần chưa triển khai.
 
-1. **Một lượt phân tích với đầu ra có cấu trúc.** Một lời gọi tạo nhận định/aspects/giải thích theo contract; code kiểm tra schema, quote và điều kiện cơ bản trước khi nhận. Ít lời gọi hơn nhưng cần đánh giá kỹ lỗi suy luận; phản hồi hợp lệ về cấu trúc không được coi là đúng nghiệp vụ.
-2. **Tách bước tạo nhận định và bước kiểm tra.** Tạo nhận định trước rồi kiểm tra lại từng kết luận với nguồn bằng bước kiểm tra riêng; có thể dùng cùng mô hình hoặc mô hình khác nếu thử nghiệm hỗ trợ. Dễ phân tích lỗi từng bước, nhưng tăng thời gian/chi phí và không bảo đảm hết lỗi. Nam chọn model/embedding, nơi chạy và fallback sau thử mẫu.
+HTTP và trạng thái report tách biệt: xử lý hợp lệ, hoàn tất nhưng không phân tích được trả HTTP 200 + report `FAILED` nếu không có lỗi thực thi. Lỗi dịch vụ/thực thi có errors trả 500, timeout 504, chưa cấu hình runner 501; lỗi upload giữ 415/413/422/409 theo [bảng API](schema-integration.md). Mã lỗi và chính sách chi tiết cho các module/dịch vụ mới tiếp tục review khi triển khai, không tự mở rộng schema.
 
-**Phương án owner đề xuất:** [Chọn, điều chỉnh hoặc đề xuất phương án khác.]
+### LK-13 — LightRAG HTTP và vòng đời dữ liệu
 
-**Lý do và đánh đổi:** [Điền lý do, chi phí/giới hạn và ví dụ kiểm chứng.]
+LightRAG Server riêng, backend gọi qua HTTP. Dũng và Đức Anh phụ trách tích hợp. Phạm vi chính là retrieval và kiểm chứng nguồn. Phiên 1 dùng fixture/mock để kiểm tra điểm nối, kết quả chạy làm căn cứ chốt release, endpoint, payload, cách ly và vòng đời chỉ mục.
 
-**Kết luận hiện có:** Chưa chốt phương án kỹ thuật; giữ baseline và trách nhiệm đã xác nhận. Hai phương án nền chưa là quyết định của owner.
-
-**Phần phối hợp liên quan:** Xem D-05 ở phần B; không dùng lựa chọn nội bộ để tự đổi contract hoặc điều kiện chung.
-
-### D-06 — Bốn nhóm chia nhận định và rubric — Phần A
-
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
-
-**Chủ trì:** Vương Thành Nam
-
-**Phần owner tự quyết định:** Nam chọn cách hiện thực phân nhóm, tổ chức nhận định/aspects và áp rubric bên trong module sau khi định nghĩa nghiệp vụ đã thống nhất.
-
-**Vấn đề cần chốt:** Ranh giới tám nhóm phân tích, chia/gộp nhận định trong semantic_diff.changes, giá trị/đơn vị, rubric pilot và ca ngoài phạm vi
-
-**Hai phương án nền để cân nhắc:**
-
-1. **Tách theo từng nhận định pháp lý độc lập.** Mỗi nhận định kiểm chứng độc lập thành một nhận định trong semantic_diff.changes; khía cạnh liên quan đặt trong aspects. Dễ gắn bằng chứng/nhận xét và đối chiếu đáp án; cần quy tắc chống tách vụn, trùng hoặc làm mất quan hệ điều kiện.
-2. **Nhóm các khía cạnh gắn chặt trong cùng nhận định.** Một nhận định trong semantic_diff.changes giữ các thay đổi cùng chủ thể/hành vi/điều kiện cần đọc chung; các nghĩa vụ độc lập vẫn tách. Giữ ngữ cảnh dễ đọc hơn nhưng cần tiêu chí nhóm rõ để không che một khía cạnh sai hoặc bỏ sót. Cả hai dùng tám nhóm hiện có và rubric được review, không tự thêm nhãn.
-
-**Phương án owner đề xuất:** [Chọn, điều chỉnh hoặc đề xuất phương án khác.]
-
-**Lý do và đánh đổi:** [Điền lý do, chi phí/giới hạn và ví dụ kiểm chứng.]
-
-**Kết luận hiện có:** Chưa chốt phương án kỹ thuật; giữ baseline và trách nhiệm đã xác nhận. Hai phương án nền chưa là quyết định của owner.
-
-**Phần phối hợp liên quan:** Xem D-06 ở phần B; không dùng lựa chọn nội bộ để tự đổi contract hoặc điều kiện chung.
-
-### D-07 — Tương tác frontend và cách đọc bằng chứng — Phần A
-
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
-
-**Chủ trì:** Lê Tùng Dương
-
-**Phần owner tự quyết định:** Tùng Dương quyết định chính thiết kế tương tác, bố cục, tổ chức frontend và lựa chọn cơ chế đọc/giữ bằng chứng trong baseline; chủ động chỉnh các chi tiết không đổi hợp đồng hay yêu cầu chung.
-
-**Vấn đề cần chốt:** Stack frontend, luồng/màn hình, evidence display, bàn phím, lỗi, lọc/đếm và ReviewRecord; cấu trúc mã frontend? Tùng Dương quyết định cơ chế giữ/đọc bằng chứng sau khi backend dọn file; các phương án nền được liệt kê ngay dưới đây.
-
-**Hai phương án nền để cân nhắc:**
-
-1. **Giữ khối nguồn trong phiên và xem bằng chứng cạnh nhận định.** Backend trả các khối nguồn cần thiết cùng báo cáo; frontend tra theo document_id/source_ref, mở nội dung trong vùng bằng chứng cạnh mục đang rà soát. Có thể đọc rộng quanh đoạn trích và không cần file tạm backend; cần kiểm soát dung lượng/khả năng điều hướng.
-2. **Giữ trích đoạn có ngữ cảnh trong phiên và mở chi tiết theo mục.** Backend trả trích đoạn cùng phần ngữ cảnh đã xác định, gắn đúng nguồn; frontend mở vùng chi tiết khi chọn bằng chứng. Nhẹ hơn và tập trung tác vụ, nhưng phải kiểm tra đoạn cắt có đủ để người dùng kiểm chứng. Tùng Dương chọn cách hiển thị, phối hợp D-01/D-02 để giữ đúng contract.
-
-**Phương án owner đề xuất:** [Chọn, điều chỉnh hoặc đề xuất phương án khác.]
-
-**Lý do và đánh đổi:** [Điền lý do, chi phí/giới hạn và ví dụ kiểm chứng.]
-
-**Kết luận hiện có:** Chưa chốt phương án kỹ thuật; giữ baseline và trách nhiệm đã xác nhận. Hai phương án nền chưa là quyết định của owner.
-
-**Phần phối hợp liên quan:** Xem D-07 ở phần B; không dùng lựa chọn nội bộ để tự đổi contract hoặc điều kiện chung.
-
-### D-08 — Đối chiếu nhận xét giữa các lượt — Phần A
-
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
-
-**Chủ trì:** Lê Tùng Dương
-
-**Phần owner tự quyết định:** Tùng Dương chọn cách tổ chức state, lưu/khôi phục nhận xét trong phiên và hiện thực đối chiếu khi dữ liệu cùng quy tắc đã rõ.
-
-**Vấn đề cần chốt:** Nhận diện cùng mục và dữ liệu cần so sánh giữa hai lượt; giữ REVIEWED khi nào, RECHECK_REQUIRED và nhận xét không ghép được thế nào?
-
-**Hai phương án nền để cân nhắc:**
-
-1. **Nhận diện chắc chắn rồi so sánh đầy đủ nội dung.** Ghép bằng tổ hợp chỉ dẫn/đích/nguồn ổn định; chỉ giữ REVIEWED khi chứng minh nội dung phục vụ kiểm chứng không đổi. Giảm thao tác kiểm tra lại không cần thiết nhưng thuật toán và fixture phải bao quát đổi giải thích/bằng chứng/mức độ; không ghép chỉ theo ID hoặc số Điều.
-2. **Đối chiếu thận trọng và yêu cầu kiểm tra lại.** Chỉ gắn những cặp xác định chắc chắn; các mục cũ nhận diện được đều yêu cầu kiểm tra lại, nhận xét cũ giữ riêng; mục không ghép chắc chắn ở danh sách chưa đối chiếu. Dễ kiểm chứng ở bản đầu nhưng người dùng phải rà lại nhiều hơn. Không tự gắn nhận xét theo chuỗi gần giống.
-
-**Phương án owner đề xuất:** [Chọn, điều chỉnh hoặc đề xuất phương án khác.]
-
-**Lý do và đánh đổi:** [Điền lý do, chi phí/giới hạn và ví dụ kiểm chứng.]
-
-**Kết luận hiện có:** Chưa chốt phương án kỹ thuật; giữ baseline và trách nhiệm đã xác nhận. Hai phương án nền chưa là quyết định của owner.
-
-**Phần phối hợp liên quan:** Xem D-08 ở phần B; không dùng lựa chọn nội bộ để tự đổi contract hoặc điều kiện chung.
-
-### D-09 — Giới hạn vận hành deadline và cleanup — Phần A
-
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
-
-**Chủ trì:** Dương Đức Anh
-
-**Phần owner tự quyết định:** Đức Anh chọn cách hiện thực kiểm tra giới hạn, deadline, retry và cleanup bên trong backend theo ràng buộc đã thống nhất.
-
-**Vấn đề cần chốt:** Dung lượng/số file, đồng thời, deadline/timeout/retry; dọn tài nguyên khi blocking/tác vụ Server còn chạy; giới hạn ingress?
-
-**Hai phương án nền để cân nhắc:**
-
-1. **Một lượt xử lý đồng thời với deadline chung.** Giữ giới hạn một comparison đang xử lý; đo và cấu hình ngân sách toàn request, kiểm tra deadline giữa các bước. Dễ kiểm soát tài nguyên bản đầu; phải thông báo bận rõ ràng và không coi deadline là hủy được thư viện blocking.
-2. **Số lượt đồng thời hữu hạn và ngân sách theo bước.** Giới hạn số comparison đang chạy cùng ngân sách từng bước/dịch vụ trong deadline chung. Có thể phục vụ thêm lượt nhưng cần kiểm chứng tài nguyên, cách ly, contention và cleanup. Vẫn request đồng bộ, không bổ sung job/queue hay xóa tài nguyên khi tác vụ còn dùng.
-
-**Phương án owner đề xuất:** [Chọn, điều chỉnh hoặc đề xuất phương án khác.]
-
-**Lý do và đánh đổi:** [Điền lý do, chi phí/giới hạn và ví dụ kiểm chứng.]
-
-**Kết luận hiện có:** Chưa chốt phương án kỹ thuật; giữ baseline và trách nhiệm đã xác nhận. Hai phương án nền chưa là quyết định của owner.
-
-**Phần phối hợp liên quan:** Xem D-09 ở phần B; không dùng lựa chọn nội bộ để tự đổi contract hoặc điều kiện chung.
-
-### D-10 — Dữ liệu gold split và mẫu tác vụ — Phần A
-
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
-
-**Chủ trì:** Bạch Công Dũng
-
-**Phần owner tự quyết định:** Dũng tổ chức thu thập, manifest, đóng gói và quản lý phiên bản dữ liệu theo tiêu chí nguồn/split đã thống nhất.
-
-**Vấn đề cần chốt:** Bộ V1–S/tham chiếu, manifest, split theo nguồn, hồ sơ gold HCI và nhãn context; mẫu đúng/sai kiểm soát cho HCI
-
-**Hai phương án nền để cân nhắc:**
-
-1. **Một bộ nguồn quản lý tập trung bằng manifest.** Mỗi mẫu chỉ rõ file, hash, vai trò, lineage, tham chiếu và nhãn; fixture kỹ thuật/tương tác tham chiếu về bộ nguồn chung. Ít bản sao hơn, cần quản lý đường dẫn/phiên bản để mẫu không vô tình đổi.
-2. **Đóng gói mẫu thành các bộ có phiên bản.** Mỗi mẫu có hồ sơ nguồn, bộ căn cứ, gold và review; manifest chung quản lý split/lineage. Bên nhận dễ chạy lại riêng nhưng có thể tăng trùng lặp; phải giữ cùng lineage trong một split và tách rõ gợi ý sai kiểm soát, V2/gold với đầu vào hệ thống.
-
-**Phương án owner đề xuất:** [Chọn, điều chỉnh hoặc đề xuất phương án khác.]
-
-**Lý do và đánh đổi:** [Điền lý do, chi phí/giới hạn và ví dụ kiểm chứng.]
-
-**Kết luận hiện có:** Chưa chốt phương án kỹ thuật; giữ baseline và trách nhiệm đã xác nhận. Hai phương án nền chưa là quyết định của owner.
-
-**Phần phối hợp liên quan:** Xem D-10 ở phần B; không dùng lựa chọn nội bộ để tự đổi contract hoặc điều kiện chung.
-
-### D-11 — Matching metric và kiểm chứng phép đo — Phần A
-
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
-
-**Chủ trì:** Vương Thành Nam
-
-**Phần owner tự quyết định:** Nam chọn cách hiện thực công cụ đo, tổ chức script và phân tích lỗi theo quy tắc đánh giá đã được thống nhất.
-
-**Vấn đề cần chốt:** Matching SemanticChange/aspects, metric, ca null/không mẫu, lỗi nguồn/linker/retrieval; ngưỡng nào có căn cứ?
-
-**Hai phương án nền để cân nhắc:**
-
-1. **Matching theo nguồn và nội dung với tiêu chí cố định.** Dùng chỉ dẫn/đích/nguồn tạo cặp ứng viên; nhận cặp khi đạt các tiêu chí nội dung/aspects đã chốt, không tính trùng. Dễ tái lập hơn nhưng cần nêu rõ trường hợp không khớp hoặc diễn đạt khác và cách xử lý chia/gộp.
-2. **Tạo cặp ứng viên rồi review đối chiếu có rubric.** Dùng nguồn/đích và nội dung để đề xuất cặp; người review xử lý diễn đạt khác hoặc chia/gộp theo rubric cố định, lưu quyết định trước khi tổng hợp số đo. Phù hợp bộ nhỏ nhưng tốn công và cần kiểm tra độ nhất quán. Cả hai phải tính sai/bỏ sót, không coi trùng ID hay một aspect là đủ đúng.
-
-**Phương án owner đề xuất:** [Chọn, điều chỉnh hoặc đề xuất phương án khác.]
-
-**Lý do và đánh đổi:** [Điền lý do, chi phí/giới hạn và ví dụ kiểm chứng.]
-
-**Kết luận hiện có:** Chưa chốt phương án kỹ thuật; giữ baseline và trách nhiệm đã xác nhận. Hai phương án nền chưa là quyết định của owner.
-
-**Phần phối hợp liên quan:** Xem D-11 ở phần B; không dùng lựa chọn nội bộ để tự đổi contract hoặc điều kiện chung.
-
-### D-12 — Tác vụ người dùng và đánh giá cải tiến — Phần A
-
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
-
-**Chủ trì:** Bạch Công Dũng
-
-**Phần owner tự quyết định:** Dũng chủ trì lựa chọn và tổ chức buổi dùng thử, điều phối người tham gia, thu phản hồi và tổng hợp vấn đề trong kế hoạch đã thống nhất.
-
-**Vấn đề cần chốt:** Tác vụ, người tham gia, tiêu chí chấm, SUS/phản hồi, thiết kế so sánh giao diện, kế hoạch cải tiến/kiểm tra lại
-
-**Hai phương án nền để cân nhắc:**
-
-1. **Dùng thử theo tác vụ và cải tiến theo vấn đề.** Người tham gia thực hiện tác vụ tìm thay đổi, kiểm chứng, đọc cảnh báo và ghi nhận xét; ghi độ đúng/thời gian/lỗi, thu SUS/phản hồi rồi sửa và kiểm tra lại tác vụ bị ảnh hưởng. Dễ tổ chức hơn nhưng không tự chứng minh giao diện tốt hơn một phương án khác.
-2. **So sánh hai cách trình bày trên tác vụ tương đương.** So sánh giao diện cơ bản với giao diện có giải thích/bằng chứng trên cùng đầu ra cố định; cân đối thứ tự và dùng tác vụ tương đương để hạn chế hiệu ứng học, thu kết quả/SUS/phản hồi. Có căn cứ so sánh rõ hơn nhưng cần chuẩn bị thêm và công bố giới hạn mẫu nhỏ; chưa chốt số người hoặc kết quả.
-
-**Phương án owner đề xuất:** [Chọn, điều chỉnh hoặc đề xuất phương án khác.]
-
-**Lý do và đánh đổi:** [Điền lý do, chi phí/giới hạn và ví dụ kiểm chứng.]
-
-**Kết luận hiện có:** Chưa chốt phương án kỹ thuật; giữ baseline và trách nhiệm đã xác nhận. Hai phương án nền chưa là quyết định của owner.
-
-**Phần phối hợp liên quan:** Xem D-12 ở phần B; không dùng lựa chọn nội bộ để tự đổi contract hoặc điều kiện chung.
-
-### D-13 — Môi trường cấu hình và khả năng chạy lại — Phần A
-
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
-
-**Chủ trì:** Dương Đức Anh — quyền quyết định chính
-
-**Phần owner tự quyết định:** Đức Anh quyết định chính cách đóng gói, khởi động, kiểm tra sẵn sàng và cấu hình vận hành trong phạm vi đã thống nhất.
-
-**Vấn đề cần chốt:** Cách cài/chạy LightRAG riêng, pin dependency/model/config; Python env hay container, storage, xác thực, log; khởi động và kiểm tra sẵn sàng
-
-**Hai phương án nền để cân nhắc:**
-
-1. **Hai môi trường Python riêng cho backend và LightRAG.** Pin dependency và hướng dẫn khởi động/kiểm tra từng môi trường; backend gọi Server HTTP. Dễ bám bộ code Python hiện có, nhưng cần kiểm tra cài sạch và khác biệt máy/hệ điều hành.
-2. **Đóng gói các dịch vụ bằng container.** Tách backend và LightRAG thành dịch vụ với cấu hình/version được cố định, kèm kiểm tra sẵn sàng và hướng dẫn storage/cleanup. Dễ mô tả môi trường chạy thống nhất hơn, nhưng tăng công đóng gói và phải kiểm chứng model, dung lượng/tài nguyên cùng khả năng chạy trên máy dùng thử.
-
-**Phương án owner đề xuất:** [Chọn, điều chỉnh hoặc đề xuất phương án khác.]
-
-**Lý do và đánh đổi:** [Điền lý do, chi phí/giới hạn và ví dụ kiểm chứng.]
-
-**Kết luận hiện có:** Chưa chốt phương án kỹ thuật; giữ baseline và trách nhiệm đã xác nhận. Hai phương án nền chưa là quyết định của owner.
-
-**Phần phối hợp liên quan:** Xem D-13 ở phần B; không dùng lựa chọn nội bộ để tự đổi contract hoặc điều kiện chung.
-
-## B. Quyết định cần nhiều bên thống nhất
-
-Bên cung cấp và bên nhận thống nhất hợp đồng/fixture và những ràng buộc ảnh hưởng lẫn nhau. Chỉ cần các bên thực sự bị ảnh hưởng xác nhận; không mặc định cả nhóm duyệt mọi chi tiết. Lựa chọn hiện thực và hai phương án nền được dẫn theo cùng D-ID ở phần A.
-
-### D-01 — Contract API schema và báo cáo — Phần B
-
-**Trạng thái:** Đã chốt hợp đồng API cho bản nền HCI. Còn bước kiểm tra và bàn giao.
-
-**Chủ trì:** Dương Đức Anh
-
-**Bên cần thống nhất hoặc review:** Dũng + Đức Anh cùng biên soạn api-contract.md; Tùng Dương nhận API; Nam review dữ liệu
-
-**Phần cần nhiều bên thống nhất:** Đức Anh, Dũng, Tùng Dương và Nam theo phần sử dụng thống nhất request/response, tên/kiểu/ý nghĩa trường, lỗi HTTP, fixture bàn giao và các thay đổi đối với hợp đồng API. Dũng + Đức Anh cùng biên soạn api-contract.md; đổi nguồn phối hợp D-02/D-07.
-
-**Đầu vào cần thống nhất:** V1/S/tham chiếu, baseline SRS, report nền và dữ liệu module cần tổng hợp.
-
-**Đầu ra cần thống nhất:** Request/response HCI, schema/validator, lỗi HTTP và fixture nguồn/báo cáo; giao diện nội bộ cần bên giao/nhận xác nhận.
-
-**Chi tiết hợp đồng cần điền khi có điểm nối:**
-
-- Bên giao → bên nhận: [Điền cặp chức năng và người liên quan.]
-- Giao diện gọi và cách trao đổi: [Tên hàm/API, tham số, kiểu trả về hoặc cách bàn giao dữ liệu.]
-- Trường dữ liệu và ý nghĩa: [Tên/kiểu, bắt buộc/tùy chọn, ID, nguồn và offset khi liên quan.]
-- Null, rỗng, cảnh báo và lỗi: [Phân biệt chưa biết, không tồn tại, chưa chạy và thất bại.]
-- Fixture và expected output: [Đường dẫn, phiên bản, căn cứ đáp án và bên nhận đã review.]
-
-**Đầu ra tối thiểu để review:** Một bộ request/response thành công, PARTIAL, FAILED, lỗi đầu vào; bảng delta với code; schema/fixture validate được khi triển khai
-
-**Trước khi và nơi cập nhật sau chốt:** Trước nối frontend và báo cáo HCI; SRS, api-contract.md, schema/fixtures
-
-**Xác nhận còn cần:** [Người/bên cần xác nhận, kết quả chạy lại và phần còn mở.]
-
-**Tài liệu schema fixture hoặc code cần cập nhật:** [Điền đầu ra bị ảnh hưởng sau khi chốt.]
-
-**Quyết định liên quan hoặc thay thế:** [Điền D-ID và phạm vi nếu có.]
-
-**Lựa chọn hiện thực liên quan:** Xem D-01 ở phần A; xác nhận ở đây chỉ áp dụng cho nội dung phối hợp đã được các bên thống nhất.
-
-### D-02 — Đầu vào Parser adapter và truy nguồn — Phần B
-
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
-
-**Chủ trì:** Bạch Công Dũng
-
-**Bên cần thống nhất hoặc review:** Đức Anh nhận adapter; Nam/Tùng Dương dùng nguồn
-
-**Phần cần nhiều bên thống nhất:** Dũng và Đức Anh thống nhất output bàn giao, ID, block/spans, bảng/outside, null/lỗi. Nam/Tùng Dương review phần nguồn họ sử dụng; mapping PDF và chuyển Unicode offsets phải được xác nhận với bên hiển thị/nhận dữ liệu.
-
-**Đầu vào cần thống nhất:** File DOCX/PDF có lớp chữ, vai trò tài liệu, cây và source_blocks hiện có, thông tin chuyển đổi.
-
-**Đầu ra cần thống nhất:** Nguồn cùng cấu trúc nội dung để Đức Anh dùng cho linker/context; định danh, block/spans, bảng/outside, cảnh báo và giới hạn mapping.
-
-**Chi tiết hợp đồng cần điền khi có điểm nối:**
-
-- Bên giao → bên nhận: [Điền cặp chức năng và người liên quan.]
-- Giao diện gọi và cách trao đổi: [Tên hàm/API, tham số, kiểu trả về hoặc cách bàn giao dữ liệu.]
-- Trường dữ liệu và ý nghĩa: [Tên/kiểu, bắt buộc/tùy chọn, ID, nguồn và offset khi liên quan.]
-- Null, rỗng, cảnh báo và lỗi: [Phân biệt chưa biết, không tồn tại, chưa chạy và thất bại.]
-- Fixture và expected output: [Đường dẫn, phiên bản, căn cứ đáp án và bên nhận đã review.]
-
-**Đầu ra tối thiểu để review:** Một DOCX và một PDF: nguồn gốc/chuyển đổi, cây, contract bàn giao, quote truy đúng vị trí và giới hạn; ca reference không có Điều
-
-**Trước khi và nơi cập nhật sau chốt:** Trước linker/context và hiển thị nguồn; SRS, Architecture, Data Guide, fixture nguồn
-
-**Xác nhận còn cần:** [Người/bên cần xác nhận, kết quả chạy lại và phần còn mở.]
-
-**Tài liệu schema fixture hoặc code cần cập nhật:** [Điền đầu ra bị ảnh hưởng sau khi chốt.]
-
-**Quyết định liên quan hoặc thay thế:** [Điền D-ID và phạm vi nếu có.]
-
-**Lựa chọn hiện thực liên quan:** Xem D-02 ở phần A; xác nhận ở đây chỉ áp dụng cho nội dung phối hợp đã được các bên thống nhất.
-
-### D-03 — Chỉ dẫn vị trí đích và nội dung trước sau — Phần B
-
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
-
-**Chủ trì:** Dương Đức Anh
-
-**Bên cần thống nhất hoặc review:** Dũng review chỉ dẫn/đích; Nam nhận trước–sau
-
-**Phần cần nhiều bên thống nhất:** Đức Anh và Nam thống nhất cấu trúc trước–sau, chỉ dẫn/đích, căn cứ trích/suy ra, hiệu lực và cảnh báo. Dũng review nghiệp vụ/nguồn; thay output từ Parser/adapter cần phối hợp D-02.
-
-**Đầu vào cần thống nhất:** Cây/nguồn V1, nội dung S và tham chiếu cần thiết; hợp đồng nguồn D-02.
-
-**Đầu ra cần thống nhất:** Các chỉ dẫn có đích/thao tác/phạm vi, trước–sau cục bộ, căn cứ tạo nội dung, hiệu lực và phần chưa xác định để Nam nhận.
-
-**Chi tiết hợp đồng cần điền khi có điểm nối:**
-
-- Bên giao → bên nhận: [Điền cặp chức năng và người liên quan.]
-- Giao diện gọi và cách trao đổi: [Tên hàm/API, tham số, kiểu trả về hoặc cách bàn giao dữ liệu.]
-- Trường dữ liệu và ý nghĩa: [Tên/kiểu, bắt buộc/tùy chọn, ID, nguồn và offset khi liên quan.]
-- Null, rỗng, cảnh báo và lỗi: [Phân biệt chưa biết, không tồn tại, chưa chạy và thất bại.]
-- Fixture và expected output: [Đường dẫn, phiên bản, căn cứ đáp án và bên nhận đã review.]
-
-**Đầu ra tối thiểu để review:** Ví dụ sửa đơn vị/cụm từ, bổ sung/bãi bỏ, S sửa nhiều văn bản và đích mơ hồ; expected/actual và nguồn
-
-**Trước khi và nơi cập nhật sau chốt:** Trước phân tích trên dữ liệu thật; Architecture, fixture linker, API khi ảnh hưởng
-
-**Xác nhận còn cần:** [Người/bên cần xác nhận, kết quả chạy lại và phần còn mở.]
-
-**Tài liệu schema fixture hoặc code cần cập nhật:** [Điền đầu ra bị ảnh hưởng sau khi chốt.]
-
-**Quyết định liên quan hoặc thay thế:** [Điền D-ID và phạm vi nếu có.]
-
-**Lựa chọn hiện thực liên quan:** Xem D-03 ở phần A; xác nhận ở đây chỉ áp dụng cho nội dung phối hợp đã được các bên thống nhất.
-
-### D-04 — Retrieval ngữ cảnh và vòng đời LightRAG — Phần B
-
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
-
-**Chủ trì:** Dương Đức Anh — quyền quyết định chính
-
-**Bên cần thống nhất hoặc review:** Dũng review nguồn; Nam nhận context; Tùng Dương kiểm tra khả năng đọc bằng chứng
-
-**Phần cần nhiều bên thống nhất:** Đức Anh thống nhất với Dũng về nguồn/mapping, với Nam về ngữ cảnh và bằng chứng bàn giao, với Tùng Dương về dữ liệu đọc nguồn. Model/embedding phối hợp Nam theo D-05; thay tài nguyên chung, cách ly hoặc vòng đời phải thống nhất với các bên bị ảnh hưởng và D-09/D-13.
-
-**Đầu vào cần thống nhất:** Cây/khối nguồn đã chuẩn hóa, chỉ dẫn/đích và yêu cầu ngữ cảnh; cấu hình mô hình phối hợp D-05.
-
-**Đầu ra cần thống nhất:** Ngữ cảnh có nguyên văn/vị trí nguồn, tình trạng căn cứ và tham chiếu; trạng thái nhập/query/lỗi/cleanup để Pipeline sử dụng.
-
-**Chi tiết hợp đồng cần điền khi có điểm nối:**
-
-- Bên giao → bên nhận: [Điền cặp chức năng và người liên quan.]
-- Giao diện gọi và cách trao đổi: [Tên hàm/API, tham số, kiểu trả về hoặc cách bàn giao dữ liệu.]
-- Trường dữ liệu và ý nghĩa: [Tên/kiểu, bắt buộc/tùy chọn, ID, nguồn và offset khi liên quan.]
-- Null, rỗng, cảnh báo và lỗi: [Phân biệt chưa biết, không tồn tại, chưa chạy và thất bại.]
-- Fixture và expected output: [Đường dẫn, phiên bản, căn cứ đáp án và bên nhận đã review.]
-
-**Đầu ra tối thiểu để review:** Parser → nhập → xác nhận sẵn sàng → query → ánh xạ quote → dọn; hai bộ không lẫn; ghi request/response thực tế đã loại bí mật, thời gian và giới hạn
-
-**Trước khi và nơi cập nhật sau chốt:** Trước tích hợp retrieval; Architecture, API contract phần nội bộ, Development Guide
-
-**Xác nhận còn cần:** [Người/bên cần xác nhận, kết quả chạy lại và phần còn mở.]
-
-**Tài liệu schema fixture hoặc code cần cập nhật:** [Điền đầu ra bị ảnh hưởng sau khi chốt.]
-
-**Quyết định liên quan hoặc thay thế:** [Điền D-ID và phạm vi nếu có.]
-
-**Lựa chọn hiện thực liên quan:** Xem D-04 ở phần A; xác nhận ở đây chỉ áp dụng cho nội dung phối hợp đã được các bên thống nhất.
-
-### D-05 — Mô hình prompt validation và fallback — Phần B
-
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
-
-**Chủ trì:** Vương Thành Nam — quyền quyết định chính
-
-**Bên cần thống nhất hoặc review:** Đức Anh vận hành/client; Dũng review nguồn; thay contract vẫn phối hợp bên nhận
-
-**Phần cần nhiều bên thống nhất:** Nam và Đức Anh thống nhất giao diện AI Adapter, cấu hình vận hành chung, dependency và output/lỗi; Dũng review nguồn, bên nhận review thay đổi contract. Phương án phát sinh chi phí, gửi dữ liệu ra ngoài hoặc thay yêu cầu tài nguyên phải phối hợp người chịu ảnh hưởng; không tự đổi ràng buộc chung chỉ vì được quyền chọn mô hình.
-
-**Đầu vào cần thống nhất:** Nội dung trước–sau, chỉ dẫn, ngữ cảnh/bằng chứng và cấu trúc kết quả phân tích cần trả.
-
-**Đầu ra cần thống nhất:** Kết quả gọi mô hình có cấu trúc, nguồn kiểm tra được, trạng thái lỗi/chưa rõ và cấu hình đủ tái lập để module phân tích sử dụng.
-
-**Chi tiết hợp đồng cần điền khi có điểm nối:**
-
-- Bên giao → bên nhận: [Điền cặp chức năng và người liên quan.]
-- Giao diện gọi và cách trao đổi: [Tên hàm/API, tham số, kiểu trả về hoặc cách bàn giao dữ liệu.]
-- Trường dữ liệu và ý nghĩa: [Tên/kiểu, bắt buộc/tùy chọn, ID, nguồn và offset khi liên quan.]
-- Null, rỗng, cảnh báo và lỗi: [Phân biệt chưa biết, không tồn tại, chưa chạy và thất bại.]
-- Fixture và expected output: [Đường dẫn, phiên bản, căn cứ đáp án và bên nhận đã review.]
-
-**Đầu ra tối thiểu để review:** So sánh trên cùng mẫu, cấu hình/mô hình/phiên bản, output đúng/sai/chưa rõ, token/chi phí nếu đo được; giới hạn và quyền truy cập
-
-**Trước khi và nơi cập nhật sau chốt:** Trước chọn cấu hình phân tích và công bố nhu cầu mạng; Architecture, config, Development Guide
-
-**Xác nhận còn cần:** [Người/bên cần xác nhận, kết quả chạy lại và phần còn mở.]
-
-**Tài liệu schema fixture hoặc code cần cập nhật:** [Điền đầu ra bị ảnh hưởng sau khi chốt.]
-
-**Quyết định liên quan hoặc thay thế:** [Điền D-ID và phạm vi nếu có.]
-
-**Lựa chọn hiện thực liên quan:** Xem D-05 ở phần A; xác nhận ở đây chỉ áp dụng cho nội dung phối hợp đã được các bên thống nhất.
-
-### D-06 — Bốn nhóm chia nhận định và rubric — Phần B
-
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
-
-**Chủ trì:** Vương Thành Nam
-
-**Bên cần thống nhất hoặc review:** Dũng review nhãn; Đức Anh/Tùng Dương nhận report
-
-**Phần cần nhiều bên thống nhất:** Nam và Dũng thống nhất ranh giới nhãn, cách chia/gộp, rubric và ví dụ chuẩn; Đức Anh/Tùng Dương review cấu trúc kết quả họ nhận. Không tự đổi tám nhóm trong SRS, đơn vị đếm, gold hoặc nội dung giao diện bằng một lựa chọn nội bộ.
-
-**Đầu vào cần thống nhất:** Bốn mã HCI trong SRS, chỉ dẫn và nội dung trước–sau, bằng chứng, ví dụ/nhãn pilot.
-
-**Đầu ra cần thống nhất:** Quy tắc chia/gộp nhận định trong semantic_diff.changes, chọn aspects/nhóm và chấm mức tác động, cùng fixture ranh giới và ngoài phạm vi.
-
-**Chi tiết hợp đồng cần điền khi có điểm nối:**
-
-- Bên giao → bên nhận: [Điền cặp chức năng và người liên quan.]
-- Giao diện gọi và cách trao đổi: [Tên hàm/API, tham số, kiểu trả về hoặc cách bàn giao dữ liệu.]
-- Trường dữ liệu và ý nghĩa: [Tên/kiểu, bắt buộc/tùy chọn, ID, nguồn và offset khi liên quan.]
-- Null, rỗng, cảnh báo và lỗi: [Phân biệt chưa biết, không tồn tại, chưa chạy và thất bại.]
-- Fixture và expected output: [Đường dẫn, phiên bản, căn cứ đáp án và bên nhận đã review.]
-
-**Đầu ra tối thiểu để review:** Ví dụ ranh giới, lý do gán nhãn, câu giải thích/evidence, ca không được ép mã; reviewer và phiên bản
-
-**Trước khi và nơi cập nhật sau chốt:** Trước khóa gold hoặc dùng Scorer; SRS nếu đổi contract, Data Guide, fixtures
-
-**Xác nhận còn cần:** [Người/bên cần xác nhận, kết quả chạy lại và phần còn mở.]
-
-**Tài liệu schema fixture hoặc code cần cập nhật:** [Điền đầu ra bị ảnh hưởng sau khi chốt.]
-
-**Quyết định liên quan hoặc thay thế:** [Điền D-ID và phạm vi nếu có.]
-
-**Lựa chọn hiện thực liên quan:** Xem D-06 ở phần A; xác nhận ở đây chỉ áp dụng cho nội dung phối hợp đã được các bên thống nhất.
-
-### D-07 — Tương tác frontend và cách đọc bằng chứng — Phần B
-
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
-
-**Chủ trì:** Lê Tùng Dương
-
-**Bên cần thống nhất hoặc review:** Dũng đối chiếu nghiên cứu; Đức Anh/Nam cung cấp dữ liệu
-
-**Phần cần nhiều bên thống nhất:** Tùng Dương và Đức Anh thống nhất dữ liệu API/nguồn, lỗi và trạng thái; Dũng phối hợp provenance/đáp án và căn cứ người dùng; Nam review cách trình bày nhận định/bằng chứng. Cơ chế Tùng Dương chọn nếu cần đổi payload, endpoint, vòng đời hoặc giới hạn tài nguyên phải được bên cung cấp/nhận thống nhất trước hiện thực.
-
-**Đầu vào cần thống nhất:** RQ/BG, kịch bản/tác vụ, fixture ComparisonReport/nguồn và dữ liệu nhận xét trong phiên.
-
-**Đầu ra cần thống nhất:** Prototype, luồng/màn hình, trạng thái UI/ReviewRecord, cơ chế giữ/đọc bằng chứng sau cleanup và fixture tương tác.
-
-**Chi tiết hợp đồng cần điền khi có điểm nối:**
-
-- Bên giao → bên nhận: [Điền cặp chức năng và người liên quan.]
-- Giao diện gọi và cách trao đổi: [Tên hàm/API, tham số, kiểu trả về hoặc cách bàn giao dữ liệu.]
-- Trường dữ liệu và ý nghĩa: [Tên/kiểu, bắt buộc/tùy chọn, ID, nguồn và offset khi liên quan.]
-- Null, rỗng, cảnh báo và lỗi: [Phân biệt chưa biết, không tồn tại, chưa chạy và thất bại.]
-- Fixture và expected output: [Đường dẫn, phiên bản, căn cứ đáp án và bên nhận đã review.]
-
-**Đầu ra tối thiểu để review:** Prototype theo tác vụ, fixture API dùng được, bảng trạng thái UI, cách đọc nguồn và kiểm thử tương tác
-
-**Trước khi và nơi cập nhật sau chốt:** Trước triển khai luồng UI chính; thiết kế tương tác, Architecture, SRS khi đổi hành vi
-
-**Xác nhận còn cần:** [Người/bên cần xác nhận, kết quả chạy lại và phần còn mở.]
-
-**Tài liệu schema fixture hoặc code cần cập nhật:** [Điền đầu ra bị ảnh hưởng sau khi chốt.]
-
-**Quyết định liên quan hoặc thay thế:** [Điền D-ID và phạm vi nếu có.]
-
-**Lựa chọn hiện thực liên quan:** Xem D-07 ở phần A; xác nhận ở đây chỉ áp dụng cho nội dung phối hợp đã được các bên thống nhất.
-
-### D-08 — Đối chiếu nhận xét giữa các lượt — Phần B
-
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
-
-**Chủ trì:** Lê Tùng Dương
-
-**Bên cần thống nhất hoặc review:** Đức Anh cung cấp ID/nguồn; Dũng/Nam review ca thay đổi
-
-**Phần cần nhiều bên thống nhất:** Tùng Dương và Đức Anh thống nhất dữ liệu nhận diện, nội dung dùng để so sánh và contract báo cáo giữa hai lượt. Dũng/Nam review fixture thêm/đổi/tách/gộp/mất mục, giữ nhận xét và yêu cầu kiểm tra lại; thay quy tắc trạng thái SRS phải được các bên xác nhận.
-
-**Đầu vào cần thống nhất:** Báo cáo cũ/mới, nội dung/nguồn liên quan, ReviewRecord và quan hệ chỉ dẫn/đích.
-
-**Đầu ra cần thống nhất:** Quan hệ mục cũ–mới, trạng thái REVIEWED/UNREVIEWED/RECHECK_REQUIRED, previous_record và danh sách nhận xét không ghép được.
-
-**Chi tiết hợp đồng cần điền khi có điểm nối:**
-
-- Bên giao → bên nhận: [Điền cặp chức năng và người liên quan.]
-- Giao diện gọi và cách trao đổi: [Tên hàm/API, tham số, kiểu trả về hoặc cách bàn giao dữ liệu.]
-- Trường dữ liệu và ý nghĩa: [Tên/kiểu, bắt buộc/tùy chọn, ID, nguồn và offset khi liên quan.]
-- Null, rỗng, cảnh báo và lỗi: [Phân biệt chưa biết, không tồn tại, chưa chạy và thất bại.]
-- Fixture và expected output: [Đường dẫn, phiên bản, căn cứ đáp án và bên nhận đã review.]
-
-**Đầu ra tối thiểu để review:** Hai report và ReviewRecord trước/sau; ca thêm mục, nội dung đổi, tách/gộp, mục mất, PARTIAL và request thất bại
-
-**Trước khi và nơi cập nhật sau chốt:** Trước luồng bổ sung/phân tích lại; SRS nếu cần đổi, Architecture, fixture phiên
-
-**Xác nhận còn cần:** [Người/bên cần xác nhận, kết quả chạy lại và phần còn mở.]
-
-**Tài liệu schema fixture hoặc code cần cập nhật:** [Điền đầu ra bị ảnh hưởng sau khi chốt.]
-
-**Quyết định liên quan hoặc thay thế:** [Điền D-ID và phạm vi nếu có.]
-
-**Lựa chọn hiện thực liên quan:** Xem D-08 ở phần A; xác nhận ở đây chỉ áp dụng cho nội dung phối hợp đã được các bên thống nhất.
-
-### D-09 — Giới hạn vận hành deadline và cleanup — Phần B
-
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
-
-**Chủ trì:** Dương Đức Anh
-
-**Bên cần thống nhất hoặc review:** Các owner module cung cấp số đo; Tùng Dương hiển thị giới hạn
-
-**Phần cần nhiều bên thống nhất:** Đức Anh cùng các owner thống nhất giới hạn cần đo, ngân sách bước và khả năng dừng tác vụ; Tùng Dương thống nhất thông báo/cách tiếp tục ở UI. Dũng phối hợp nguồn lực và tác vụ dùng thử; không biến default code thành giới hạn nghiệm thu hoặc tự đổi hành vi timeout phía frontend.
-
-**Đầu vào cần thống nhất:** Kích thước/số file, số đo từng module/dịch vụ và môi trường dự kiến chạy.
-
-**Đầu ra cần thống nhất:** Cấu hình giới hạn, hành vi vượt giới hạn/lỗi/timeout, quy tắc retry và dọn tài nguyên, cùng ca kiểm chứng.
-
-**Chi tiết hợp đồng cần điền khi có điểm nối:**
-
-- Bên giao → bên nhận: [Điền cặp chức năng và người liên quan.]
-- Giao diện gọi và cách trao đổi: [Tên hàm/API, tham số, kiểu trả về hoặc cách bàn giao dữ liệu.]
-- Trường dữ liệu và ý nghĩa: [Tên/kiểu, bắt buộc/tùy chọn, ID, nguồn và offset khi liên quan.]
-- Null, rỗng, cảnh báo và lỗi: [Phân biệt chưa biết, không tồn tại, chưa chạy và thất bại.]
-- Fixture và expected output: [Đường dẫn, phiên bản, căn cứ đáp án và bên nhận đã review.]
-
-**Đầu ra tối thiểu để review:** Đo trên mẫu/môi trường, ca vượt giới hạn/lỗi/timeout, vị trí cấu hình và phần không thể hủy cứng; không coi mặc định code là benchmark
-
-**Trước khi và nơi cập nhật sau chốt:** Trước tích hợp thật và dùng thử; SRS yêu cầu vận hành, API Contract, config, Development Guide
-
-**Xác nhận còn cần:** [Người/bên cần xác nhận, kết quả chạy lại và phần còn mở.]
-
-**Tài liệu schema fixture hoặc code cần cập nhật:** [Điền đầu ra bị ảnh hưởng sau khi chốt.]
-
-**Quyết định liên quan hoặc thay thế:** [Điền D-ID và phạm vi nếu có.]
-
-**Lựa chọn hiện thực liên quan:** Xem D-09 ở phần A; xác nhận ở đây chỉ áp dụng cho nội dung phối hợp đã được các bên thống nhất.
-
-### D-10 — Dữ liệu gold split và mẫu tác vụ — Phần B
-
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
-
-**Chủ trì:** Bạch Công Dũng
-
-**Bên cần thống nhất hoặc review:** Nam review nhãn/đáp án; Đức Anh/Tùng Dương dùng fixture
-
-**Phần cần nhiều bên thống nhất:** Dũng và Nam thống nhất nhãn, đáp án, lineage/split, phạm vi đủ/thiếu căn cứ và review gold. Đức Anh/Tùng Dương review fixture cần sử dụng; mẫu người dùng/gợi ý sai kiểm soát phối hợp D-12, không tự thay dữ liệu đánh giá đã cố định.
-
-**Đầu vào cần thống nhất:** V1/S/tham chiếu có nguồn, lineage, chất lượng chuyển đổi và phạm vi bốn nhóm HCI.
-
-**Đầu ra cần thống nhất:** Manifest, mẫu/gold đã review, split, fixture đủ/thiếu căn cứ và dữ liệu tác vụ tách khỏi index/phép đo AI.
-
-**Chi tiết hợp đồng cần điền khi có điểm nối:**
-
-- Bên giao → bên nhận: [Điền cặp chức năng và người liên quan.]
-- Giao diện gọi và cách trao đổi: [Tên hàm/API, tham số, kiểu trả về hoặc cách bàn giao dữ liệu.]
-- Trường dữ liệu và ý nghĩa: [Tên/kiểu, bắt buộc/tùy chọn, ID, nguồn và offset khi liên quan.]
-- Null, rỗng, cảnh báo và lỗi: [Phân biệt chưa biết, không tồn tại, chưa chạy và thất bại.]
-- Fixture và expected output: [Đường dẫn, phiên bản, căn cứ đáp án và bên nhận đã review.]
-
-**Đầu ra tối thiểu để review:** Danh sách file/hash/vai trò/lineage, mẫu bốn nhóm và thiếu căn cứ, đáp án/reviewer; tách V2/gold/gợi ý sai khỏi index và đo AI
-
-**Trước khi và nơi cập nhật sau chốt:** Trước khóa dữ liệu/đánh giá; Data Guide, data/manifest và fixture
-
-**Xác nhận còn cần:** [Người/bên cần xác nhận, kết quả chạy lại và phần còn mở.]
-
-**Tài liệu schema fixture hoặc code cần cập nhật:** [Điền đầu ra bị ảnh hưởng sau khi chốt.]
-
-**Quyết định liên quan hoặc thay thế:** [Điền D-ID và phạm vi nếu có.]
-
-**Lựa chọn hiện thực liên quan:** Xem D-10 ở phần A; xác nhận ở đây chỉ áp dụng cho nội dung phối hợp đã được các bên thống nhất.
-
-### D-11 — Matching metric và kiểm chứng phép đo — Phần B
-
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
-
-**Chủ trì:** Vương Thành Nam
-
-**Bên cần thống nhất hoặc review:** Dũng review gold; Đức Anh/Tùng Dương cung cấp kết quả
-
-**Phần cần nhiều bên thống nhất:** Nam và Dũng thống nhất gold, đơn vị đánh giá, matching/aspects, công thức, cách xử lý chưa xác định và ngưỡng có căn cứ; Đức Anh/Tùng Dương phối hợp dữ liệu đầu ra và khả năng tái lập. Những thay đổi làm đổi cách diễn giải hoặc so sánh số liệu phải được bên dùng kết quả review trước đo.
-
-**Đầu vào cần thống nhất:** Dự đoán và gold theo SemanticChange/aspects trên cùng bộ căn cứ, cùng quy tắc nhãn đã review.
-
-**Đầu ra cần thống nhất:** Quy tắc đối chiếu, công thức/cách tổng hợp, ca tính tay, cách xử lý null/không mẫu, ngưỡng có căn cứ và lệnh/cấu hình đo.
-
-**Chi tiết hợp đồng cần điền khi có điểm nối:**
-
-- Bên giao → bên nhận: [Điền cặp chức năng và người liên quan.]
-- Giao diện gọi và cách trao đổi: [Tên hàm/API, tham số, kiểu trả về hoặc cách bàn giao dữ liệu.]
-- Trường dữ liệu và ý nghĩa: [Tên/kiểu, bắt buộc/tùy chọn, ID, nguồn và offset khi liên quan.]
-- Null, rỗng, cảnh báo và lỗi: [Phân biệt chưa biết, không tồn tại, chưa chạy và thất bại.]
-- Fixture và expected output: [Đường dẫn, phiên bản, căn cứ đáp án và bên nhận đã review.]
-
-**Đầu ra tối thiểu để review:** Ca tính tay có TP/FP/FN, sai/thiếu aspect, nguồn sai và phần chưa xác định; lệnh đo/config; tiêu chí cố định trước test
-
-**Trước khi và nơi cập nhật sau chốt:** Trước chạy đánh giá kỹ thuật; test_evaluation_plan.md phần kỹ thuật, evaluator/fixtures
-
-**Xác nhận còn cần:** [Người/bên cần xác nhận, kết quả chạy lại và phần còn mở.]
-
-**Tài liệu schema fixture hoặc code cần cập nhật:** [Điền đầu ra bị ảnh hưởng sau khi chốt.]
-
-**Quyết định liên quan hoặc thay thế:** [Điền D-ID và phạm vi nếu có.]
-
-**Lựa chọn hiện thực liên quan:** Xem D-11 ở phần A; xác nhận ở đây chỉ áp dụng cho nội dung phối hợp đã được các bên thống nhất.
-
-### D-12 — Tác vụ người dùng và đánh giá cải tiến — Phần B
-
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
-
-**Chủ trì:** Bạch Công Dũng
-
-**Bên cần thống nhất hoặc review:** Tùng Dương thiết kế; Nam chuẩn bị đáp án; Đức Anh bàn giao bản chạy
-
-**Phần cần nhiều bên thống nhất:** Dũng phối hợp Tùng Dương về tác vụ/giao diện, Nam về đáp án và gợi ý sai kiểm soát, Đức Anh về phiên bản/môi trường sẵn sàng. Thiết kế so sánh, cách chấm và cải tiến ảnh hưởng nhiều module cần các bên liên quan thống nhất trước thực hiện.
-
-**Đầu vào cần thống nhất:** RQ/BG/AT, bản chạy ổn định, dữ liệu/đáp án, mẫu đúng/sai kiểm soát và nhóm người dùng mục tiêu.
-
-**Đầu ra cần thống nhất:** Kế hoạch tác vụ/người tham gia/cách chấm, SUS/phản hồi, vấn đề/cải tiến và minh chứng kiểm tra lại gắn phiên bản.
-
-**Chi tiết hợp đồng cần điền khi có điểm nối:**
-
-- Bên giao → bên nhận: [Điền cặp chức năng và người liên quan.]
-- Giao diện gọi và cách trao đổi: [Tên hàm/API, tham số, kiểu trả về hoặc cách bàn giao dữ liệu.]
-- Trường dữ liệu và ý nghĩa: [Tên/kiểu, bắt buộc/tùy chọn, ID, nguồn và offset khi liên quan.]
-- Null, rỗng, cảnh báo và lỗi: [Phân biệt chưa biết, không tồn tại, chưa chạy và thất bại.]
-- Fixture và expected output: [Đường dẫn, phiên bản, căn cứ đáp án và bên nhận đã review.]
-
-**Đầu ra tối thiểu để review:** Kế hoạch nối với BG/RQ/AT, đáp án và gợi ý sai kiểm soát, biểu mẫu/phiên bản, lịch/nguồn lực thực tế; phân biệt hai người nghiên cứu ban đầu với người dùng thử
-
-**Trước khi và nơi cập nhật sau chốt:** Trước tuyển/dùng thử và thu số liệu; test_evaluation_plan.md phần usability, User Research chỉ khi có dữ liệu mới
-
-**Xác nhận còn cần:** [Người/bên cần xác nhận, kết quả chạy lại và phần còn mở.]
-
-**Tài liệu schema fixture hoặc code cần cập nhật:** [Điền đầu ra bị ảnh hưởng sau khi chốt.]
-
-**Quyết định liên quan hoặc thay thế:** [Điền D-ID và phạm vi nếu có.]
-
-**Lựa chọn hiện thực liên quan:** Xem D-12 ở phần A; xác nhận ở đây chỉ áp dụng cho nội dung phối hợp đã được các bên thống nhất.
-
-### D-13 — Môi trường cấu hình và khả năng chạy lại — Phần B
-
-**Trạng thái:** CHỜ OWNER ĐỀ XUẤT.
-
-**Chủ trì:** Dương Đức Anh — quyền quyết định chính
-
-**Bên cần thống nhất hoặc review:** Dũng + Đức Anh cùng biên soạn development-guide.md; mỗi owner bàn giao dependency/lệnh; Dũng xác nhận máy dùng thử
-
-**Phần cần nhiều bên thống nhất:** Đức Anh nhận dependency/lệnh từ các owner, phối hợp Nam về model/embedding D-05 và Dũng về máy dùng thử/nguồn lực. Dũng + Đức Anh cùng biên soạn development-guide.md; đổi môi trường chung, chi phí, storage hoặc vòng đời ảnh hưởng bên khác phải được thống nhất.
-
-**Đầu vào cần thống nhất:** Dependency/lệnh của từng module, cấu hình đã kiểm chứng, model/embedding theo D-05 và máy dùng thử.
-
-**Đầu ra cần thống nhất:** Hướng dẫn cài/chạy, cấu hình mẫu không bí mật, phiên bản cố định, kiểm tra sẵn sàng và điều kiện Internet/tài nguyên.
-
-**Chi tiết hợp đồng cần điền khi có điểm nối:**
-
-- Bên giao → bên nhận: [Điền cặp chức năng và người liên quan.]
-- Giao diện gọi và cách trao đổi: [Tên hàm/API, tham số, kiểu trả về hoặc cách bàn giao dữ liệu.]
-- Trường dữ liệu và ý nghĩa: [Tên/kiểu, bắt buộc/tùy chọn, ID, nguồn và offset khi liên quan.]
-- Null, rỗng, cảnh báo và lỗi: [Phân biệt chưa biết, không tồn tại, chưa chạy và thất bại.]
-- Fixture và expected output: [Đường dẫn, phiên bản, căn cứ đáp án và bên nhận đã review.]
-
-**Đầu ra tối thiểu để review:** Hướng dẫn cài sạch và chạy lại trên máy khác, cấu hình mẫu không bí mật, một lệnh/nhóm lệnh kiểm tra; khai báo phần cần Internet và nguồn phải tải trước
-
-**Trước khi và nơi cập nhật sau chốt:** Trước bàn giao chạy thật; development-guide.md, requirements/config/deploy; README chỉ tóm tắt
-
-**Xác nhận còn cần:** [Người/bên cần xác nhận, kết quả chạy lại và phần còn mở.]
-
-**Tài liệu schema fixture hoặc code cần cập nhật:** [Điền đầu ra bị ảnh hưởng sau khi chốt.]
-
-**Quyết định liên quan hoặc thay thế:** [Điền D-ID và phạm vi nếu có.]
-
-**Lựa chọn hiện thực liên quan:** Xem D-13 ở phần A; xác nhận ở đây chỉ áp dụng cho nội dung phối hợp đã được các bên thống nhất.
-
-Không cần mọi D-ID hoàn tất mới làm module. D-01/D-02 cần đủ rõ trước ghép dữ liệu; có thể thử riêng D-03/D-04/D-05/D-07 bằng fixture. D-06/D-10 và D-11/D-12 cần rõ trước khóa gold hoặc đánh giá. D-04 chọn cấu hình dịch vụ trong phép thử; D-13 đóng gói cấu hình đã kiểm chứng, không duy trì hai cấu hình trái nhau.
-
-Các lựa chọn về phạm vi toàn file, tên trường/API, model, endpoint và ngưỡng chưa được chốt chỉ bằng việc ghi phương án nền. Trường hợp một D-ID không bàn giao dữ liệu runtime, phần hợp đồng được áp dụng cho bộ mẫu, cấu hình hoặc tài liệu bàn giao tương ứng; không bắt tạo API không cần thiết.
-
-**Mẫu owner trả lời**
-
-Owner điền các trường lựa chọn nội bộ ở phần A và cùng bên liên quan hoàn thiện phần B theo cùng D-ID; có thể thêm trường con khi cần. Mẫu dưới đây dùng khi tổng hợp đề xuất, không tạo một bản quyết định song song. Hai phương án nền là đề xuất tham khảo, không điền hộ lựa chọn hoặc xác nhận của owner.
-
-```text
-ID:
-Trạng thái: CHỜ OWNER ĐỀ XUẤT / ĐÃ ĐỀ XUẤT / ĐANG THỬ / ĐÃ CHỐT / CẦN ĐIỀU CHỈNH
-Owner:
-Phương án đề xuất:
-Lựa chọn khác và lý do chọn:
-Phần giữ nguyên baseline / thay đổi yêu cầu hoặc contract:
-Đầu vào–đầu ra và ví dụ:
-Code/commit, phiên bản thư viện hoặc mô hình:
-Kiểm tra đã chạy; expected/actual:
-Thời gian, tài nguyên, chi phí đã đo (nếu chưa đo thì ghi chưa đo):
-Giới hạn, trường hợp lỗi và cách xử lý:
-Bên nhận/reviewer; kết quả chạy lại:
-Thời gian dự kiến và phụ thuộc:
-Kết luận được chốt; người xác nhận:
-File schema/fixture/tài liệu đã cập nhật:
-```
-
-**Quy tắc cập nhật**
-
-1. Owner chọn phương pháp nội bộ trong baseline, tự kiểm tra và ghi đề xuất. Không cần họp cả nhóm cho mọi chi tiết thư viện.
-2. Bên nhận/reviewer kiểm tra ví dụ và chạy lại phần bàn giao. Mỗi task vẫn có một owner; người kiểm thử không thay tự kiểm tra.
-3. Đổi contract phải có schema và fixture cùng các module bị ảnh hưởng. Dũng tổng hợp thay đổi phạm vi/phân công/mốc; Đức Anh điều phối contract và tích hợp.
-4. Chỉ chuyển ĐÃ CHỐT khi có quyết định được xác nhận, minh chứng và tài liệu sở hữu đã cập nhật. Dòng đề xuất không tự thành quyết định cả nhóm.
-5. Giữ lịch sử phương án/căn cứ khi điều chỉnh; không ghi đè gold, kết quả nghiên cứu hoặc số đo để làm đẹp tiến độ.
-6. Các file chuyên trách chỉ giữ yêu cầu/thiết kế đã thống nhất và dẫn D-ID còn mở; không sao chép nhiều bảng trạng thái khác nhau.
-
-**Tài liệu cần hoàn thiện sau đề xuất**
-
-- `api-contract.md`: Dũng + Đức Anh cùng biên soạn theo D-01; D-02 về nguồn, D-04 về dịch vụ, D-07 về cơ chế đọc bằng chứng, D-09 về giới hạn/lỗi. Chưa có trong gói.
-- `development-guide.md`: Dũng + Đức Anh cùng biên soạn theo D-13; Đức Anh quyết định chính về triển khai/vận hành. Chưa có trong gói.
-- [test_evaluation_plan.md](test_evaluation_plan.md): đã có bản khung, đang hoàn thiện; D-11 phần kỹ thuật, D-12 phần usability.
-
-api-contract.md và development-guide.md chưa có; kế hoạch kiểm thử/đánh giá đã có bản khung, đang hoàn thiện. Không ghi thông số chưa được owner quyết định hoặc coi bản khung là kế hoạch đã hoàn tất.
+Kho dân sự và index kho được giữ qua nhiều analysis. Chỉ dọn nguồn/index tạm thuộc lượt đang xử lý; lỗi retrieval/rỗng không chứng minh thiếu văn bản hoặc không có tác động. Client hiện tại dành server/storage riêng cho một comparison, chưa hỗ trợ kho bền vững dùng chung; phải thiết kế binding/vòng đời mới và kiểm chứng trước khi bật kho thật. Xem Architecture §4.3.

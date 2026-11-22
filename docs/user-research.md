@@ -82,4 +82,4 @@ Phần bổ sung này chỉ đồng bộ tài liệu; nội dung nghiên cứu �
 
 Các phát hiện được dùng để định hướng [BRD](brd.md), [SRS](srs.md) và [Architecture](architecture.md), không để xác nhận công nghệ. LightRAG là lựa chọn kỹ thuật tạm thời, không là nhu cầu đã được hai người tham gia nêu hoặc bằng chứng cải thiện trải nghiệm.
 
-D-07/D-08 trong [Module Owner Decisions](module-owner-decisions-hci.md) cần đề xuất UI và đối chiếu phiên; D-12 cần kế hoạch dùng thử, tác vụ, đáp án và phép đo. Các phương án đó phải gắn với RQ-01–04 và khoảng trống đã ghi, không sửa kết quả nghiên cứu để hợp thức hóa thiết kế. Dũng tổng hợp nghiên cứu/đánh giá người dùng, Tùng Dương đề xuất tương tác; kết quả AI kỹ thuật do Nam đánh giá riêng.
+Các nghiên cứu tương tác và vòng đời nhận xét cần đề xuất UI, đối chiếu phiên, kế hoạch dùng thử, tác vụ, đáp án và phép đo theo [quyết định module](module-owner-decisions-hci.md). Các phương án đó phải gắn với RQ-01–04 và khoảng trống đã ghi, không sửa kết quả nghiên cứu để hợp thức hóa thiết kế. Dũng tổng hợp nghiên cứu/đánh giá người dùng, Tùng Dương đề xuất tương tác; kết quả AI kỹ thuật do Nam đánh giá riêng.
