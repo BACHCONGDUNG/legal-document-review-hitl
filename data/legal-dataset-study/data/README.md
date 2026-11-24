@@ -1,15 +1,14 @@
 # legal-dataset-study
 
-Thư mục khảo sát nguồn văn bản pháp luật, lọc ứng viên dân sự từ metadata và tải từng văn bản HTML để kiểm tra, chuẩn hóa dữ liệu.
+Thư mục khảo sát nguồn văn bản pháp luật, lọc ứng viên dân sự từ metadata và tải văn bản thành DOCX theo số hiệu. HTML được xử lý tạm trong luồng mặc định.
 
 ## Cấu trúc thư mục
 
 ```text
 legal-dataset-study/
-├── .venv/                         Môi trường Python cục bộ, không đưa lên Git
 ├── download_metadata.py           Tải metadata, xuất CSV và gọi bộ lọc ứng viên
 ├── civil_metadata_rules.py        Bổ sung quy tắc lọc dữ liệu dân sự từ metadata
-├── open_document.py               Tải HTML thuộc ứng viên, kiểm tra trùng tại đích
+├── open_document.py               Tải ứng viên thành DOCX theo số hiệu
 └── data/
     ├── README.md                 Hướng dẫn sử dụng thư mục
     ├── metadata.csv              Metadata gốc xuất từ dataset
@@ -20,8 +19,7 @@ legal-dataset-study/
     ├── ung_vien_dan_su_luot2_report.json
     │                             Thống kê kết quả, vai trò cột và nguồn tham khảo
     ├── vbpl-111436.html           HTML mẫu trích từ PDF nguồn
-    ├── vbpl-<id>.html             HTML tạo khi tải văn bản mới
-    └── vbpl-<id>.source.json      Dataset, revision, ID và hash của HTML tải mới
+    └── lightrag/                 Thư mục đích minh họa, chứa DOCX theo số hiệu
 ```
 
 ## Nguồn dữ liệu
@@ -33,7 +31,7 @@ Các script tải dữ liệu cố định revision `8977887f17be2defae4c5171d55
 | Thành phần dataset | Nội dung | Sử dụng trong thư mục |
 | --- | --- | --- |
 | `metadata` | Thông tin mô tả từng văn bản | Xuất thành `data/metadata.csv`, dùng để khảo sát và lọc ứng viên |
-| `content` | Toàn văn trong trường `content_html` | Đọc streaming, tìm theo `id` rồi lưu thành HTML |
+| `content` | Toàn văn trong trường `content_html` | Đọc streaming theo ID; chuyển HTML tạm thành DOCX |
 | `relationships` | Quan hệ giữa các văn bản | Chưa được các script trong thư mục xử lý |
 
 [vohuutridung/vietnamese-legal-documents](https://huggingface.co/datasets/vohuutridung/vietnamese-legal-documents) là nguồn tham khảo bổ sung, chưa được tích hợp vào các script hiện tại.
@@ -46,7 +44,7 @@ Các script tải dữ liệu cố định revision `8977887f17be2defae4c5171d55
 | --- | --- |
 | `download_metadata.py` | Tải phần metadata, xuất `metadata.csv`, thống kê lĩnh vực và cập nhật danh sách ứng viên qua bộ quy tắc lọc |
 | `civil_metadata_rules.py` | Bổ sung việc lọc ứng viên dân sự ngoài cách chỉ tìm từ “dân sự” trong `title` và `linh_vuc`; kết hợp thêm các cột metadata phù hợp, lưu căn cứ cho từng ID |
-| `open_document.py` | Chỉ nhận ID trong CSV ứng viên; kiểm tra HTML/PDF/DOCX đã có ở thư mục đích và thư mục con, tải những văn bản còn thiếu, kiểm tra có chữ rồi lưu HTML kèm nguồn |
+| `open_document.py` | Chỉ nhận ID trong CSV ứng viên; kiểm tra HTML/PDF/DOCX đã có ở thư mục đích và thư mục con, tải những văn bản còn thiếu, kiểm tra có chữ rồi chuyển DOCX theo số hiệu |
 
 ## Chuẩn bị môi trường
 
@@ -54,21 +52,23 @@ Mở PowerShell tại thư mục gốc repo, sau đó chuyển vào thư mục n
 
 ```powershell
 Set-Location .\data\legal-dataset-study
-py -m venv .venv
-.\.venv\Scripts\python.exe -m pip install datasets pandas
+$studyVenv = Join-Path $env:USERPROFILE '.venvs\hci-study'
+python -m venv $studyVenv
+$studyPython = Join-Path $studyVenv 'Scripts\python.exe'
+& $studyPython -m pip install datasets pandas python-docx lxml
 ```
 
-Mỗi máy tạo `.venv` riêng; không sao chép môi trường từ máy khác. Nếu môi trường đã chạy được thì không cần tạo lại. Các lệnh dưới đây chạy tại `legal-dataset-study`, trừ khi có ghi chú khác.
+Dùng môi trường riêng ở đường dẫn ngắn để tránh giới hạn Windows. Nếu môi trường đã có, chỉ khai báo $studyPython trong cửa sổ PowerShell đang dùng. Các lệnh dưới đây chạy tại `legal-dataset-study`, trừ khi có ghi chú khác.
 
 ## Tải hoặc xem metadata
 
 Các CSV đi kèm có thể sử dụng ngay. Chỉ chạy lệnh sau khi cần tải lại metadata:
 
 ```powershell
-.\.venv\Scripts\python.exe -u .\download_metadata.py
+& $studyPython -u .\download_metadata.py
 ```
 
-Script xuất ba CSV chính và các file bằng chứng/thống kê của bộ lọc. Lệnh chưa tải toàn văn. Hugging Face có thể lưu cache ngoài thư mục dự án.
+download_metadata.py ghi lại metadata.csv và thống kê lĩnh vực, sau đó bộ lọc cập nhật ứng viên/evidence/report. Script dùng đường dẫn tương đối nên chạy tại legal-dataset-study. Lệnh chưa tải toàn văn. Hugging Face có thể lưu cache ngoài thư mục dự án.
 
 Xem danh sách ứng viên và tra một văn bản:
 
@@ -87,9 +87,9 @@ Import-Csv .\data\metadata.csv -Encoding UTF8 | Where-Object { $_.id -eq '15289'
 Xem quy tắc, kiểm tra dự kiến và cập nhật kết quả:
 
 ```powershell
-.\.venv\Scripts\python.exe .\civil_metadata_rules.py --describe-rules
-.\.venv\Scripts\python.exe .\civil_metadata_rules.py --dry-run
-.\.venv\Scripts\python.exe .\civil_metadata_rules.py
+& $studyPython .\civil_metadata_rules.py --describe-rules
+& $studyPython .\civil_metadata_rules.py --dry-run
+& $studyPython .\civil_metadata_rules.py
 ```
 
 `--dry-run` không ghi file. Chạy cập nhật nhiều lần không nhân bản ID. Script giữ các ứng viên đã có, bổ sung dòng mới và không sửa `metadata.csv`. Có thể chỉ định `--metadata`, `--candidates`, `--evidence`, `--report` để thử trên bản sao.
@@ -104,59 +104,17 @@ Snapshot đi kèm có 506 ứng viên từ lượt 1 và 4.093 ứng viên sau l
 
 Danh sách này chưa phải tập văn bản dân sự đã xác nhận. Nhóm liên quan/hỗ trợ và trường hợp dễ nhầm được đánh dấu để đọc toàn văn. Ngược lại, một văn bản không được chọn qua metadata cũng chưa có nghĩa đã được xác định ngoài phạm vi.
 
-## Tải HTML từ danh sách ứng viên
+## Tải văn bản thành DOCX
 
-`open_document.py` nhận ID qua dòng lệnh, không cần sửa mã nguồn. Phải chọn `--id` hoặc `--all-candidates`; không truyền lựa chọn thì chương trình chỉ báo cách dùng, không tự tải.
+Chạy từ thư mục legal-dataset-study bằng môi trường đã cài datasets, pandas, python-docx và lxml. Ví dụ dưới dùng --limit 10 để thử tối đa 10 văn bản chưa có:
 
-Kiểm tra dự kiến trước, rồi tải một văn bản chưa có:
+    & $studyPython -u .\open_document.py --all-candidates --limit 10 --output-dir .\data\lightrag --dry-run
 
-```powershell
-.\.venv\Scripts\python.exe -u .\open_document.py --id 15289 --output-dir .\data --dry-run
-.\.venv\Scripts\python.exe -u .\open_document.py --id 15289 --output-dir .\data
-```
-
-Tải một số ID cụ thể hoặc thử tối đa 10 văn bản chưa có trong toàn bộ danh sách:
-
-```powershell
-.\.venv\Scripts\python.exe -u .\open_document.py --id 15289 26735 --output-dir .\data
-.\.venv\Scripts\python.exe -u .\open_document.py --all-candidates --limit 10 --output-dir .\data --dry-run
-.\.venv\Scripts\python.exe -u .\open_document.py --all-candidates --limit 10 --output-dir .\data --report .\data\tai_html.json
-```
-
-`--limit` giới hạn số văn bản chưa có sẽ được thử tải, không tính các file đã bỏ qua. HTML rỗng hoặc lỗi nguồn có thể làm số file tải thành công nhỏ hơn giới hạn. Không dùng `--all-candidates` không giới hạn nếu chưa chủ động muốn duyệt cả danh sách.
-
-### Kiểm tra điều kiện và chống trùng
-
-1. Mọi ID được yêu cầu phải nằm trong `ung_vien_dan_su.csv`. Nếu có ID ngoài danh sách, lệnh dừng trước khi tải bất kỳ ID nào.
-2. Kiểm tra thư mục `--output-dir` và các thư mục con. File ở vị trí khác không được tính là đã có ở đích này.
-3. Nhận diện HTML theo tên `vbpl-<id>.html` và bản ghi `.source.json`. Với PDF/DOCX, dùng `data/manifest.csv` theo dataset/revision/ID nếu có; tên file theo ID hoặc số hiệu cũng được coi là dấu hiệu có thể trùng.
-4. File đã có được bỏ qua, không ghi đè. Nếu chưa xác nhận nguồn/phiên bản thì báo `skipped_unverified`; nếu rỗng, hỏng hoặc xung đột nguồn thì báo cần kiểm tra và giữ nguyên file.
-5. Chỉ những ID còn thiếu mới được tìm trong `content` của snapshot đã cố định. Một lô dùng chung một lượt đọc streaming; kết thúc khi đã gặp đủ ID hoặc hết nguồn.
-6. HTML có body rỗng, chỉ có script/style hoặc ảnh không có chữ sẽ không được lưu thành kết quả thành công.
-
-Ví dụ kiểm tra văn bản đã có trong các ca nguồn:
-
-```powershell
-.\.venv\Scripts\python.exe .\open_document.py --id 15289 26735 --output-dir ..\raw --dry-run
-```
-
-### Đầu ra và tham số
-
-Mỗi văn bản mới tạo `vbpl-<id>.html` và `vbpl-<id>.source.json` trong thư mục đích. Bản ghi nguồn chứa dataset, revision, ID, số hiệu, tiêu đề, thời điểm tải và SHA-256. Không tự cập nhật `data/manifest.csv` hoặc gán vai trò S/V1 cho một văn bản vừa tải.
-
-| Tham số | Ý nghĩa |
-| --- | --- |
-| `--id ID [ID ...]` | Chọn một hoặc nhiều ID thuộc ứng viên |
-| `--all-candidates` | Xét các ID theo thứ tự CSV ứng viên |
-| `--limit N` | Giới hạn số văn bản chưa có sẽ được thử tải |
-| `--output-dir PATH` | Vị trí lưu và kiểm tra trùng; mặc định là thư mục `data` bên cạnh script |
-| `--candidates PATH` | CSV ứng viên khác; mặc định `data/ung_vien_dan_su.csv` bên cạnh script |
-| `--manifest PATH`, `--manifest-root PATH` | Manifest dùng nhận diện file có sẵn và gốc tính các `local_path` tương đối; mặc định dùng manifest/gốc repo |
-| `--dry-run` | Chỉ kiểm tra, không gọi mạng hoặc ghi HTML; chỉ lưu báo cáo nếu có `--report` |
-| `--report PATH` | Lưu báo cáo JSON mới; không ghi đè báo cáo đã có |
-| `--open` | Mở các HTML vừa tải thành công; mặc định không tự mở trình duyệt |
-
-Streaming cần mạng và có thể đọc qua nhiều bản ghi trước khi gặp ID cần tìm. File HTML có chữ vẫn cần đối chiếu nguồn để xác nhận toàn văn đủ và đúng phiên bản. Script chưa tự chuyển sang DOCX hoặc thực hiện lượt phân loại nội dung.
+Bỏ --dry-run để tải thật. Mặc định thư mục đích chỉ nhận DOCX theo số hiệu, ví dụ 100_2006_NĐ-CP.docx. HTML được xử lý trong thư mục tạm rồi dọn, không tạo HTML, .source.json hoặc .report.json trong thư mục đích.
+File DOCX đã có được kiểm tra gói ZIP và sự hiện diện của word/document.xml và bỏ qua để tránh tải trùng. Khi không có manifest hoặc bản ghi nguồn, chương trình báo skipped_unverified vì tên file chưa xác nhận được nguồn/phiên bản. File lỗi được giữ để người dùng kiểm tra. Không ghi đè.
+--id ID [ID ...] chọn văn bản cụ thể. --all-candidates xét CSV ứng viên; --limit N là tùy chọn, nhận số nguyên dương. Code mặc định limit=None: bỏ --limit sẽ xét toàn bộ ID đã chọn hoặc toàn bộ CSV khi dùng --all-candidates. Khi có giới hạn, chỉ văn bản chưa có được tính vào N; số DOCX thành công có thể ít hơn N do lỗi tải hoặc chuyển đổi. --candidates, --manifest và --manifest-root cho phép chỉ định nguồn kiểm tra.
+--report PATH chỉ tạo báo cáo tổng khi người dùng chủ động yêu cầu. --html-only là tùy chọn giữ chế độ tải HTML cũ. Lệnh tải mặc định không cần các tùy chọn này.
+Danh sách được xét theo thứ tự CSV, chưa sắp xếp theo download_priority. Chuyển đổi lỗi hoặc nguồn không có chữ sẽ báo lỗi và không xuất DOCX trắng. Cần đối chiếu nguồn chính thức khi dùng tài liệu.
 
 ### HTML mẫu 111436
 
@@ -175,8 +133,8 @@ HTML nguồn đã kiểm tra của ID này có `body` rỗng. Bộ tải giữ n
 Bộ chuyển đổi nằm tại `backend/app/document_processing/html_to_docx.py`. Sau khi tải HTML, có thể gọi riêng từ thư mục nghiên cứu:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install python-docx lxml
-.\.venv\Scripts\python.exe ..\..\backend\app\document_processing\html_to_docx.py .\data\vbpl-15289.html --document-number "100/2006/NĐ-CP" --output-dir ..\raw\case_moi
+& $studyPython -m pip install python-docx lxml
+& $studyPython ..\..\backend\app\document_processing\html_to_docx.py .\data\vbpl-15289.html --document-number "100/2006/NĐ-CP" --output-dir ..\raw\case_moi
 ```
 
 Ví dụ trên tạo `data/raw/case_moi/100_2006_NĐ-CP.docx` và report chuyển đổi. Thay thư mục, ID và số hiệu theo văn bản thực tế. Bộ chuyển đổi tự nhận diện số ký hiệu nếu HTML có thông tin phù hợp; `--document-number` dùng giá trị từ metadata đã đối chiếu khi HTML thiếu số của chính văn bản. Dấu `/` được đổi thành `_` trong tên file; đầu ra đã tồn tại sẽ không bị ghi đè.
@@ -198,7 +156,7 @@ Kết quả lọc theo nội dung nên được lưu riêng, nối qua ID và th
 
 - Đọc ID dưới dạng chuỗi và giữ kèm tên dataset, revision, số hiệu, nguồn đối chiếu.
 - Không ghép hai nguồn chỉ vì ID giống nhau; cần đối chiếu định danh và phiên bản văn bản.
-- Giữ HTML nguồn để đối chiếu với DOCX; phân biệt tài liệu nguyên bản và bản chuyển đổi.
+- Luồng mặc định chỉ giữ DOCX. Đối chiếu qua ID, dataset/revision trong CSV, số hiệu và manifest nếu có. --html-only là chế độ riêng để lưu HTML và .source.json.
 - Các ca nguồn phục vụ dự án đặt trong `data/raw/<case_id>/`, cập nhật nguồn và thông tin file trong `data/manifest.csv`.
 - Đáp án phân loại/trước–sau đã duyệt cần lưu riêng với nguồn dùng cho truy xuất.
 
@@ -207,7 +165,7 @@ Kết quả lọc theo nội dung nên được lưu riêng, nối qua ID và th
 Chạy tại thư mục gốc repo bằng môi trường Python đang sử dụng:
 
 ```powershell
-py -B -m unittest discover -s test\data_suite -v
+& $studyPython -B -m unittest discover -s test\data_suite -v
 ```
 
 ## Lỗi thường gặp
@@ -215,10 +173,10 @@ py -B -m unittest discover -s test\data_suite -v
 | Hiện tượng | Kiểm tra |
 | --- | --- |
 | Không tìm thấy `metadata.csv` | Chạy script tải metadata tại `legal-dataset-study`; kiểm tra file nằm trong thư mục con `data` |
-| Môi trường `.venv` không chạy sau khi chuyển máy/thư mục | Tạo lại môi trường tại vị trí hiện tại và cài thư viện |
-| Tải toàn văn bị ngắt | Chạy lại cùng lựa chọn và thư mục đích; file hoàn tất có bản ghi nguồn sẽ được bỏ qua, ID còn thiếu được thử lại |
-| Cảnh báo WinError 10038 sau khi báo `downloaded` | Chạy lại cùng ID và đích để kiểm tra hash; file hoàn tất sẽ được bỏ qua. Nếu lỗi trước khi lưu thành công thì kiểm tra mạng và thử lại |
+| Môi trường `.venv` không chạy sau khi chuyển máy/thư mục | Tạo môi trường tại đường dẫn ngắn như $env:USERPROFILE\.venvs\hci-study rồi cài thư viện |
+| Tải toàn văn bị ngắt | Chạy lại cùng lựa chọn và đích. DOCX có sẵn được bỏ qua; khi chỉ có tên file, trạng thái là skipped_unverified. |
+| Cảnh báo WinError 10038 sau khi báo `downloaded` | Chạy lại cùng ID và đích để kiểm tra file có sẵn. Hash cần manifest phù hợp; luồng DOCX-only không sinh bản ghi nguồn. |
 | `existing_invalid` / `existing_identity_conflict` | Kiểm tra file cũ, hash, dataset và revision; bộ tải không tự sửa hoặc ghi đè |
 | `empty_or_invalid_html` | Nguồn không có chữ đọc được; đối chiếu HTML/PDF chính thức thay vì tạo DOCX trắng |
-| Không nhận diện được số ký hiệu khi chuyển DOCX | Đối chiếu metadata và truyền `--document-number`; không lấy số của văn bản được viện dẫn |
+| Không nhận diện được số ký hiệu khi chuyển DOCX | Bộ tải lấy so_ky_hieu từ CSV. Xác minh metadata nếu thiếu hoặc mâu thuẫn; --document-number chỉ dùng khi gọi converter thủ công. |
 | Bộ lọc báo ứng viên không khớp metadata | Kiểm tra dataset, revision và giá trị gốc; không ghép hoặc ghi đè trước khi làm rõ |

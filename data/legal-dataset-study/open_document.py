@@ -1,9 +1,9 @@
-"""Tải HTML chỉ cho các ID trong CSV ứng viên và chưa có ở thư mục đích.
+"""Tải ứng viên, mặc định chuyển HTML tạm thành DOCX theo số hiệu.
 
-Chạy: python open_document.py --id 15289 --output-dir data
-       python open_document.py --all-candidates --limit 10 --output-dir data --dry-run
-Không tải khi thiếu lựa chọn ID; không tự mở trình duyệt hoặc ghi đè file.
-Chỉ cần datasets khi thực sự tải; kiểm tra thư mục/dry-run dùng thư viện chuẩn.
+CLI yêu cầu --id hoặc --all-candidates. --dry-run chỉ lập kế hoạch offline.
+--html-only bật lưu HTML và .source.json. --report yêu cầu báo cáo tổng.
+Hàm download_documents mặc định convert_docx=False để giữ caller cũ.
+CLI mặc định bật DOCX. Kiểm tra trùng chưa xác nhận nội dung thuộc dân sự.
 """
 from __future__ import annotations
 
@@ -15,6 +15,8 @@ import hashlib
 from html.parser import HTMLParser
 import io
 import json
+import os
+import tempfile
 from pathlib import Path
 import re
 import sys
@@ -230,9 +232,63 @@ def _save(content, row, output):
     return path
 
 
+
+class DocxConversionError(ValueError):
+    pass
+
+
+def _convert_source(source, row, output):
+    if str(REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(REPO_ROOT))
+    from backend.app.document_processing.html_to_docx import convert_html_to_docx
+    try:
+        target, _ = convert_html_to_docx(source, document_number=row.get('so_ky_hieu', ''),
+                                          output_dir=output, write_report=False)
+    except FileExistsError:
+        raise
+    except Exception as error:
+        raise DocxConversionError(str(error)) from error
+    return target
+
+
+def _save_docx(content, row, output):
+    validate_html(content)
+    # HTML is temporary and never written into the download directory.
+    with tempfile.TemporaryDirectory(prefix='hci_html_') as temporary:
+        source = Path(temporary) / 'source.html'
+        source.write_text(content, encoding='utf-8')
+        return _convert_source(source, row, output)
+
+
+def _convert_result(result, row, dry_run):
+    source = Path(result['path'])
+    if source.suffix.lower() != '.html':
+        return
+    if dry_run and result['status'] in {'would_download', 'skipped_existing'}:
+        if str(REPO_ROOT) not in sys.path:
+            sys.path.insert(0, str(REPO_ROOT))
+        from backend.app.document_processing.document_number import normalize_document_number
+        try:
+            number = normalize_document_number(row.get('so_ky_hieu', ''))
+        except ValueError as error:
+            result.update(status='conversion_error', reason=f'Chưa thể đặt tên DOCX: {error}')
+            return
+        status = 'would_download_and_convert' if result['status'] == 'would_download' else 'would_convert'
+        target = source.parent / (number.replace('/', '_') + '.docx')
+        result.update(status=status, path=str(target),
+                      reason='Dự kiến tải và chuyển DOCX theo số hiệu; thư mục đích chỉ lưu DOCX.')
+    elif result['status'] == 'skipped_existing':
+        try:
+            target = _convert_source(source, row, source.parent)
+            result.update(status='converted', path=str(target), reason='Đã chuyển HTML có sẵn thành DOCX.')
+        except Exception as error:
+            result.update(status='conversion_error', reason=f'{type(error).__name__}: {error}')
+
+
+
 def download_documents(ids=None, *, all_candidates=False, candidates_path=DEFAULT_CANDIDATES,
                        output_dir=None, limit=None, dry_run=False,
-                       manifest_path=DEFAULT_MANIFEST, manifest_root=REPO_ROOT, stream_factory=None):
+                       manifest_path=DEFAULT_MANIFEST, manifest_root=REPO_ROOT, stream_factory=None, convert_docx=False):
     if bool(ids) == bool(all_candidates):
         raise ValueError('Chọn --id hoặc --all-candidates, không dùng đồng thời hoặc bỏ cả hai.')
     if limit is not None and limit < 1:
@@ -276,8 +332,15 @@ def download_documents(ids=None, *, all_candidates=False, candidates_path=DEFAUL
                     if old:
                         result.update(old)
                     else:
-                        path = _save(document.get('content_html') or '', candidates[identity], output)
-                        result.update(status='downloaded', path=str(path), reason='Đã lưu HTML có chữ và bản ghi nguồn.')
+                        content = document.get('content_html') or ''
+                        if convert_docx:
+                            path = _save_docx(content, candidates[identity], output)
+                            result.update(status='converted', path=str(path), reason='Đã lưu DOCX theo số hiệu.')
+                        else:
+                            path = _save(content, candidates[identity], output)
+                            result.update(status='downloaded', path=str(path), reason='Đã lưu HTML và bản ghi nguồn.')
+                except DocxConversionError as error:
+                    result.update(status='conversion_error', reason=str(error))
                 except ValueError as error:
                     result.update(status='empty_or_invalid_html', reason=str(error))
                 except FileExistsError:
@@ -298,8 +361,11 @@ def download_documents(ids=None, *, all_candidates=False, candidates_path=DEFAUL
                     close()
                 except Exception as error:
                     warnings.append(f'Đã kết thúc đọc nguồn nhưng đóng kết nối có cảnh báo: {type(error).__name__}')
+    if convert_docx:
+        for result in results:
+            _convert_result(result, candidates[result['id']], dry_run)
     counts = dict(Counter(row['status'] for row in results))
-    failures = {'existing_invalid', 'existing_identity_conflict', 'empty_or_invalid_html', 'write_error', 'not_found', 'download_error'}
+    failures = {'conversion_error', 'existing_invalid', 'existing_identity_conflict', 'empty_or_invalid_html', 'write_error', 'not_found', 'download_error'}
     return {'dataset': DATASET, 'revision': REVISION, 'candidates': str(Path(candidates_path).resolve()),
             'output_dir': str(output), 'dry_run': dry_run, 'total_candidates': len(candidates),
             'considered': len(results), 'unexamined_due_to_limit': len(requested) - len(results),
@@ -311,17 +377,18 @@ def main():
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, 'reconfigure'):
             stream.reconfigure(encoding='utf-8', errors='backslashreplace')
-    parser = argparse.ArgumentParser(description='Chỉ tải HTML thuộc CSV ứng viên; kiểm tra HTML/PDF/DOCX đã có ở đích và thư mục con.')
+    parser = argparse.ArgumentParser(description='Tải ứng viên thành DOCX theo số hiệu; kiểm tra file đã có ở đích và thư mục con.')
     selection = parser.add_mutually_exclusive_group(required=True)
     selection.add_argument('--id', nargs='+', dest='ids', help='Một hoặc nhiều ID trong CSV ứng viên.')
     selection.add_argument('--all-candidates', action='store_true', help='Xét CSV ứng viên; nên thêm --limit để tải thử.')
     parser.add_argument('--candidates', type=Path, default=DEFAULT_CANDIDATES)
     parser.add_argument('--output-dir', type=Path, default=SCRIPT_DIR / 'data')
-    parser.add_argument('--limit', type=int, help='Giới hạn số văn bản CHƯA CÓ cần tải, không tính các file bỏ qua.')
+    parser.add_argument('--limit', type=int, help='Tùy chọn số nguyên dương: tối đa N văn bản chưa có được thử tải. Bỏ tham số để xét toàn bộ lựa chọn; file bỏ qua không tính vào N.')
     parser.add_argument('--manifest', type=Path, default=DEFAULT_MANIFEST, help='Manifest dự án để nhận diện DOCX đã có theo dataset/revision/ID.')
     parser.add_argument('--manifest-root', type=Path, default=REPO_ROOT, help='Gốc tính local_path tương đối trong manifest.')
-    parser.add_argument('--dry-run', action='store_true', help='Chỉ kiểm tra, không gọi mạng/ghi HTML; chỉ lưu báo cáo nếu có --report.')
-    parser.add_argument('--open', action='store_true', help='Mở các HTML vừa tải thành công trong trình duyệt.')
+    parser.add_argument('--dry-run', action='store_true', help='Lập kế hoạch offline, chưa tải/chuyển hoặc tạo file; --report cho phép lưu kế hoạch JSON.')
+    parser.add_argument('--html-only', action='store_true', help='Chỉ tải HTML, bỏ bước chuyển DOCX mặc định.')
+    parser.add_argument('--open', action='store_true', help='Mở đường dẫn DOCX/HTML vừa tạo qua trình duyệt hệ thống.')
     parser.add_argument('--report', type=Path, help='Lưu báo cáo JSON mới; không ghi đè file báo cáo đã có.')
     args = parser.parse_args()
     if args.report and (args.report.exists() or args.report.is_symlink()):
@@ -329,7 +396,7 @@ def main():
     try:
         result = download_documents(args.ids, all_candidates=args.all_candidates, candidates_path=args.candidates,
                                     output_dir=args.output_dir, limit=args.limit, dry_run=args.dry_run,
-                                    manifest_path=args.manifest, manifest_root=args.manifest_root)
+                                    manifest_path=args.manifest, manifest_root=args.manifest_root, convert_docx=not args.html_only)
         if args.report:
             args.report.parent.mkdir(parents=True, exist_ok=True)
             with args.report.open('x', encoding='utf-8') as handle:
@@ -343,7 +410,7 @@ def main():
         print('Chỉ hiển thị 20 dòng đầu; dùng --report để xem đầy đủ kết quả.')
     if args.open and not args.dry_run:
         for row in result['results']:
-            if row['status'] == 'downloaded':
+            if row['status'] in {'downloaded', 'converted'}:
                 webbrowser.open(Path(row['path']).as_uri())
     return 1 if result['has_errors'] else 0
 

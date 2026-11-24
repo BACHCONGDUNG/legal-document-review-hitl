@@ -209,7 +209,7 @@ class CandidateDownloadTests(unittest.TestCase):
         report=self.root/'plan.json'
         result=subprocess.run([sys.executable,'-B',str(module_path),'--id','1','--candidates',str(self.csv),'--output-dir',str(self.output),'--manifest',str(self.root/'missing.csv'),'--dry-run','--report',str(report)],capture_output=True)
         self.assertEqual(result.returncode,0,result.stderr.decode('utf-8'))
-        self.assertEqual(json.loads(report.read_text(encoding='utf-8'))['counts'],{'would_download':1})
+        self.assertEqual(json.loads(report.read_text(encoding='utf-8'))['counts'],{'would_download_and_convert':1})
         self.assertFalse(self.output.exists())
 
 
