@@ -9,7 +9,7 @@ legal-dataset-study/
 ├── .venv/                         Môi trường Python cục bộ, không đưa lên Git
 ├── download_metadata.py           Tải metadata, xuất CSV và gọi bộ lọc ứng viên
 ├── civil_metadata_rules.py        Bổ sung quy tắc lọc dữ liệu dân sự từ metadata
-├── open_document.py               Tải HTML của một văn bản theo ID
+├── open_document.py               Tải HTML thuộc ứng viên, kiểm tra trùng tại đích
 └── data/
     ├── README.md                 Hướng dẫn sử dụng thư mục
     ├── metadata.csv              Metadata gốc xuất từ dataset
@@ -19,7 +19,9 @@ legal-dataset-study/
     │                             Quy tắc và giá trị metadata làm căn cứ theo ID
     ├── ung_vien_dan_su_luot2_report.json
     │                             Thống kê kết quả, vai trò cột và nguồn tham khảo
-    └── vbpl-111436.html           HTML mẫu trích từ PDF nguồn
+    ├── vbpl-111436.html           HTML mẫu trích từ PDF nguồn
+    ├── vbpl-<id>.html             HTML tạo khi tải văn bản mới
+    └── vbpl-<id>.source.json      Dataset, revision, ID và hash của HTML tải mới
 ```
 
 ## Nguồn dữ liệu
@@ -44,7 +46,7 @@ Các script tải dữ liệu cố định revision `8977887f17be2defae4c5171d55
 | --- | --- |
 | `download_metadata.py` | Tải phần metadata, xuất `metadata.csv`, thống kê lĩnh vực và cập nhật danh sách ứng viên qua bộ quy tắc lọc |
 | `civil_metadata_rules.py` | Bổ sung việc lọc ứng viên dân sự ngoài cách chỉ tìm từ “dân sự” trong `title` và `linh_vuc`; kết hợp thêm các cột metadata phù hợp, lưu căn cứ cho từng ID |
-| `open_document.py` | Đọc `metadata.csv`, tìm một văn bản theo `document_id`, tải `content_html`, lưu file và mở trong trình duyệt |
+| `open_document.py` | Chỉ nhận ID trong CSV ứng viên; kiểm tra HTML/PDF/DOCX đã có ở thư mục đích và thư mục con, tải những văn bản còn thiếu, kiểm tra có chữ rồi lưu HTML kèm nguồn |
 
 ## Chuẩn bị môi trường
 
@@ -102,21 +104,59 @@ Snapshot đi kèm có 506 ứng viên từ lượt 1 và 4.093 ứng viên sau l
 
 Danh sách này chưa phải tập văn bản dân sự đã xác nhận. Nhóm liên quan/hỗ trợ và trường hợp dễ nhầm được đánh dấu để đọc toàn văn. Ngược lại, một văn bản không được chọn qua metadata cũng chưa có nghĩa đã được xác định ngoài phạm vi.
 
-## Tải HTML của một văn bản
+## Tải HTML từ danh sách ứng viên
 
-1. Chọn ID trong metadata hoặc danh sách ứng viên; đối chiếu tên và số hiệu.
-2. Mở `open_document.py`, đặt `document_id` thành ID cần tải, ví dụ `"15289"`, rồi lưu file.
-3. Chạy script và kiểm tra HTML được tạo.
+`open_document.py` nhận ID qua dòng lệnh, không cần sửa mã nguồn. Phải chọn `--id` hoặc `--all-candidates`; không truyền lựa chọn thì chương trình chỉ báo cách dùng, không tự tải.
+
+Kiểm tra dự kiến trước, rồi tải một văn bản chưa có:
 
 ```powershell
-notepad .\open_document.py
-.\.venv\Scripts\python.exe -u .\open_document.py
-Invoke-Item .\data\vbpl-15289.html
+.\.venv\Scripts\python.exe -u .\open_document.py --id 15289 --output-dir .\data --dry-run
+.\.venv\Scripts\python.exe -u .\open_document.py --id 15289 --output-dir .\data
 ```
 
-Đầu ra có dạng `data/vbpl-<id>.html`. Script chỉ tải một ID mỗi lần, không tự tải toàn bộ danh sách ứng viên hoặc chuyển DOCX. Streaming cần mạng và có thể đọc qua nhiều bản ghi trước khi gặp ID cần tìm.
+Tải một số ID cụ thể hoặc thử tối đa 10 văn bản chưa có trong toàn bộ danh sách:
 
-Khi terminal báo `Đã lưu`, cần mở file để kiểm tra có toàn văn. Script hiện chỉ kiểm tra chuỗi HTML không rỗng, chưa xác minh nội dung trong `body`; chạy lại cùng ID có thể ghi đè HTML đã có.
+```powershell
+.\.venv\Scripts\python.exe -u .\open_document.py --id 15289 26735 --output-dir .\data
+.\.venv\Scripts\python.exe -u .\open_document.py --all-candidates --limit 10 --output-dir .\data --dry-run
+.\.venv\Scripts\python.exe -u .\open_document.py --all-candidates --limit 10 --output-dir .\data --report .\data\tai_html.json
+```
+
+`--limit` giới hạn số văn bản chưa có sẽ được thử tải, không tính các file đã bỏ qua. HTML rỗng hoặc lỗi nguồn có thể làm số file tải thành công nhỏ hơn giới hạn. Không dùng `--all-candidates` không giới hạn nếu chưa chủ động muốn duyệt cả danh sách.
+
+### Kiểm tra điều kiện và chống trùng
+
+1. Mọi ID được yêu cầu phải nằm trong `ung_vien_dan_su.csv`. Nếu có ID ngoài danh sách, lệnh dừng trước khi tải bất kỳ ID nào.
+2. Kiểm tra thư mục `--output-dir` và các thư mục con. File ở vị trí khác không được tính là đã có ở đích này.
+3. Nhận diện HTML theo tên `vbpl-<id>.html` và bản ghi `.source.json`. Với PDF/DOCX, dùng `data/manifest.csv` theo dataset/revision/ID nếu có; tên file theo ID hoặc số hiệu cũng được coi là dấu hiệu có thể trùng.
+4. File đã có được bỏ qua, không ghi đè. Nếu chưa xác nhận nguồn/phiên bản thì báo `skipped_unverified`; nếu rỗng, hỏng hoặc xung đột nguồn thì báo cần kiểm tra và giữ nguyên file.
+5. Chỉ những ID còn thiếu mới được tìm trong `content` của snapshot đã cố định. Một lô dùng chung một lượt đọc streaming; kết thúc khi đã gặp đủ ID hoặc hết nguồn.
+6. HTML có body rỗng, chỉ có script/style hoặc ảnh không có chữ sẽ không được lưu thành kết quả thành công.
+
+Ví dụ kiểm tra văn bản đã có trong các ca nguồn:
+
+```powershell
+.\.venv\Scripts\python.exe .\open_document.py --id 15289 26735 --output-dir ..\raw --dry-run
+```
+
+### Đầu ra và tham số
+
+Mỗi văn bản mới tạo `vbpl-<id>.html` và `vbpl-<id>.source.json` trong thư mục đích. Bản ghi nguồn chứa dataset, revision, ID, số hiệu, tiêu đề, thời điểm tải và SHA-256. Không tự cập nhật `data/manifest.csv` hoặc gán vai trò S/V1 cho một văn bản vừa tải.
+
+| Tham số | Ý nghĩa |
+| --- | --- |
+| `--id ID [ID ...]` | Chọn một hoặc nhiều ID thuộc ứng viên |
+| `--all-candidates` | Xét các ID theo thứ tự CSV ứng viên |
+| `--limit N` | Giới hạn số văn bản chưa có sẽ được thử tải |
+| `--output-dir PATH` | Vị trí lưu và kiểm tra trùng; mặc định là thư mục `data` bên cạnh script |
+| `--candidates PATH` | CSV ứng viên khác; mặc định `data/ung_vien_dan_su.csv` bên cạnh script |
+| `--manifest PATH`, `--manifest-root PATH` | Manifest dùng nhận diện file có sẵn và gốc tính các `local_path` tương đối; mặc định dùng manifest/gốc repo |
+| `--dry-run` | Chỉ kiểm tra, không gọi mạng hoặc ghi HTML; chỉ lưu báo cáo nếu có `--report` |
+| `--report PATH` | Lưu báo cáo JSON mới; không ghi đè báo cáo đã có |
+| `--open` | Mở các HTML vừa tải thành công; mặc định không tự mở trình duyệt |
+
+Streaming cần mạng và có thể đọc qua nhiều bản ghi trước khi gặp ID cần tìm. File HTML có chữ vẫn cần đối chiếu nguồn để xác nhận toàn văn đủ và đúng phiên bản. Script chưa tự chuyển sang DOCX hoặc thực hiện lượt phân loại nội dung.
 
 ### HTML mẫu 111436
 
@@ -128,7 +168,7 @@ Invoke-Item .\data\vbpl-111436.html
 
 Nguồn đối chiếu: [thông tin văn bản](https://vbpl-bientap-gateway.moj.gov.vn/api/qtdc/public/doc/111436) và [PDF nguồn](https://vbpl-bientap-gateway.moj.gov.vn/api/qtdc/public/doc/minio/buckets/vbpl/111436/25-VBHN-BTC_25-VBHN-BTC.pdf/download).
 
-HTML nguồn đã kiểm tra của ID này có `body` rỗng. Chạy `open_document.py` với ID `111436` có thể ghi đè mẫu đang có bằng HTML trắng. Khi gặp nguồn rỗng, cần đối chiếu nguồn khác và ghi rõ việc chuyển đổi; không coi thông báo lưu file là bằng chứng đã có toàn văn.
+HTML nguồn đã kiểm tra của ID này có `body` rỗng. Bộ tải giữ nguyên mẫu đang có và báo `skipped_unverified` nếu chưa có bản ghi nguồn cùng dataset/revision. Khi tải vào một thư mục trống, HTML nguồn rỗng sẽ bị từ chối. Muốn có nội dung cần đối chiếu PDF/nguồn khác và ghi rõ việc chuyển đổi.
 
 ## Chuyển HTML sang DOCX
 
@@ -162,12 +202,12 @@ Kết quả lọc theo nội dung nên được lưu riêng, nối qua ID và th
 - Các ca nguồn phục vụ dự án đặt trong `data/raw/<case_id>/`, cập nhật nguồn và thông tin file trong `data/manifest.csv`.
 - Đáp án phân loại/trước–sau đã duyệt cần lưu riêng với nguồn dùng cho truy xuất.
 
-## Kiểm thử bộ lọc metadata
+## Kiểm thử bộ lọc và bộ tải
 
 Chạy tại thư mục gốc repo bằng môi trường Python đang sử dụng:
 
 ```powershell
-py -B -m unittest discover -s test\data_suite -p test_civil_metadata_rules.py -v
+py -B -m unittest discover -s test\data_suite -v
 ```
 
 ## Lỗi thường gặp
@@ -176,7 +216,9 @@ py -B -m unittest discover -s test\data_suite -p test_civil_metadata_rules.py -v
 | --- | --- |
 | Không tìm thấy `metadata.csv` | Chạy script tải metadata tại `legal-dataset-study`; kiểm tra file nằm trong thư mục con `data` |
 | Môi trường `.venv` không chạy sau khi chuyển máy/thư mục | Tạo lại môi trường tại vị trí hiện tại và cài thư viện |
-| Tải toàn văn bị ngắt | Kiểm tra mạng, mở file đã lưu nếu có rồi mới quyết định tải lại |
-| HTML mở trắng | Kiểm tra nội dung `body`, đối chiếu nguồn; không chuyển file trắng thành DOCX rồi coi là hoàn tất |
+| Tải toàn văn bị ngắt | Chạy lại cùng lựa chọn và thư mục đích; file hoàn tất có bản ghi nguồn sẽ được bỏ qua, ID còn thiếu được thử lại |
+| Cảnh báo WinError 10038 sau khi báo `downloaded` | Chạy lại cùng ID và đích để kiểm tra hash; file hoàn tất sẽ được bỏ qua. Nếu lỗi trước khi lưu thành công thì kiểm tra mạng và thử lại |
+| `existing_invalid` / `existing_identity_conflict` | Kiểm tra file cũ, hash, dataset và revision; bộ tải không tự sửa hoặc ghi đè |
+| `empty_or_invalid_html` | Nguồn không có chữ đọc được; đối chiếu HTML/PDF chính thức thay vì tạo DOCX trắng |
 | Không nhận diện được số ký hiệu khi chuyển DOCX | Đối chiếu metadata và truyền `--document-number`; không lấy số của văn bản được viện dẫn |
 | Bộ lọc báo ứng viên không khớp metadata | Kiểm tra dataset, revision và giá trị gốc; không ghép hoặc ghi đè trước khi làm rõ |
