@@ -188,7 +188,8 @@ $('#compare-form').addEventListener('submit', async event => {
   event.preventDefault(); if (state.busy) return;
   try {validateFiles(state); if (!state.v1.length || !state.s.length) throw new Error('Cần chọn đủ V1 và S.');}
   catch(error) {message(error.message,true); return;}
-  clearReport(); message(); setBusy(true);
+  // Keep the last usable report until a new usable comparison arrives.
+  message(); setBusy(true);
   const data = new FormData(); data.append('doc_v1',state.v1[0]); data.append('doc_s',state.s[0]);
   for (const file of state.references) data.append('reference_files',file);
   const controller = new AbortController();
@@ -196,7 +197,13 @@ $('#compare-form').addEventListener('submit', async event => {
   try {
     const response = await fetch('/api/compare',{method:'POST',body:data,signal:controller.signal});
     const report = await response.json();
-    if (Array.isArray(report.results) && report.comparison_id) renderReport(report);
+    if (Array.isArray(report.results) && report.comparison_id) {
+      if (!response.ok || report.status === 'FAILED') {
+        const keptPrevious = state.report !== null;
+        if (!keptPrevious) renderReport(report);
+        message(`Lượt đối chiếu mới thất bại. ${keptPrevious ? 'Đang giữ báo cáo trước đó. ' : ''}${report.errors?.[0]?.message || report.warnings?.find(w=>w.code === 'NO_USABLE_ANALYSIS')?.message || 'Hãy xem lại chỉ dẫn và đầu vào.'}`,true);
+      } else renderReport(report);
+    }
     else {
       const detail = report.detail;
       throw new Error(Array.isArray(detail) ? 'Đầu vào chưa hợp lệ hoặc thiếu file bắt buộc.' : typeof detail === 'string' ? detail : detail?.message || 'Máy chủ chưa xử lý được yêu cầu.');

@@ -1,8 +1,5 @@
-"""Upload API for the existing ZIP. Run from project root:
-    python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
-
-This file intentionally keeps routes here so only the three requested files need
-replacing. Later move routes into app/api/compare.py. No missing module imports.
+"""Session 1 upload API. Run from project root:
+    python -m uvicorn backend.main:app --host 127.0.0.1 --port 8001
 
 Development defaults below are configurable, NOT measured project commitments.
 Upload limits apply after Starlette has parsed/spooled multipart: add ingress
@@ -27,6 +24,7 @@ from fastapi.responses import JSONResponse
 from .app.pipeline import (
     DocumentInput, MISSING_COMPONENTS, PipelineInputError, run_comparison,
 )
+from .app.demo_runner import run_demo_analysis
 
 logger = logging.getLogger(__name__)
 
@@ -45,16 +43,15 @@ DEADLINE_SECONDS = float(os.getenv("LEGAL_DEADLINE_SECONDS", "300"))
 if not math.isfinite(DEADLINE_SECONDS) or DEADLINE_SECONDS <= 0:
     raise ValueError("LEGAL_DEADLINE_SECONDS must be finite and positive")
 
-app = FastAPI(title="Legal Document Change Detection API", version="0.2.0-foundation")
-# Assign a real synchronous runner during application composition when ready.
-# A URL alone does not implement a LightRAG client or the legal pipeline.
-app.state.analysis_runner = None
+app = FastAPI(title="Legal Document Change Detection API", version="0.3.0-session1")
+app.state.analysis_runner = run_demo_analysis
 _comparison_lock = Lock()
 
 
 @app.get("/health")
 def health(request: Request):
     return {"api": "ok", "comparison_ready": request.app.state.analysis_runner is not None,
+            "mode": "LOCAL_RULES_PARTIAL", "model": "not_selected",
             "lightrag_connection": "not_checked",
             "missing_components": list(MISSING_COMPONENTS)
             if request.app.state.analysis_runner is None else []}
@@ -94,18 +91,32 @@ def _save_upload(upload: UploadFile, directory: Path, number: int,
 @app.post("/api/compare")
 def compare_documents(
     request: Request,
-    doc_v1: Annotated[UploadFile, File(description="Van ban goc V1")],
-    doc_s: Annotated[UploadFile, File(description="Van ban sua doi S")],
+    doc_v1: Annotated[UploadFile | None, File(description="Legacy alias for base_file")] = None,
+    doc_s: Annotated[UploadFile | None, File(description="Legacy alias for amendment_file")] = None,
     reference_files: Annotated[list[UploadFile] | None,
                                File(description="Tai lieu tham chieu")] = None,
+    base_file: Annotated[UploadFile | None, File(description="Văn bản gốc V1")] = None,
+    amendment_file: Annotated[UploadFile | None, File(description="Văn bản sửa đổi S")] = None,
 ):
     # A sync route runs outside the event loop. Do not wrap conversion with a
     # timeout that deletes files while its worker is still using those files.
     references = reference_files or []
-    uploads = [doc_v1, doc_s, *references]
+    uploads = [upload for upload in [doc_v1, doc_s, base_file, amendment_file, *references]
+               if upload is not None]
     acquired = False
     comparison_id = str(uuid.uuid4())
     try:
+        for canonical, alias, name in [(base_file, doc_v1, 'base_file'),
+                                       (amendment_file, doc_s, 'amendment_file')]:
+            if canonical is not None and alias is not None:
+                raise HTTPException(422, detail={'code': 'AMBIGUOUS_INPUT',
+                                                'message': f'Chỉ gửi {name} hoặc alias tương ứng, không gửi cả hai.'})
+            if canonical is None and alias is None:
+                raise HTTPException(422, detail={'code': 'MISSING_FILE',
+                                                'message': f'Thiếu file bắt buộc: {name}.'})
+        primary_uploads = [base_file if base_file is not None else doc_v1,
+                           amendment_file if amendment_file is not None else doc_s,
+                           *references]
         if len(references) > MAX_REFERENCE_FILES:
             raise HTTPException(422, detail={"code": "TOO_MANY_REFERENCES",
                                             "message": "Qua so file tham chieu cau hinh."})
@@ -122,7 +133,7 @@ def compare_documents(
             roles.extend((f"ref_{i}", "REFERENCE") for i in range(1, len(references) + 1))
             documents = [
                 _save_upload(upload, directory, i, document_id, role, total, deadline)
-                for i, (upload, (document_id, role)) in enumerate(zip(uploads, roles))
+                for i, (upload, (document_id, role)) in enumerate(zip(primary_uploads, roles))
             ]
             report = run_comparison(
                 documents, comparison_id, deadline=deadline,
