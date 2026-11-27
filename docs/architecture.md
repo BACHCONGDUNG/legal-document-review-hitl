@@ -24,10 +24,10 @@ B liên quan đến V1 chưa chứng minh B bị ảnh hưởng. Phải chỉ ra
 | Reader/Parser/Adapter | Parser DOCX, nguồn block, cây và adapter; cần kiểm thử hồi quy trên HCI | PDF xuyên luồng và nguồn/phiên bản trong kho dân sự cần kiểm chứng |
 | Linker | Quy tắc hẹp nhận V1/S đã chuẩn hóa, dựng một số cặp trước/sau | Trích yêu cầu độc lập với V1, nhiều đích và thao tác mở rộng chưa hoàn chỉnh |
 | Text Diff | Kết quả theo amendment_id, offset ký tự Python | Kiểm thử trên các loại sửa đổi mở rộng |
-| Context | Thiết kế tách index/query; query nhận TextDiffResult sau điểm chờ | Demo tắt retrieval; chưa có truy xuất đích hoặc tác động gián tiếp |
+| Context | Bridge chuẩn bị chỉ mục song song Text Diff rồi truy xuất. Demo web tra đích theo số hiệu, nạp metadata mẫu và trả bằng chứng có nguồn | Nạp toàn văn 409 DOCX và phân tích tác động gián tiếp cần triển khai riêng |
 | LightRAG client | HTTP client thử nghiệm, pin upstream và kiểm thử mô phỏng | Chưa nghiệm thu dịch vụ thật; client hiện dành một server/storage riêng cho một comparison, chưa dùng được như kho bền vững dùng chung |
 | Semantic/Scorer | Quy tắc giới hạn, giữ null/review khi thiếu căn cứ | LLM, rubric dân sự và kiểm chứng tác động gián tiếp chưa hoàn thành |
-| API/UI | Demo DOCX nhận V1 + S + tham chiếu, trả ComparisonReport | Đầu vào chỉ S và báo cáo cấp S ở SRS §1.8 chưa có API/schema/validator thực thi |
+| API/UI | Demo DOCX nhận V1 + S + tham chiếu. Demo web nhận S để tra đích rồi đối chiếu từng V1 | Báo cáo cấp S ở SRS §1.8 cần API, schema và validator thực thi |
 | Kho và điều phối cấp S | Chưa triển khai trong nền chung | Danh mục dân sự, phiên bản kho, xác định đích và tổng hợp nhiều báo cáo |
 
 [Nền chung](common-baseline.md) giữ lệnh chạy và bằng chứng. Tài liệu này mô tả đích triển khai, không xác nhận hệ thống mới đã chạy.
@@ -85,7 +85,8 @@ Giữ cấu trúc repo, không tạo folder/file khung mới chỉ để khớp 
 | `backend/app/schemas/` | contracts và validator của báo cáo từng V1 |
 | `backend/app/pipeline.py`, `backend/main.py` | Pipeline/API nền; route chưa tách hoàn toàn sang api/compare.py |
 | `backend/demo.py`, `backend/app/demo_runner.py` | Điểm chạy demo DOCX và wiring phân tích giới hạn |
-| `frontend/` | UI demo và phần frontend đang phát triển |
+| `backend/shared_demo.py`, `backend/context_cli.py` | Demo web dùng chung và kiểm thử Context. Xem [hướng dẫn Docker](../deploy/lightrag/README.md) |
+| `frontend/` | Giao diện đối chiếu và hiển thị bằng chứng |
 | `data/`, `test/`, `deploy/lightrag/` | Nguồn/fixture, kiểm thử và cấu hình thử nghiệm; dữ liệu hiện có chưa tự trở thành kho dân sự đã duyệt |
 
 Parser hiện tự đọc DOCX, trả articles/outside/source_blocks và trạng thái; không bắt refactor Reader riêng để triển khai nghiệp vụ mới. Cây Parser không phải knowledge graph. Chunk phải giữ câu dẫn/ngữ cảnh cần thiết và có thể tra về nguyên văn; không lặp full_text mọi cấp hoặc chỉ lấy node lá làm mất nghĩa.

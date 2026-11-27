@@ -17,3 +17,7 @@ Luồng mục tiêu nhận S, bối cảnh/nguồn bổ sung tùy chọn và tr�
 Cấu trúc chuẩn lấy từ `main`. [Architecture §3](architecture.md) định vị code hiện có và phân biệt các chức năng mục tiêu chưa có file.
 
 Change F1 ≥ 90% và Critical Change Recall ≥ 95% là các ngưỡng dự tính. Xem [kế hoạch đánh giá](test_evaluation_plan.md) để tra phương pháp đo và mốc xác nhận.
+
+- [Docker và cấu hình LightRAG](../deploy/lightrag/README.md)
+- [Demo web dùng chung](shared-web-demo.md)
+- [Hợp đồng và kiểm thử Context](context-handoff.md)

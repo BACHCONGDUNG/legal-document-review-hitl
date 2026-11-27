@@ -15,7 +15,7 @@ from backend.app.schemas.report_validation import validate_report
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--base-url', default='http://127.0.0.1:8000')
+    parser.add_argument('--base-url', default='http://127.0.0.1:8001')
     parser.add_argument('--output', type=Path, default=Path('data/demo-results'))
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)

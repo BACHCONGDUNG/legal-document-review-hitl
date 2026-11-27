@@ -8,3 +8,4 @@ runtime/lightrag/
 deploy/lightrag/.env.*
 !deploy/lightrag/.env.example
 backend/.env.lightrag
+deploy/lightrag/.env

@@ -1,4 +1,4 @@
-"""Local web demo: python -m uvicorn backend.demo:app --host 127.0.0.1 --port 8000.
+"""Local web demo: python -m uvicorn backend.demo:app --host 127.0.0.1 --port 8001.
 
 Separate composition from backend.main: the default API retains its unconfigured
 runner. No external model or LightRAG request is made in this deferred-model demo.

@@ -6,7 +6,7 @@ Dự án hỗ trợ rà soát thay đổi trong văn bản quy phạm pháp lu�
 
 ## 2. Chức năng và phạm vi
 
-Đầu vào gồm văn bản ban đầu **V1**, văn bản sửa đổi **S** và tài liệu tham chiếu nếu cần. S chứa chỉ dẫn sửa đổi, không phải bản đầy đủ sau sửa đổi V2.
+Demo cục bộ nhận **V1**, **S** và tài liệu tham chiếu tùy chọn. Demo web dùng chung nhận **S** để tìm V1 trong danh mục và cho chọn hoặc bổ sung V1 khi cần. S chứa chỉ dẫn sửa đổi, không phải bản đầy đủ sau sửa đổi V2.
 
 Hệ thống được thiết kế để:
 
@@ -36,16 +36,16 @@ python -m venv .venv
 
 Mở [giao diện demo](http://127.0.0.1:8001) để tải V1, S và tài liệu tham chiếu hoặc chọn bộ DOCX mẫu. [OpenAPI](http://127.0.0.1:8001/docs) mô tả API đang chạy. `backend.main:app` là điểm vào API nền, mặc định trả HTTP 501 với `ANALYSIS_NOT_CONFIGURED` khi chưa gắn runner.
 
-Chạy bốn bộ kiểm thử bằng PowerShell.
+Chạy các bộ kiểm thử bằng PowerShell.
 
 ```powershell
-foreach ($suite in 'schema_suite', 'context_suite', 'demo_suite', 'handoff_suite') {
+foreach ($suite in 'unit/document_processing', 'data_suite', 'schema_suite', 'context_suite', 'demo_suite', 'handoff_suite') {
     .\.venv\Scripts\python.exe -m unittest discover -s "test/$suite" -p "test_*.py" -v
     if ($LASTEXITCODE -ne 0) { break }
 }
 ```
 
-LightRAG và model mặc định tắt. Cấu hình mẫu dùng Compose project `hci-lightrag`, cổng host `9622` và workspace `hci_comparison_a`. Compose tạo volume theo tên project. Backend dùng biến `HCI_LIGHTRAG_*` theo mẫu trong repo.
+Demo cục bộ ở cổng 8001 chạy bằng quy tắc. Demo web với LightRAG dùng cổng 8002. Backend có hai bản ghi metadata mẫu để thử truy xuất. Kho 409 DOCX được lưu riêng để chuẩn bị nạp chỉ mục. [Hướng dẫn Docker và cấu hình LightRAG](deploy/lightrag/README.md).
 
 ## 5. Tài liệu dự án
 

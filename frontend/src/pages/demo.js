@@ -1,7 +1,12 @@
 // Small same-origin demo UI. All document text is rendered as text nodes, never HTML.
 const $ = selector => document.querySelector(selector);
-const state = {v1: [], s: [], references: [], busy: false, config: null, report: null};
+const state = {v1: [], s: [], references: [], busy: false, config: null, report: null, lookup: null};
 const labels = {SUCCESS: 'Hoàn thành', PARTIAL: 'Cần kiểm tra thêm', FAILED: 'Xử lý thất bại'};
+const statusDetails = {
+  SUCCESS: 'Các mục đã có thể hiển thị theo dữ liệu backend trả về.',
+  PARTIAL: 'Một số mục hoặc căn cứ chưa đủ để kết luận; không đồng nghĩa không có thay đổi.',
+  FAILED: 'Chưa tạo được mục phân tích dùng được; các chỉ dẫn đã nhận diện và lý do chưa xử lý được giữ bên dưới.'
+};
 const operations = {AMEND: 'Sửa đổi', ADD: 'Bổ sung', REPEAL: 'Bãi bỏ', UNRESOLVED: 'Chưa xác định thao tác'};
 const groups = {TIME_QUANTITY:'Thời gian / số lượng', SUBJECT_OBJECT:'Chủ thể / đối tượng',
   RIGHTS_DUTIES_ACTIONS:'Quyền / nghĩa vụ', CONDITIONS_EXCEPTIONS:'Điều kiện / ngoại lệ',
@@ -21,7 +26,10 @@ function message(text = '', error = false) {
 function setBusy(busy) {
   state.busy = busy;
   $('#compare-form').querySelectorAll('button,input,select').forEach(el => {el.disabled = busy;});
-  $('#submit-button').disabled = busy || !state.config || !state.v1.length || !state.s.length;
+  const lookupOnly = state.config?.target_lookup_enabled && !state.v1.length;
+  $('#submit-button').disabled = busy || !state.config || !state.s.length || (!lookupOnly && !state.v1.length);
+  $('#submit-button').textContent = lookupOnly ? 'Tìm văn bản gốc' : 'Bắt đầu đối chiếu';
+  document.querySelectorAll('#target-lookup [data-lookup-action]').forEach(el => {el.disabled = busy;});
   $('#processing').hidden = !busy;
   $('#compare-form').setAttribute('aria-busy', String(busy));
 }
@@ -36,7 +44,11 @@ function renderFiles() {
       const row = node('li'); row.append(node('span', file.name, 'file-name'), node('span',size(file.size),'file-size'));
       const remove = node('button', '×', 'remove'); remove.type = 'button';
       remove.setAttribute('aria-label',`Bỏ file ${file.name}`); remove.disabled = state.busy;
-      remove.addEventListener('click', () => {state[role].splice(index,1); clearReport(); renderFiles();});
+      remove.addEventListener('click', () => {
+        state[role].splice(index,1);
+        if (role !== 'references') resetLookup();
+        renderFiles();
+      });
       row.append(remove); list.append(row);
     });
   }
@@ -64,7 +76,13 @@ function choose(role, files) {
   if (role === 'references') {
     for (const file of incoming) if (!next.references.some(f => f.name === file.name && f.size === file.size && f.lastModified === file.lastModified)) next.references.push(file);
   }
-  try {validateFiles(next); state[role] = next[role]; clearReport(); message(); renderFiles();}
+  try {
+    validateFiles(next);
+    state[role] = next[role];
+    if (role !== 'references') resetLookup();
+    message(state.report ? 'Đầu vào đã đổi; báo cáo bên dưới thuộc lượt trước.' : '');
+    renderFiles();
+  }
   catch (error) {message(error.message, true);}
 }
 for (const [id, role] of [['v1-file','v1'],['s-file','s'],['reference-files','references']]) {
@@ -84,8 +102,32 @@ function sourceLabel(evidence, identities) {
 function addIssue(container, issue, error = false) {
   const box = node('div', undefined, `report-issue${error ? ' error' : ''}`);
   box.append(node('strong',issue.message || issue.code || 'Chưa xử lý được.'));
-  if (issue.code) box.append(node('div',issue.code,'source'));
+  const metadata = [issue.stage, issue.code].filter(Boolean).join(' · ');
+  if (metadata) box.append(node('div',metadata,'source'));
   container.append(box);
+}
+function reviewReason(value) {
+  return value || 'Cần kiểm tra thêm theo dữ liệu backend trả về.';
+}
+function renderEvidence(container, evidence, identities) {
+  if (!evidence) return;
+  const block = node('div',undefined,'evidence');
+  block.append(node('div',sourceLabel(evidence,identities),'source'),node('p',evidence.quote || ''));
+  container.append(block);
+}
+function renderEvidenceDetails(container, title, evidence, identities) {
+  if (!evidence?.length) return;
+  const details = node('details');
+  details.append(node('summary',`${title} · ${evidence.length} nguồn`));
+  evidence.forEach(item => renderEvidence(details,item,identities));
+  container.append(details);
+}
+function renderReview(container, needsReview, reason) {
+  if (!needsReview) return;
+  container.append(node('span','Cần kiểm tra','badge warning'),node('p',reviewReason(reason),'review-reason'));
+}
+function valueLabel(value) {
+  return value === null ? 'Chưa biết: thiếu căn cứ' : value;
 }
 function pane(title, text, changes, side) {
   const box = node('div',undefined,'text-pane'); box.append(node('div',title,'pane-title'));
@@ -111,9 +153,11 @@ function renderItem(result, warnings, identities, index) {
   const badges = node('div'); badges.append(node('span',operations[item.operation] || item.operation,'badge'));
   if (item.applicability === 'OTHER_DOCUMENT') badges.append(node('span','Văn bản khác','badge warning'));
   else if (item.applicability === 'UNRESOLVED') badges.append(node('span','Đích chưa rõ','badge error'));
-  else badges.append(node('span','Cần kiểm tra','badge warning'));
+  else badges.append(node('span','Áp dụng cho V1','badge'));
+  if (item.needs_review) badges.append(node('span','Cần kiểm tra','badge warning'));
   header.append(badges); card.append(header);
   card.append(node('blockquote',item.instruction.quote,'instruction'), node('p',sourceLabel(item.instruction,identities),'source'));
+  if (item.needs_review) card.append(node('p',reviewReason(item.review_reason),'review-reason'));
   const local = warnings.filter(w=>w.amendment_id === item.amendment_id);
   if (result.text_diff === null) {
     if (local.length) for (const warning of local) addIssue(card,warning);
@@ -127,27 +171,57 @@ function renderItem(result, warnings, identities, index) {
     const analysis = node('div',undefined,'analysis-grid');
     const semantic = node('div'); semantic.append(node('h4','Phân tích ý nghĩa'));
     const changes = result.semantic_diff?.changes || [];
+    const scores = new Map((result.scoring || []).filter(entry => entry.change_id).map(entry => [entry.change_id,entry]));
     if (!changes.length) semantic.append(node('p','Chưa có kết luận ngữ nghĩa để hiển thị.'));
     for (const change of changes) {
-      semantic.append(node('span', change.is_meaningful_change === null ? 'Chưa xác định' : change.is_meaningful_change ? 'Có đổi nghĩa' : 'Không đổi nghĩa', 'badge warning'));
-      semantic.append(node('p',change.diff_details));
-      if (change.review_reason) semantic.append(node('p',change.review_reason));
+      const changeBox = node('div',undefined,'semantic-change');
+      const meaningLabel = change.is_meaningful_change === null
+        ? 'Chưa biết: thiếu căn cứ'
+        : change.is_meaningful_change ? 'Có đổi nghĩa' : 'Không đổi nghĩa';
+      changeBox.append(node('div',`${change.change_id || 'Thay đổi chưa định danh'} · ${meaningLabel}`,
+        `badge ${change.is_meaningful_change === false ? '' : 'warning'}`));
+      changeBox.append(node('p',change.diff_details || 'Chưa có diễn giải tổng thể.'));
+      renderReview(changeBox,change.needs_review,change.review_reason);
+      renderEvidenceDetails(changeBox,'Bằng chứng nhận định',change.evidence,identities);
+      for (const aspect of change.aspects || []) {
+        const aspectBox = node('div',undefined,'semantic-aspect');
+        aspectBox.append(node('strong',aspect.aspect_id || 'Khía cạnh chưa định danh'));
+        aspectBox.append(node('p',aspect.field_group ? groups[aspect.field_group] || aspect.field_group : 'Chưa xác định nhóm tác động'));
+        aspectBox.append(node('p',`Trước: ${valueLabel(aspect.old_value)} · Sau: ${valueLabel(aspect.new_value)}`));
+        aspectBox.append(node('p',aspect.interpretation || 'Chưa có diễn giải.'));
+        renderReview(aspectBox,aspect.needs_review,aspect.review_reason);
+        renderEvidenceDetails(aspectBox,'Bằng chứng khía cạnh',aspect.evidence,identities);
+        aspectBox.append(node('p',`Trích cũ: ${valueLabel(aspect.old_quote)} · Trích mới: ${valueLabel(aspect.new_quote)}`,'source'));
+        changeBox.append(aspectBox);
+      }
+      const scoreEntry = scores.get(change.change_id);
+      if (scoreEntry) {
+        const scoreBox = node('div',undefined,'score-entry');
+        scoreBox.append(node('strong','Phân loại & mức tác động'));
+        scoreBox.append(node('span',scoreEntry.significance === null ? 'Chưa xác định' : scoreEntry.significance,'badge warning'));
+        scoreBox.append(node('p',scoreEntry.category ? groups[scoreEntry.category] || scoreEntry.category : 'Chưa xác định nhóm tác động.'));
+        scoreBox.append(node('p',scoreEntry.reason || 'Chưa có lý do chấm điểm.'));
+        renderReview(scoreBox,scoreEntry.needs_review,scoreEntry.review_reason);
+        changeBox.append(scoreBox);
+        scores.delete(change.change_id);
+      }
+      semantic.append(changeBox);
     }
     const score = node('div'); score.append(node('h4','Phân loại & mức tác động'));
-    for (const entry of result.scoring || []) {
-      score.append(node('span',entry.significance || 'Chưa chấm mức tác động','badge warning'));
+    for (const entry of scores.values()) {
+      score.append(node('span',entry.significance === null ? 'Chưa xác định' : entry.significance || 'Chưa chấm mức tác động','badge warning'));
       score.append(node('p',entry.category ? groups[entry.category] || entry.category : 'Chưa xác định nhóm tác động.'));
-      score.append(node('p',entry.reason));
+      score.append(node('p',entry.reason || 'Chưa có lý do chấm điểm.'));
+      renderReview(score,entry.needs_review,entry.review_reason);
     }
+    if (!scores.size && !changes.length) score.append(node('p','Chưa có mức tác động để hiển thị.'));
     analysis.append(semantic,score); card.append(analysis);
   }
-  const all = [...item.evidence,...(item.context?.evidence || [])];
+  const all = [...(item.evidence || []),...(item.effect_info || []).flatMap(effect => effect.evidence || []),
+    ...(item.context?.evidence || [])];
   const unique = [...new Map(all.map(e=>[JSON.stringify(e),e])).values()];
   const details = node('details'); details.append(node('summary',`${unique.length} bằng chứng nguồn · xem nguyên văn`));
-  for (const evidence of unique) {
-    const block = node('div',undefined,'evidence');
-    block.append(node('div',sourceLabel(evidence,identities),'source'),node('p',evidence.quote)); details.append(block);
-  }
+  unique.forEach(evidence => renderEvidence(details,evidence,identities));
   card.append(details); return card;
 }
 function renderReport(report) {
@@ -155,6 +229,7 @@ function renderReport(report) {
   const identities = Object.fromEntries([report.base_document,report.amendment_document,...(report.reference_documents||[])].filter(Boolean).map(d=>[d.document_id,d]));
   const meta = $('#report-meta'); meta.replaceChildren();
   meta.append(node('span',labels[report.status] || report.status,`badge ${report.status === 'FAILED' ? 'error' : 'warning'}`));
+  meta.append(node('p',statusDetails[report.status] || 'Trạng thái do backend trả về.','status-description'));
   meta.append(node('p',`V1: ${report.base_document?.filename || ''} · S: ${report.amendment_document?.filename || ''}`,'meta'));
   meta.append(node('p',`Mã đối chiếu: ${report.comparison_id}`,'source'));
   const results = report.results || [], summary = $('#report-summary'); summary.replaceChildren();
@@ -184,26 +259,168 @@ function renderReport(report) {
   $('#results').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-$('#compare-form').addEventListener('submit', async event => {
-  event.preventDefault(); if (state.busy) return;
-  try {validateFiles(state); if (!state.v1.length || !state.s.length) throw new Error('Cần chọn đủ V1 và S.');}
-  catch(error) {message(error.message,true); return;}
-  clearReport(); message(); setBusy(true);
-  const data = new FormData(); data.append('doc_v1',state.v1[0]); data.append('doc_s',state.s[0]);
+function showReport(report) {
+  message();
+  renderReport(report);
+  window.dispatchEvent(new CustomEvent('hci:report', {detail:{comparison_id:report.comparison_id}}));
+}
+
+async function requestJson(path, options) {
+  const response = await fetch(path, options);
+  let payload;
+  try {payload = JSON.parse(await response.text());}
+  catch {throw new Error(`Lỗi máy chủ (HTTP ${response.status}): phản hồi không phải JSON.`);}
+  if (response.ok || (payload?.comparison_id && Array.isArray(payload.results))) return payload;
+  const detail = payload?.detail;
+  const explanation = Array.isArray(detail) ? 'Thiếu hoặc sai file bắt buộc.'
+    : typeof detail === 'string' ? detail : [detail?.code, detail?.message].filter(Boolean).join(': ');
+  throw new Error(`HTTP ${response.status}: ${explanation || 'Máy chủ chưa trả được kết quả.'}`);
+}
+
+async function compareFiles(base, signal) {
+  validateFiles({...state,v1:[base]});
+  const data = new FormData();
+  data.append('doc_v1',base);
+  data.append('doc_s',state.s[0]);
   for (const file of state.references) data.append('reference_files',file);
+  const report = await requestJson('/api/compare',{method:'POST',body:data,signal});
+  if (!report?.comparison_id || !Array.isArray(report.results)) throw new Error('Máy chủ chưa trả báo cáo đối chiếu.');
+  return report;
+}
+
+async function runRequest(work) {
+  message(state.report ? 'Đang xử lý lượt mới. Báo cáo bên dưới thuộc lượt trước.' : '');
+  setBusy(true);
   const controller = new AbortController();
   const timer = setTimeout(()=>controller.abort(),(state.config.deadline_seconds+30)*1000);
-  try {
-    const response = await fetch('/api/compare',{method:'POST',body:data,signal:controller.signal});
-    const report = await response.json();
-    if (Array.isArray(report.results) && report.comparison_id) renderReport(report);
-    else {
-      const detail = report.detail;
-      throw new Error(Array.isArray(detail) ? 'Đầu vào chưa hợp lệ hoặc thiếu file bắt buộc.' : typeof detail === 'string' ? detail : detail?.message || 'Máy chủ chưa xử lý được yêu cầu.');
-    }
-  } catch(error) {
-    message(error.name === 'AbortError' ? 'Hết thời gian chờ phản hồi. Máy chủ có thể vẫn đang kết thúc xử lý; hãy kiểm tra lại trước khi gửi tiếp.' : error.message === 'Failed to fetch' ? 'Không kết nối được máy chủ. Kiểm tra dịch vụ rồi thử lại.' : error.message,true);
+  try { await work(controller.signal); }
+  catch(error) {
+    message(error.name === 'AbortError' ? 'Hết thời gian chờ. Máy chủ có thể vẫn đang kết thúc xử lý.'
+      : error.message === 'Failed to fetch' ? 'Lỗi kết nối. Kiểm tra dịch vụ rồi thử lại.' : error.message,true);
   } finally {clearTimeout(timer); setBusy(false);}
+}
+
+function resetLookup() {
+  state.lookup = null;
+  const panel = $('#target-lookup');
+  if (panel) {panel.replaceChildren(); panel.hidden = true;}
+}
+
+function sourceInstructions(parent, instructions) {
+  const details = node('details');
+  details.append(node('summary',`Chỉ dẫn trong S (${instructions.length})`));
+  for (const source of instructions) {
+    details.append(node('p',source.source_refs.join(', '),'source'),node('blockquote',source.quote));
+  }
+  parent.append(details);
+}
+
+function selectTargetAction(text, action) {
+  const actionButton = node('button',text,'secondary');
+  actionButton.type = 'button';
+  actionButton.dataset.lookupAction = '';
+  actionButton.addEventListener('click',action);
+  return actionButton;
+}
+
+function renderTargets() {
+  const panel = $('#target-lookup');
+  panel.replaceChildren(node('h3','Văn bản đích tìm được từ S'));
+  panel.hidden = false;
+  for (const target of state.lookup.targets) {
+    const card = node('section',null,'result-card');
+    card.append(node('h4',target.document_number));
+    const status = target.report ? `Đã có báo cáo · ${labels[target.report.status] || target.report.status}`
+      : target.status === 'AUTO_MATCH' ? 'Đã tìm thấy bản gốc của ca demo đã kiểm chứng.'
+      : target.status === 'NEEDS_V1' ? 'Kho chưa có V1 cho đích này. Hãy bổ sung file nếu có.'
+      : 'Có bản ứng viên. Hãy xác nhận đúng phiên bản trước khi đối chiếu.';
+    card.append(node('p',status));
+    if (target.error) card.append(node('p',target.error,'report-issue error'));
+    sourceInstructions(card,target.instructions);
+    if (target.report) card.append(selectTargetAction('Xem báo cáo đích này',()=>showReport(target.report)));
+    for (const candidate of target.candidates) {
+      const row = node('div',null,'report-issue');
+      row.append(node('strong',candidate.filename),
+        node('p',[candidate.document_date,candidate.version_note,candidate.source].filter(Boolean).join(' · '),'source'),
+        selectTargetAction('Dùng phiên bản này',()=>runRequest(signal=>compareTarget(target,candidate,null,signal))));
+      card.append(row);
+    }
+    const upload = node('input');
+    upload.type = 'file';
+    upload.accept = '.docx,.pdf';
+    upload.dataset.lookupAction = '';
+    upload.setAttribute('aria-label',`Bổ sung V1 cho ${target.document_number}`);
+    upload.addEventListener('change',()=>{
+      const file = upload.files[0];
+      if (file) runRequest(signal=>compareTarget(target,null,file,signal));
+    });
+    const uploadLabel = node('label','Bổ sung V1 cho đích này ');
+    uploadLabel.append(upload);
+    card.append(uploadLabel);
+    panel.append(card);
+  }
+  if (state.lookup.unresolved.length) {
+    const group = node('section',null,'result-card');
+    group.append(node('h4','Chỉ dẫn chưa xác định được một đích duy nhất'),
+                 node('p','Hãy kiểm tra số hiệu trong các chỉ dẫn bên dưới. Có thể dùng chế độ cung cấp V1 thủ công để đối chiếu một đích.'));
+    sourceInstructions(group,state.lookup.unresolved.map(entry=>entry.instruction));
+    panel.append(group);
+  }
+  if (!state.lookup.targets.length && !state.lookup.unresolved.length) {
+    panel.append(node('p','Chưa nhận diện được chỉ dẫn thuộc mẫu hỗ trợ. Có thể bổ sung V1 thủ công để kiểm tra tiếp.'));
+  }
+  setBusy(state.busy);
+}
+
+async function compareTarget(target, candidate, file, signal) {
+  target.error = '';
+  try {
+    let base = file;
+    if (candidate) {
+      const response = await fetch(`/api/demo/targets/candidates/${encodeURIComponent(candidate.id)}`,{signal});
+      if (!response.ok) throw new Error('Không tải được V1 đã chọn từ kho.');
+      base = new File([await response.blob()],candidate.filename);
+    }
+    validateFiles({...state,v1:[base]});
+    const validation = new FormData();
+    validation.append('doc_v1',base);
+    validation.append('document_number',target.document_number);
+    await requestJson('/api/demo/targets/verify-v1',{method:'POST',body:validation,signal});
+    target.report = await compareFiles(base,signal);
+    showReport(target.report);
+  } catch(error) {
+    target.error = error.name === 'AbortError' ? 'Hết thời gian chờ ở đích này.' : error.message;
+  } finally {
+    renderTargets();
+  }
+}
+
+async function findTargets(signal) {
+  const data = new FormData();
+  data.append('doc_s',state.s[0]);
+  state.lookup = await requestJson('/api/demo/targets',{method:'POST',body:data,signal});
+  clearReport();
+  window.dispatchEvent(new Event('hci:clear-report'));
+  message();
+  renderTargets();
+  for (const target of state.lookup.targets) {
+    if (target.status === 'AUTO_MATCH' && target.candidates.length === 1 && !signal.aborted) {
+      await compareTarget(target,target.candidates[0],null,signal);
+    }
+  }
+}
+
+$('#compare-form').addEventListener('submit', event => {
+  event.preventDefault();
+  if (state.busy) return;
+  try {
+    validateFiles(state);
+    if (!state.s.length || (!state.config.target_lookup_enabled && !state.v1.length)) {
+      throw new Error(state.config.target_lookup_enabled ? 'Cần chọn S.' : 'Cần chọn đủ V1 và S.');
+    }
+  } catch(error) {message(error.message,true); return;}
+  if (state.v1.length) runRequest(async signal=>showReport(await compareFiles(state.v1[0],signal)));
+  else runRequest(findTargets);
 });
 
 $('#load-sample').addEventListener('click',async()=>{
@@ -211,14 +428,19 @@ $('#load-sample').addEventListener('click',async()=>{
   if (!sample || state.busy) {message('Hãy chọn một bộ dữ liệu mẫu trước.'); return;}
   setBusy(true); message();
   try {
-    const files = await Promise.all(['v1','s'].map(async role=>{
+    const roles = state.config.target_lookup_enabled ? ['s'] : ['v1','s'];
+    const files = await Promise.all(roles.map(async role=>{
       const response = await fetch(`/api/demo/files/${encodeURIComponent(sample.id)}/${role}`);
       if (!response.ok) throw new Error('Không tải được bộ dữ liệu trong data/raw.');
       return new File([await response.blob()],sample[role],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
     }));
-    const next = {v1:[files[0]],s:[files[1]],references:[]}; validateFiles(next);
-    Object.assign(state,next); clearReport(); renderFiles();
-    message('Đã nạp V1 và S từ data/raw. Đây là tài liệu trong repo; chưa xác minh hiệu lực hiện tại.');
+    const next = state.config.target_lookup_enabled ? {v1:[],s:files,references:[]}
+      : {v1:[files[0]],s:[files[1]],references:[]};
+    validateFiles(next);
+    resetLookup();
+    Object.assign(state,next); renderFiles();
+    message(state.config.target_lookup_enabled ? 'Đã nạp S mẫu. Bấm Tìm văn bản gốc để tiếp tục.'
+      : 'Đã nạp V1 và S từ data/raw. Đây là tài liệu trong repo; chưa xác minh hiệu lực hiện tại.');
   } catch(error) {message(error.message,true);} finally {setBusy(false);}
 });
 $('#download-json').addEventListener('click',()=>{
@@ -233,6 +455,25 @@ try {
   const response = await fetch('/api/demo/config');
   if (!response.ok) throw new Error('Không lấy được cấu hình demo.');
   state.config = await response.json();
+  if (state.config.target_lookup_enabled) {
+    $('.intro p:last-child').textContent = 'Nộp S để tìm văn bản đích. Bạn có thể chọn bản ứng viên hoặc bổ sung V1 nếu kho thiếu.';
+    $('#upload-title').closest('.section-head').querySelector('.small-label').textContent = 'Bắt đầu bằng văn bản sửa đổi S';
+    const base = $('[data-role="v1"]');
+    const grid = $('.upload-grid');
+    grid.prepend($('[data-role="s"]'));
+    base.hidden = true;
+    const toggle = selectTargetAction('Tôi có sẵn V1',()=>{
+      base.hidden = !base.hidden;
+      toggle.textContent = base.hidden ? 'Tôi có sẵn V1' : 'Bỏ chọn V1 thủ công';
+      if (base.hidden) {state.v1 = []; resetLookup(); renderFiles();}
+    });
+    grid.after(toggle);
+    const panel = node('section');
+    panel.id = 'target-lookup';
+    panel.hidden = true;
+    $('#compare-form').after(panel);
+    $('#sample-select option').textContent = 'Chọn một văn bản sửa đổi mẫu…';
+  }
   for (const sample of state.config.samples) {
     const option = node('option',sample.label); option.value = sample.id; $('#sample-select').append(option);
   }
