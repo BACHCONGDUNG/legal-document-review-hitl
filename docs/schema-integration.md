@@ -11,6 +11,14 @@ Fixture giao nhận ở [data/module_handoff_fixtures](../data/module_handoff_fi
 ## Báo cáo cấp S cần bổ sung
 [SRS mục 1.8](srs.md) mô tả lớp bao cho nhiều đích, kho/phiên bản, yêu cầu chưa giải quyết và tác động gián tiếp. Cần chốt kiểu dữ liệu, ID liên kết, null/lỗi, validator và fixture trước khi API/UI nhận hợp đồng mới.
 Mỗi đích cần mapping từ ID cục bộ sang văn bản, phiên bản và snapshot kho. Các liên kết tác động gián tiếp cần trỏ đúng target_id, amendment_id và change_id nếu có. Validator cục bộ không xác nhận các liên kết xuyên đích hoặc độ đúng của nhận định tác động.
+## Đặc tả mở rộng quan hệ ngày 27/11/2026
+
+[SRS §1.9](srs.md#19-đặc-tả-mục-tiêu-cho-nút-và-hai-loại-quan-hệ) bổ sung dữ liệu mục tiêu cho nút văn bản, thuộc tính ngữ nghĩa, hai loại cạnh độc lập và kiểm chứng tác động. Mục này không sửa runtime schema, API hoặc validator hiện có; các mốc nhập schema dưới đây là lịch sử.
+
+Trước khi nối chức năng mới, bên giao/nhận cần review contract và fixture cho: định danh toàn kho/phiên bản/snapshot; ánh xạ nguồn của từng thuộc tính; loại/ý nghĩa theo chiều và căn cứ của từng cạnh; trạng thái nút/cạnh; liên kết cạnh → quy định V1/B → thay đổi trực tiếp → nhận định tác động. Có quan hệ không đồng nghĩa bị ảnh hưởng; cả hai chiều cần căn cứ riêng. Quy ước hướng ngữ nghĩa và tiêu chí màu còn mở.
+
+Không thêm khóa vào `ComparisonReport`, `AnalysisContext` hoặc `SemanticDiffResult` cũ để truyền đồ thị không qua kiểm tra. Lớp dữ liệu mới cần mapping về ID cục bộ từng đích theo SRS §1.8 và kiểm tra EvidenceRef đúng phiên bản. Tách kiểm tra nguồn đồ thị khỏi thành công retrieval; nguồn ngoài registry không thành bằng chứng đã xác minh. Dùng các ca RG trong [kế hoạch kiểm thử](test_evaluation_plan.md#ca-kiểm-chứng-hai-loại-quan-hệ--27112026) khi thiết kế fixture.
+
 ## Phân công giao nhận
 Đức Anh phụ trách schema, Context/LightRAG, linker và Pipeline/API. Nam bàn giao Text Diff, Semantic Diff, Scorer và AI Adapter. Dũng kiểm tra nguồn, đáp án và nghiệp vụ. Tùng Dương đọc báo cáo và biểu diễn bằng chứng trên UI. Hai bên kiểm tra fixture trước khi đổi hợp đồng chung.
 ## Kiểm chứng và giới hạn

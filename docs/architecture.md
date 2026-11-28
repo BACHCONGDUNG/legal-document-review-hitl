@@ -24,7 +24,7 @@ B liên quan đến V1 chưa chứng minh B bị ảnh hưởng. Phải chỉ ra
 | Reader/Parser/Adapter | Parser DOCX, nguồn block, cây và adapter; cần kiểm thử hồi quy trên HCI | PDF xuyên luồng và nguồn/phiên bản trong kho dân sự cần kiểm chứng |
 | Linker | Quy tắc hẹp nhận V1/S đã chuẩn hóa, dựng một số cặp trước/sau | Trích yêu cầu độc lập với V1, nhiều đích và thao tác mở rộng chưa hoàn chỉnh |
 | Text Diff | Kết quả theo amendment_id, offset ký tự Python | Kiểm thử trên các loại sửa đổi mở rộng |
-| Context | Bridge chuẩn bị chỉ mục song song Text Diff rồi truy xuất. Demo web tra đích theo số hiệu, nạp metadata mẫu và trả bằng chứng có nguồn | Nạp toàn văn 409 DOCX và phân tích tác động gián tiếp cần triển khai riêng |
+| Context | Bridge chuẩn bị chỉ mục song song Text Diff rồi truy xuất. Demo web tra đích theo số hiệu, nạp metadata mẫu và trả bằng chứng có nguồn | Nạp toàn văn 2.096 DOCX và phân tích tác động gián tiếp cần triển khai riêng |
 | LightRAG client | HTTP client thử nghiệm, pin upstream và kiểm thử mô phỏng | Chưa nghiệm thu dịch vụ thật; client hiện dành một server/storage riêng cho một comparison, chưa dùng được như kho bền vững dùng chung |
 | Semantic/Scorer | Quy tắc giới hạn, giữ null/review khi thiếu căn cứ | LLM, rubric dân sự và kiểm chứng tác động gián tiếp chưa hoàn thành |
 | API/UI | Demo DOCX nhận V1 + S + tham chiếu. Demo web nhận S để tra đích rồi đối chiếu từng V1 | Báo cáo cấp S ở SRS §1.8 cần API, schema và validator thực thi |

@@ -19,7 +19,7 @@ python -m backend.shared_demo --provider-env-file deploy/lightrag/.env.groq-jina
 
 Mở [demo HCI](http://127.0.0.1:8002). Nạp S của ca Ngân hàng rồi chọn **Tìm văn bản gốc** để thử đối chiếu. Mục **Index metadata thật** dùng hai bản ghi mẫu và cho thử truy xuất khi trạng thái là `READY`. Hai thao tác dùng các container riêng. Khi kết thúc, dừng web bằng Ctrl+C để backend dọn container của phiên.
 
-Kho 409 DOCX có tại `data/legal-dataset-study/data/lightrag/`. Demo hiện dùng hai bản ghi metadata và Context của từng lượt đối chiếu. Xem [luồng web và API](../../docs/shared-web-demo.md) để biết cách đọc bằng chứng và trạng thái.
+Kho 2.096 DOCX có tại `data/legal-dataset-study/data/lightrag/`. Demo hiện dùng hai bản ghi metadata và Context của từng lượt đối chiếu. Xem [luồng web và API](../../docs/shared-web-demo.md) để biết cách đọc bằng chứng và trạng thái.
 
 ## Kiểm thử Context với dữ liệu mô phỏng
 
@@ -45,3 +45,5 @@ Khi kiểm tra client, đặt biến `HCI_LIGHTRAG_URL`, `HCI_LIGHTRAG_WORKSPACE
 ```powershell
 docker compose --env-file deploy/lightrag/.env -f deploy/lightrag/compose.yaml down
 ```
+
+Xem [hướng dẫn chạy pilot đồ thị DOCX](../../docs/document-graph-pilot.md).

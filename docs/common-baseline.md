@@ -6,7 +6,7 @@ Mốc bắt đầu Phiên 1 là fb49c9b. Bộ tài liệu ngày 22/11/2026 mở 
 Kết quả kiểm tra trên bản tải từ fb49c9b gồm 111 test đạt, 2 expected failures và 2 test dịch vụ thật được bỏ qua. Kết quả áp dụng tại mốc đó. Chưa chạy đánh giá chất lượng pháp lý hoặc PDF xuyên luồng.
 ## Demo web và kho dữ liệu hiện tại
 
-Demo web dùng chung đã có bước nộp S, tra đích theo số hiệu, chọn hoặc bổ sung V1 và đối chiếu có Context. LightRAG dùng một kho metadata gồm hai bản ghi mẫu và instance riêng cho từng lượt đối chiếu. Kho 409 DOCX phục vụ bước mở rộng nạp toàn văn. Xem [hướng dẫn Docker](../deploy/lightrag/README.md) và [hợp đồng Context](context-handoff.md).
+Demo web dùng chung đã có bước nộp S, tra đích theo số hiệu, chọn hoặc bổ sung V1 và đối chiếu có Context. LightRAG dùng một kho metadata gồm hai bản ghi mẫu và instance riêng cho từng lượt đối chiếu. Kho 2.096 DOCX phục vụ bước mở rộng nạp toàn văn. Xem [hướng dẫn Docker](../deploy/lightrag/README.md) và [hợp đồng Context](context-handoff.md).
 
 ## Phần cần triển khai và xác nhận
 Kho dân sự bền vững, xác minh phiên bản, tác động gián tiếp và báo cáo cấp S cần hợp đồng, fixture và kiểm tra trên HCI. Báo cáo cục bộ dùng v1/s/ref_* cần mapping sang kho và từng đích.

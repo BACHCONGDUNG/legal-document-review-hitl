@@ -45,7 +45,7 @@ foreach ($suite in 'unit/document_processing', 'data_suite', 'schema_suite', 'co
 }
 ```
 
-Demo cục bộ ở cổng 8001 chạy bằng quy tắc. Demo web với LightRAG dùng cổng 8002. Backend có hai bản ghi metadata mẫu để thử truy xuất. Kho 409 DOCX được lưu riêng để chuẩn bị nạp chỉ mục. [Hướng dẫn Docker và cấu hình LightRAG](deploy/lightrag/README.md).
+Demo cục bộ ở cổng 8001 chạy bằng quy tắc. Demo web với LightRAG dùng cổng 8002. Backend có hai bản ghi metadata mẫu để thử truy xuất. Kho 2.096 DOCX được lưu riêng để chuẩn bị nạp chỉ mục. [Hướng dẫn Docker và cấu hình LightRAG](deploy/lightrag/README.md).
 
 ## 5. Tài liệu dự án
 
@@ -70,3 +70,5 @@ Demo cục bộ ở cổng 8001 chạy bằng quy tắc. Demo web với LightRAG
 | Dương Đức Anh | Backend, schema và Pipeline; chỉ dẫn sửa đổi, liên kết, ngữ cảnh và tích hợp |
 | Lê Tùng Dương | Thiết kế tương tác, prototype và frontend; đối chiếu, kiểm chứng và nhận xét trong phiên |
 | Vương Thành Nam | Text Diff, Semantic Diff, AI Adapter và Scorer; đánh giá kỹ thuật chất lượng phân tích |
+
+Xem [hướng dẫn chạy pilot đồ thị DOCX](docs/document-graph-pilot.md).
