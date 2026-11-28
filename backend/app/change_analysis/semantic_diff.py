@@ -9,10 +9,12 @@ from copy import deepcopy
 
 
 _DEADLINE = re.compile(r'trong thời hạn (?P<value>[1-9]\d*) ngày')
+_WORKING_DAY_DEADLINE = re.compile(r'trong (?:thời hạn )?(?P<value>[1-9]\d*) ngày\b')
 
 
-def deadline_values(old, new):
-    a, b = list(_DEADLINE.finditer(old)), list(_DEADLINE.finditer(new))
+def deadline_values(old, new, *, working_days=False):
+    pattern = _WORKING_DAY_DEADLINE if working_days else _DEADLINE
+    a, b = list(pattern.finditer(old)), list(pattern.finditer(new))
     if len(a) != 1 or len(b) != 1:
         return None
     x, y = a[0], b[0]
@@ -20,7 +22,18 @@ def deadline_values(old, new):
         return None
     if x['value'] == y['value']:
         return None
-    return x['value'] + ' ngày', y['value'] + ' ngày'
+    unit = 'ngày làm việc' if working_days else 'ngày'
+    return f"{x['value']} {unit}", f"{y['value']} {unit}"
+
+
+def _working_day_rule_applies(item):
+    locator = item['target_locator'].strip()
+    rule = f'Thời hạn tại {locator} được tính theo ngày làm việc.'.casefold()
+    return any(
+        evidence['document_id'] == item['target_document']
+        and unicodedata.normalize('NFC', evidence['quote']).strip().casefold() == rule
+        for evidence in item['context']['evidence']
+    )
 
 
 def detect_semantic_changes(item, text_diff, *, context_complete=False):
@@ -48,7 +61,7 @@ def detect_semantic_changes(item, text_diff, *, context_complete=False):
         if old.replace('chậm nhất vào ngày', 'không muộn hơn ngày') == new.replace('chậm nhất vào ngày', 'không muộn hơn ngày'):
             meaningful, details = False, 'Đổi cách diễn đạt thời hạn tương đương; phần còn lại giữ nguyên.'
         else:
-            values = deadline_values(old, new)
+            values = deadline_values(old, new, working_days=_working_day_rule_applies(item))
             if values:
                 meaningful = True
                 details = f'Thay thời hạn {values[0]} thành {values[1]}; phần còn lại giữ nguyên.'

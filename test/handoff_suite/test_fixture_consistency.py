@@ -7,6 +7,7 @@ from backend.app.schemas.contracts import TextDiffResult, SemanticDiffResult, Sc
 from backend.app.schemas.report_validation import validate_payload, validate_sources, validate_amendment, validate_report
 from backend.app.schemas.validation import validate_extracted_document
 from backend.app.change_analysis.text_diff import compute_text_diff
+from backend.app.change_analysis.semantic_diff import detect_semantic_changes
 from backend.app.change_analysis.scorer import score_changes
 from backend.app.demo_runner import classify_demo_results
 
@@ -103,6 +104,67 @@ class HandoffFixtureTests(unittest.TestCase):
             for key in ['change_id', 'category', 'significance', 'is_critical', 'needs_review']:
                 self.assertEqual(score[key], expected[key])
             self.assertTrue(score['review_reason'])
+
+    def analyze_deadline(self, item, *, context_complete):
+        text = compute_text_diff(item)
+        self.assertEqual(text, load('document_to_text_diff')['expected_output'])
+        validate_amendment(item, self.documents, self.clauses)
+        semantic = detect_semantic_changes(item, text, context_complete=context_complete)
+        scoring = score_changes(semantic)
+
+        report = load('analysis_to_pipeline')['expected_output']
+        report['results'] = [{
+            'amendment': item, 'text_diff': text, 'semantic_diff': semantic, 'scoring': scoring,
+        }]
+        report['status'] = classify_demo_results(report['results'])
+        validate_report(report)
+        validate_sources(report, self.documents)
+        self.assertEqual(report['status'], 'PARTIAL')
+        return semantic, scoring
+
+    def test_deadline_analysis_uses_verified_working_day_evidence(self):
+        fixture = load('context_and_text_diff_to_semantic')
+        item = fixture['input']['amendment']
+        semantic, scoring = self.analyze_deadline(item, context_complete=True)
+
+        self.assertEqual(semantic['amendment_id'], item['amendment_id'])
+        self.assertFalse(semantic['needs_review'])
+        change, = semantic['changes']
+        self.assertIs(change['is_meaningful_change'], True)
+        aspect, = change['aspects']
+        expected = fixture['expected_output']['changes'][0]['aspects'][0]
+        for key in ('field_group', 'old_value', 'new_value', 'old_quote', 'new_quote'):
+            self.assertEqual(aspect[key], expected[key])
+        self.assertIn(item['context']['evidence'][0], aspect['evidence'])
+        score, = scoring
+        self.assertEqual(score['change_id'], change['change_id'])
+        expected_score, = load('semantic_to_scorer')['expected_output']
+        for key in ('category', 'significance', 'is_critical', 'needs_review'):
+            self.assertEqual(score[key], expected_score[key])
+        self.assertIn('rubric', score['reason'])
+
+    def test_deadline_analysis_defers_without_verified_working_day_evidence(self):
+        for available, complete in ((False, False), (False, True), (True, False)):
+            with self.subTest(available=available, complete=complete):
+                item = load('context_and_text_diff_to_semantic')['input']['amendment']
+                if not available:
+                    item['context']['evidence'] = []
+                semantic, scoring = self.analyze_deadline(item, context_complete=complete)
+                change, = semantic['changes']
+                self.assertIsNone(change['is_meaningful_change'])
+                self.assertEqual(change['aspects'], [])
+                self.assertTrue(semantic['needs_review'])
+                self.assertTrue(change['review_reason'])
+                score, = scoring
+                self.assertIsNone(score['significance'])
+                self.assertIsNone(score['is_critical'])
+                self.assertTrue(score['needs_review'])
+
+    def test_deadline_analysis_rejects_working_day_rule_for_another_article(self):
+        item = load('context_and_text_diff_to_semantic')['input']['amendment']
+        item['target_locator'] = 'Điều 20'
+        semantic, _ = self.analyze_deadline(item, context_complete=True)
+        self.assertIsNone(semantic['changes'][0]['is_meaningful_change'])
 
     def test_real_demo_classifier_matches_partial_handoff_report(self):
         report = load('analysis_to_pipeline')['expected_output']

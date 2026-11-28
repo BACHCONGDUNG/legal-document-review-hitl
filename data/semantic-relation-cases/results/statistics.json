@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "corpus_snapshot_sha256": "18bbc62d8c5bb73ae84c4d63b127320590a30849f3712ea3794abc074975ea42",
+  "files": 2096,
+  "files_read": 2096,
+  "files_passed": 1362,
+  "status_counts": {
+    "EXTRACTED": 1362,
+    "NO_GROUNDED_ATTRIBUTES": 734
+  },
+  "corpus_attribute_records": 60458,
+  "field_counts": {
+    "activity": 3200,
+    "actor": 24912,
+    "condition": 23136,
+    "exception": 2439,
+    "modality": 23661,
+    "object": 15736,
+    "right_or_duty": 22994,
+    "semantic_role": 4,
+    "temporal_scope": 6775,
+    "territory": 1809
+  },
+  "supplemental_sources": 1,
+  "edges": 2,
+  "other_decisions": {
+    "REJECTED": 1
+  },
+  "file_relation_counts": {
+    "NO_RELATION_FOUND": 1360,
+    "INSUFFICIENT_DATA": 734,
+    "HAS_RELATION": 2
+  }
+}

@@ -1,0 +1,173 @@
+{
+  "nodes": [
+    {
+      "id": "A",
+      "title": "Quy định sử dụng vỉa hè",
+      "number": "A-MAU",
+      "document_type": "Văn bản mẫu",
+      "issuer": null,
+      "source": null,
+      "snapshot": "demo-v1",
+      "version": "1",
+      "full_text_status": "AVAILABLE_IN_PILOT",
+      "legal_version_verified": false,
+      "attributes": [
+        {
+          "id": "A.1",
+          "clause": "Điều 1",
+          "role": "SETS_CONDITION",
+          "concept": "SIDEWALK_TRADING_AREA",
+          "actor": "Mọi tổ chức, cá nhân",
+          "activity": "Sử dụng vỉa hè để bán hàng",
+          "object": "Thiết bị bán hàng",
+          "modality": "Chỉ được",
+          "condition": "Trong phần diện tích đã đánh dấu",
+          "exception": null,
+          "actor_scope": "*",
+          "use_scope": "SIDEWALK_TRADE",
+          "territory": "X",
+          "valid_from": "2026-01-01",
+          "valid_to": "2026-12-31",
+          "qualifications_checked": true,
+          "evidence": {
+            "document_id": "A",
+            "source_refs": [
+              "block:1"
+            ],
+            "quote": "Điều 1. Trong năm 2026, tại khu X, mọi tổ chức, cá nhân sử dụng vỉa hè để bán hàng chỉ được đặt thiết bị trong phần diện tích đã được đánh dấu."
+          }
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "title": "Quy định về sạp hàng di động",
+      "number": "B-MAU",
+      "document_type": "Văn bản mẫu",
+      "issuer": null,
+      "source": null,
+      "snapshot": "demo-v1",
+      "version": "1",
+      "full_text_status": "AVAILABLE_IN_PILOT",
+      "legal_version_verified": false,
+      "attributes": [
+        {
+          "id": "B.3",
+          "clause": "Điều 3",
+          "role": "USES_CONDITION",
+          "concept": "SIDEWALK_TRADING_AREA",
+          "actor": "Người kinh doanh",
+          "activity": "Đặt sạp trên vỉa hè",
+          "object": "Sạp hàng di động",
+          "modality": "Phải",
+          "condition": "Trong phần diện tích được phép bán hàng",
+          "exception": null,
+          "actor_scope": "TRADER",
+          "use_scope": "SIDEWALK_TRADE",
+          "territory": "X",
+          "valid_from": "2026-01-01",
+          "valid_to": "2026-12-31",
+          "qualifications_checked": true,
+          "evidence": {
+            "document_id": "B",
+            "source_refs": [
+              "block:1"
+            ],
+            "quote": "Điều 3. Trong năm 2026, tại khu X, người kinh doanh đặt sạp hàng di động trên vỉa hè phải bố trí sạp trong phần diện tích được phép bán hàng."
+          }
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "title": "Quy định về điểm bán hàng tại khu Y",
+      "number": "C-MAU",
+      "document_type": "Văn bản mẫu",
+      "issuer": null,
+      "source": null,
+      "snapshot": "demo-v1",
+      "version": "1",
+      "full_text_status": "AVAILABLE_IN_PILOT",
+      "legal_version_verified": false,
+      "attributes": [
+        {
+          "id": "C.1",
+          "clause": "Điều 1",
+          "role": "USES_CONDITION",
+          "concept": "SIDEWALK_TRADING_AREA",
+          "actor": "Người kinh doanh",
+          "activity": "Đặt sạp trên vỉa hè",
+          "object": "Sạp hàng",
+          "modality": "Phải",
+          "condition": "Trong phần diện tích dành cho bán hàng",
+          "exception": null,
+          "actor_scope": "TRADER",
+          "use_scope": "SIDEWALK_TRADE",
+          "territory": "Y",
+          "valid_from": "2026-01-01",
+          "valid_to": "2026-12-31",
+          "qualifications_checked": true,
+          "evidence": {
+            "document_id": "C",
+            "source_refs": [
+              "block:1"
+            ],
+            "quote": "Điều 1. Trong năm 2026, người kinh doanh đặt sạp trên vỉa hè tại khu Y phải sử dụng phần diện tích dành cho bán hàng."
+          }
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "doc:C.2-A",
+      "source_id": "C",
+      "target_id": "A",
+      "family": "DOCUMENT",
+      "relation": "CITES",
+      "rule_id": null,
+      "reason": null,
+      "source_facet_id": null,
+      "target_facet_id": null,
+      "impact_status": "NOT_ASSESSED",
+      "evidence": [
+        {
+          "document_id": "C",
+          "source_refs": [
+            "block:2"
+          ],
+          "quote": "Điều 2. Tham khảo mẫu sổ tiếp nhận của văn bản A-MAU."
+        }
+      ]
+    },
+    {
+      "id": "sem:[\"CONDITION\",\"A.1\",\"B.3\"]",
+      "source_id": "A",
+      "target_id": "B",
+      "family": "SEMANTIC",
+      "relation": "MAY_AFFECT",
+      "rule_id": "CONDITION",
+      "reason": "A đặt điều kiện mà hoạt động trong B phải đáp ứng.",
+      "source_facet_id": "A.1",
+      "target_facet_id": "B.3",
+      "impact_status": "NOT_ASSESSED",
+      "evidence": [
+        {
+          "document_id": "A",
+          "source_refs": [
+            "block:1"
+          ],
+          "quote": "Điều 1. Trong năm 2026, tại khu X, mọi tổ chức, cá nhân sử dụng vỉa hè để bán hàng chỉ được đặt thiết bị trong phần diện tích đã được đánh dấu."
+        },
+        {
+          "document_id": "B",
+          "source_refs": [
+            "block:1"
+          ],
+          "quote": "Điều 3. Trong năm 2026, tại khu X, người kinh doanh đặt sạp hàng di động trên vỉa hè phải bố trí sạp trong phần diện tích được phép bán hàng."
+        }
+      ]
+    }
+  ],
+  "needs_review": []
+}

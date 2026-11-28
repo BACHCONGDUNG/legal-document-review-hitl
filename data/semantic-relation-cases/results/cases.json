@@ -1,0 +1,691 @@
+[
+  {
+    "case": "RG-04",
+    "passed": true,
+    "edge": {
+      "id": "LAND_SECURITY_REGISTRATION_TIME:dataset:159372:2161-vbhn-btp:excerpt:block:3:0:162:dataset:147004:block:121:0:348",
+      "type": "SEMANTIC",
+      "relation": "REGISTRATION_TIME_APPLIES",
+      "rule_id": "LAND_SECURITY_REGISTRATION_TIME",
+      "direction": "SOURCE_SETS_EVENT_USED_BY_TARGET",
+      "status": "SUPPORTED",
+      "reason": "Nguồn A xác định thời điểm ghi nhận đăng ký đối với quyền sử dụng đất. Nguồn B dùng thời điểm đăng ký để xác định hiệu lực đối kháng; cạnh chỉ áp dụng cho phần giao nhau này.",
+      "source_id": "dataset:159372:2161-vbhn-btp:excerpt",
+      "target_id": "dataset:147004",
+      "source": {
+        "id": "dataset:159372:2161-vbhn-btp:excerpt:block:3:0:162",
+        "document_id": "dataset:159372:2161-vbhn-btp:excerpt",
+        "article": "6",
+        "clause": "1",
+        "point": "a",
+        "source_ref": "block:3",
+        "start": 0,
+        "end": 162,
+        "quote": "a) Thời điểm có hiệu lực của đăng ký đối với quyền sử dụng đất, tài sản gắn liền với đất là thời điểm cơ quan đăng ký cập nhật nội dung đăng ký vào Cơ sở dữ liệu;",
+        "values": {
+          "actor": {
+            "value": "cơ quan đăng ký",
+            "start": 102,
+            "end": 117,
+            "status": "FOUND"
+          },
+          "object": {
+            "value": "quyền sử dụng đất",
+            "start": 45,
+            "end": 62,
+            "status": "FOUND"
+          },
+          "activity": {
+            "value": "cập nhật nội dung đăng ký",
+            "start": 118,
+            "end": 143,
+            "status": "FOUND"
+          },
+          "modality": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "right_or_duty": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "condition": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "exception": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "territory": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "temporal_scope": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "semantic_role": {
+            "value": "Thời điểm có hiệu lực của đăng ký đối với quyền sử dụng đất, tài sản gắn liền với đất là thời điểm cơ quan đăng ký cập nhật nội dung đăng ký",
+            "start": 3,
+            "end": 143,
+            "status": "FOUND",
+            "code": "sets_registration_time"
+          }
+        },
+        "number": "99/2022/NĐ-CP",
+        "version_sha256": "8eba0e08ed1b1896eb8cd5d9deaa235fee7def9b100c5193537aee08ddf8ca6e",
+        "path": "data/semantic-relation-cases/sources.json",
+        "source_url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2026/4/2161-vbhn-btp.pdf#page=6"
+      },
+      "target": {
+        "id": "dataset:147004:block:121:0:348",
+        "document_id": "dataset:147004",
+        "article": "23",
+        "clause": "2",
+        "point": null,
+        "source_ref": "block:121",
+        "start": 0,
+        "end": 348,
+        "quote": "2. Trường hợp biện pháp bảo đảm phải đăng ký theo quy định của Bộ luật Dân sự, luật khác liên quan hoặc được đăng ký theo thỏa thuận hoặc được đăng ký theo yêu cầu của bên nhận bảo đảm thì thời điểm đăng ký tại cơ quan có thẩm quyền theo quy định của pháp luật liên quan là thời điểm biện pháp bảo đảm phát sinh hiệu lực đối kháng với người thứ ba.",
+        "values": {
+          "actor": {
+            "value": "bên nhận bảo đảm",
+            "start": 168,
+            "end": 184,
+            "status": "FOUND"
+          },
+          "object": {
+            "value": "biện pháp bảo đảm",
+            "start": 14,
+            "end": 31,
+            "status": "FOUND"
+          },
+          "activity": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "modality": {
+            "value": "phải",
+            "start": 32,
+            "end": 36,
+            "status": "FOUND"
+          },
+          "right_or_duty": {
+            "value": "phải đăng ký theo quy định của Bộ luật Dân sự, luật khác liên quan hoặc được đăng ký theo thỏa thuận hoặc được đăng ký theo yêu cầu của bên nhận bảo đảm thì thời điểm đăng ký tại cơ quan có thẩm quyền theo quy định của pháp luật liên quan là thời điểm biện pháp bảo đảm phát sinh hiệu lực đối kháng với người thứ ba",
+            "start": 32,
+            "end": 347,
+            "status": "FOUND"
+          },
+          "condition": {
+            "value": "Trường hợp biện pháp bảo đảm phải đăng ký theo quy định của Bộ luật Dân sự, luật khác liên quan hoặc được đăng ký theo thỏa thuận hoặc được đăng ký theo yêu cầu của bên nhận bảo đảm",
+            "start": 3,
+            "end": 184,
+            "status": "FOUND"
+          },
+          "exception": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "territory": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "temporal_scope": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "semantic_role": {
+            "value": "thời điểm đăng ký tại cơ quan có thẩm quyền theo quy định của pháp luật liên quan là thời điểm biện pháp bảo đảm phát sinh hiệu lực đối kháng với người thứ ba",
+            "start": 189,
+            "end": 347,
+            "status": "FOUND",
+            "code": "uses_registration_time"
+          }
+        },
+        "number": "21/2021/NĐ-CP",
+        "version_sha256": "356477b491847762bbbf5079990cda3529dc303c8468f282400c0f0f8f3b9d91",
+        "path": "21_2021_NĐ-CP.docx",
+        "source_url": null
+      },
+      "scope": {
+        "asset": "quyền sử dụng đất",
+        "event": "đăng ký biện pháp bảo đảm"
+      },
+      "context_evidence": [
+        {
+          "id": "dataset:147004:block:120:0:130",
+          "document_id": "dataset:147004",
+          "article": "23",
+          "clause": "1",
+          "point": null,
+          "source_ref": "block:120",
+          "start": 0,
+          "end": 130,
+          "quote": "1. Biện pháp bảo đảm chỉ phát sinh hiệu lực đối kháng với người thứ ba trong trường hợp hợp đồng bảo đảm đã có hiệu lực pháp luật.",
+          "values": {
+            "actor": {
+              "value": "người thứ ba",
+              "start": 58,
+              "end": 70,
+              "status": "FOUND"
+            },
+            "object": {
+              "value": "Biện pháp bảo đảm",
+              "start": 3,
+              "end": 20,
+              "status": "FOUND"
+            },
+            "activity": {
+              "value": null,
+              "status": "NOT_FOUND"
+            },
+            "modality": {
+              "value": null,
+              "status": "NOT_FOUND"
+            },
+            "right_or_duty": {
+              "value": null,
+              "status": "NOT_FOUND"
+            },
+            "condition": {
+              "value": "trong trường hợp hợp đồng bảo đảm đã có hiệu lực pháp luật",
+              "start": 71,
+              "end": 129,
+              "status": "FOUND"
+            },
+            "exception": {
+              "value": null,
+              "status": "NOT_FOUND"
+            },
+            "territory": {
+              "value": null,
+              "status": "NOT_FOUND"
+            },
+            "temporal_scope": {
+              "value": null,
+              "status": "NOT_FOUND"
+            },
+            "semantic_role": {
+              "value": "hợp đồng bảo đảm đã có hiệu lực pháp luật",
+              "start": 88,
+              "end": 129,
+              "status": "FOUND",
+              "code": "contract_effective"
+            }
+          },
+          "number": "21/2021/NĐ-CP",
+          "version_sha256": "356477b491847762bbbf5079990cda3529dc303c8468f282400c0f0f8f3b9d91",
+          "path": "21_2021_NĐ-CP.docx",
+          "source_url": null
+        }
+      ],
+      "impact_status": "NOT_ASSESSED"
+    },
+    "no_direct_reference_checked": true,
+    "reference_check_scope": "NĐ 21 DOCX và đoạn Điều 6 NĐ 99 dùng trong kiểm thử"
+  },
+  {
+    "case": "RG-05",
+    "passed": true,
+    "decision": {
+      "id": "LAND_SECURITY_REGISTRATION_TIME:dataset:159372:2161-vbhn-btp:excerpt:block:3:0:162:dataset:147004:block:128:0:163",
+      "type": "SEMANTIC",
+      "relation": "REGISTRATION_TIME_APPLIES",
+      "rule_id": "LAND_SECURITY_REGISTRATION_TIME",
+      "direction": "SOURCE_SETS_EVENT_USED_BY_TARGET",
+      "status": "REJECTED",
+      "reason": "Cùng đề cập hiệu lực đối kháng. Khoản về ký quỹ dùng mốc gửi tài sản vào tài khoản phong tỏa, khác mốc đăng ký quyền sử dụng đất.",
+      "source_id": "dataset:159372:2161-vbhn-btp:excerpt",
+      "target_id": "dataset:147004",
+      "source": {
+        "id": "dataset:159372:2161-vbhn-btp:excerpt:block:3:0:162",
+        "document_id": "dataset:159372:2161-vbhn-btp:excerpt",
+        "article": "6",
+        "clause": "1",
+        "point": "a",
+        "source_ref": "block:3",
+        "start": 0,
+        "end": 162,
+        "quote": "a) Thời điểm có hiệu lực của đăng ký đối với quyền sử dụng đất, tài sản gắn liền với đất là thời điểm cơ quan đăng ký cập nhật nội dung đăng ký vào Cơ sở dữ liệu;",
+        "values": {
+          "actor": {
+            "value": "cơ quan đăng ký",
+            "start": 102,
+            "end": 117,
+            "status": "FOUND"
+          },
+          "object": {
+            "value": "quyền sử dụng đất",
+            "start": 45,
+            "end": 62,
+            "status": "FOUND"
+          },
+          "activity": {
+            "value": "cập nhật nội dung đăng ký",
+            "start": 118,
+            "end": 143,
+            "status": "FOUND"
+          },
+          "modality": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "right_or_duty": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "condition": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "exception": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "territory": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "temporal_scope": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "semantic_role": {
+            "value": "Thời điểm có hiệu lực của đăng ký đối với quyền sử dụng đất, tài sản gắn liền với đất là thời điểm cơ quan đăng ký cập nhật nội dung đăng ký",
+            "start": 3,
+            "end": 143,
+            "status": "FOUND",
+            "code": "sets_registration_time"
+          }
+        },
+        "number": "99/2022/NĐ-CP",
+        "version_sha256": "8eba0e08ed1b1896eb8cd5d9deaa235fee7def9b100c5193537aee08ddf8ca6e",
+        "path": "data/semantic-relation-cases/sources.json",
+        "source_url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2026/4/2161-vbhn-btp.pdf#page=6"
+      },
+      "target": {
+        "id": "dataset:147004:block:128:0:163",
+        "document_id": "dataset:147004",
+        "article": "23",
+        "clause": "5",
+        "point": null,
+        "source_ref": "block:128",
+        "start": 0,
+        "end": 163,
+        "quote": "5. Hiệu lực đối kháng của biện pháp ký quỹ với người thứ ba phát sinh từ thời điểm tài sản ký quỹ được gửi vào tài khoản phong tỏa tại tổ chức tín dụng nơi ký quỹ.",
+        "values": {
+          "actor": {
+            "value": "người thứ ba",
+            "start": 47,
+            "end": 59,
+            "status": "FOUND"
+          },
+          "object": {
+            "value": "tài sản ký quỹ",
+            "start": 83,
+            "end": 97,
+            "status": "FOUND"
+          },
+          "activity": {
+            "value": "gửi vào tài khoản phong tỏa",
+            "start": 103,
+            "end": 130,
+            "status": "FOUND"
+          },
+          "modality": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "right_or_duty": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "condition": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "exception": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "territory": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "temporal_scope": {
+            "value": "từ thời điểm tài sản ký quỹ được gửi vào tài khoản phong tỏa tại tổ chức tín dụng nơi ký quỹ",
+            "start": 70,
+            "end": 162,
+            "status": "FOUND"
+          },
+          "semantic_role": {
+            "value": "Hiệu lực đối kháng của biện pháp ký quỹ với người thứ ba phát sinh từ thời điểm tài sản ký quỹ được gửi vào tài khoản phong tỏa",
+            "start": 3,
+            "end": 130,
+            "status": "FOUND",
+            "code": "uses_escrow_time"
+          }
+        },
+        "number": "21/2021/NĐ-CP",
+        "version_sha256": "356477b491847762bbbf5079990cda3529dc303c8468f282400c0f0f8f3b9d91",
+        "path": "21_2021_NĐ-CP.docx",
+        "source_url": null
+      },
+      "scope": {
+        "asset": "quyền sử dụng đất",
+        "event": "đăng ký biện pháp bảo đảm"
+      },
+      "context_evidence": [
+        {
+          "id": "dataset:147004:block:120:0:130",
+          "document_id": "dataset:147004",
+          "article": "23",
+          "clause": "1",
+          "point": null,
+          "source_ref": "block:120",
+          "start": 0,
+          "end": 130,
+          "quote": "1. Biện pháp bảo đảm chỉ phát sinh hiệu lực đối kháng với người thứ ba trong trường hợp hợp đồng bảo đảm đã có hiệu lực pháp luật.",
+          "values": {
+            "actor": {
+              "value": "người thứ ba",
+              "start": 58,
+              "end": 70,
+              "status": "FOUND"
+            },
+            "object": {
+              "value": "Biện pháp bảo đảm",
+              "start": 3,
+              "end": 20,
+              "status": "FOUND"
+            },
+            "activity": {
+              "value": null,
+              "status": "NOT_FOUND"
+            },
+            "modality": {
+              "value": null,
+              "status": "NOT_FOUND"
+            },
+            "right_or_duty": {
+              "value": null,
+              "status": "NOT_FOUND"
+            },
+            "condition": {
+              "value": "trong trường hợp hợp đồng bảo đảm đã có hiệu lực pháp luật",
+              "start": 71,
+              "end": 129,
+              "status": "FOUND"
+            },
+            "exception": {
+              "value": null,
+              "status": "NOT_FOUND"
+            },
+            "territory": {
+              "value": null,
+              "status": "NOT_FOUND"
+            },
+            "temporal_scope": {
+              "value": null,
+              "status": "NOT_FOUND"
+            },
+            "semantic_role": {
+              "value": "hợp đồng bảo đảm đã có hiệu lực pháp luật",
+              "start": 88,
+              "end": 129,
+              "status": "FOUND",
+              "code": "contract_effective"
+            }
+          },
+          "number": "21/2021/NĐ-CP",
+          "version_sha256": "356477b491847762bbbf5079990cda3529dc303c8468f282400c0f0f8f3b9d91",
+          "path": "21_2021_NĐ-CP.docx",
+          "source_url": null
+        }
+      ],
+      "impact_status": "NOT_ASSESSED"
+    }
+  },
+  {
+    "case": "RG-06",
+    "passed": true,
+    "edge": {
+      "id": "LAND_SECURITY_REGISTRATION_TIME:dataset:159372:2161-vbhn-btp:excerpt:block:3:0:162:dataset:147004:block:121:0:348",
+      "type": "SEMANTIC",
+      "relation": "REGISTRATION_TIME_APPLIES",
+      "rule_id": "LAND_SECURITY_REGISTRATION_TIME",
+      "direction": "SOURCE_SETS_EVENT_USED_BY_TARGET",
+      "status": "SUPPORTED",
+      "reason": "Nguồn A xác định thời điểm ghi nhận đăng ký đối với quyền sử dụng đất. Nguồn B dùng thời điểm đăng ký để xác định hiệu lực đối kháng; cạnh chỉ áp dụng cho phần giao nhau này.",
+      "source_id": "dataset:159372:2161-vbhn-btp:excerpt",
+      "target_id": "dataset:147004",
+      "source": {
+        "id": "dataset:159372:2161-vbhn-btp:excerpt:block:3:0:162",
+        "document_id": "dataset:159372:2161-vbhn-btp:excerpt",
+        "article": "6",
+        "clause": "1",
+        "point": "a",
+        "source_ref": "block:3",
+        "start": 0,
+        "end": 162,
+        "quote": "a) Thời điểm có hiệu lực của đăng ký đối với quyền sử dụng đất, tài sản gắn liền với đất là thời điểm cơ quan đăng ký cập nhật nội dung đăng ký vào Cơ sở dữ liệu;",
+        "values": {
+          "actor": {
+            "value": "cơ quan đăng ký",
+            "start": 102,
+            "end": 117,
+            "status": "FOUND"
+          },
+          "object": {
+            "value": "quyền sử dụng đất",
+            "start": 45,
+            "end": 62,
+            "status": "FOUND"
+          },
+          "activity": {
+            "value": "cập nhật nội dung đăng ký",
+            "start": 118,
+            "end": 143,
+            "status": "FOUND"
+          },
+          "modality": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "right_or_duty": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "condition": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "exception": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "territory": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "temporal_scope": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "semantic_role": {
+            "value": "Thời điểm có hiệu lực của đăng ký đối với quyền sử dụng đất, tài sản gắn liền với đất là thời điểm cơ quan đăng ký cập nhật nội dung đăng ký",
+            "start": 3,
+            "end": 143,
+            "status": "FOUND",
+            "code": "sets_registration_time"
+          }
+        },
+        "number": "99/2022/NĐ-CP",
+        "version_sha256": "8eba0e08ed1b1896eb8cd5d9deaa235fee7def9b100c5193537aee08ddf8ca6e",
+        "path": "data/semantic-relation-cases/sources.json",
+        "source_url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2026/4/2161-vbhn-btp.pdf#page=6"
+      },
+      "target": {
+        "id": "dataset:147004:block:121:0:348",
+        "document_id": "dataset:147004",
+        "article": "23",
+        "clause": "2",
+        "point": null,
+        "source_ref": "block:121",
+        "start": 0,
+        "end": 348,
+        "quote": "2. Trường hợp biện pháp bảo đảm phải đăng ký theo quy định của Bộ luật Dân sự, luật khác liên quan hoặc được đăng ký theo thỏa thuận hoặc được đăng ký theo yêu cầu của bên nhận bảo đảm thì thời điểm đăng ký tại cơ quan có thẩm quyền theo quy định của pháp luật liên quan là thời điểm biện pháp bảo đảm phát sinh hiệu lực đối kháng với người thứ ba.",
+        "values": {
+          "actor": {
+            "value": "bên nhận bảo đảm",
+            "start": 168,
+            "end": 184,
+            "status": "FOUND"
+          },
+          "object": {
+            "value": "biện pháp bảo đảm",
+            "start": 14,
+            "end": 31,
+            "status": "FOUND"
+          },
+          "activity": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "modality": {
+            "value": "phải",
+            "start": 32,
+            "end": 36,
+            "status": "FOUND"
+          },
+          "right_or_duty": {
+            "value": "phải đăng ký theo quy định của Bộ luật Dân sự, luật khác liên quan hoặc được đăng ký theo thỏa thuận hoặc được đăng ký theo yêu cầu của bên nhận bảo đảm thì thời điểm đăng ký tại cơ quan có thẩm quyền theo quy định của pháp luật liên quan là thời điểm biện pháp bảo đảm phát sinh hiệu lực đối kháng với người thứ ba",
+            "start": 32,
+            "end": 347,
+            "status": "FOUND"
+          },
+          "condition": {
+            "value": "Trường hợp biện pháp bảo đảm phải đăng ký theo quy định của Bộ luật Dân sự, luật khác liên quan hoặc được đăng ký theo thỏa thuận hoặc được đăng ký theo yêu cầu của bên nhận bảo đảm",
+            "start": 3,
+            "end": 184,
+            "status": "FOUND"
+          },
+          "exception": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "territory": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "temporal_scope": {
+            "value": null,
+            "status": "NOT_FOUND"
+          },
+          "semantic_role": {
+            "value": "thời điểm đăng ký tại cơ quan có thẩm quyền theo quy định của pháp luật liên quan là thời điểm biện pháp bảo đảm phát sinh hiệu lực đối kháng với người thứ ba",
+            "start": 189,
+            "end": 347,
+            "status": "FOUND",
+            "code": "uses_registration_time"
+          }
+        },
+        "number": "21/2021/NĐ-CP",
+        "version_sha256": "356477b491847762bbbf5079990cda3529dc303c8468f282400c0f0f8f3b9d91",
+        "path": "21_2021_NĐ-CP.docx",
+        "source_url": null
+      },
+      "scope": {
+        "asset": "quyền sử dụng đất",
+        "event": "đăng ký biện pháp bảo đảm"
+      },
+      "context_evidence": [
+        {
+          "id": "dataset:147004:block:120:0:130",
+          "document_id": "dataset:147004",
+          "article": "23",
+          "clause": "1",
+          "point": null,
+          "source_ref": "block:120",
+          "start": 0,
+          "end": 130,
+          "quote": "1. Biện pháp bảo đảm chỉ phát sinh hiệu lực đối kháng với người thứ ba trong trường hợp hợp đồng bảo đảm đã có hiệu lực pháp luật.",
+          "values": {
+            "actor": {
+              "value": "người thứ ba",
+              "start": 58,
+              "end": 70,
+              "status": "FOUND"
+            },
+            "object": {
+              "value": "Biện pháp bảo đảm",
+              "start": 3,
+              "end": 20,
+              "status": "FOUND"
+            },
+            "activity": {
+              "value": null,
+              "status": "NOT_FOUND"
+            },
+            "modality": {
+              "value": null,
+              "status": "NOT_FOUND"
+            },
+            "right_or_duty": {
+              "value": null,
+              "status": "NOT_FOUND"
+            },
+            "condition": {
+              "value": "trong trường hợp hợp đồng bảo đảm đã có hiệu lực pháp luật",
+              "start": 71,
+              "end": 129,
+              "status": "FOUND"
+            },
+            "exception": {
+              "value": null,
+              "status": "NOT_FOUND"
+            },
+            "territory": {
+              "value": null,
+              "status": "NOT_FOUND"
+            },
+            "temporal_scope": {
+              "value": null,
+              "status": "NOT_FOUND"
+            },
+            "semantic_role": {
+              "value": "hợp đồng bảo đảm đã có hiệu lực pháp luật",
+              "start": 88,
+              "end": 129,
+              "status": "FOUND",
+              "code": "contract_effective"
+            }
+          },
+          "number": "21/2021/NĐ-CP",
+          "version_sha256": "356477b491847762bbbf5079990cda3529dc303c8468f282400c0f0f8f3b9d91",
+          "path": "21_2021_NĐ-CP.docx",
+          "source_url": null
+        }
+      ],
+      "impact_status": "NOT_ASSESSED"
+    },
+    "impact": {
+      "status": "NO_IMPACT_SHOWN",
+      "reason": "Chỉ dẫn đổi tên cơ quan tại Điều khác chưa cho thấy thay đổi mốc đăng ký của cạnh.",
+      "change": {
+        "kind": "RENAME_ONLY",
+        "article": "10",
+        "clause": "1",
+        "evidence": {
+          "document_number": "18/2026/NĐ-CP",
+          "locator": "Điểm đ khoản 10 Điều 11",
+          "source_url": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2026/01/18-ndcp.signed.pdf",
+          "quote": "Cụm từ “Sở Tài nguyên và Môi trường” bằng cụm từ “Sở Nông nghiệp và Môi trường” tại khoản 1 Điều 10"
+        },
+        "target_id": "dataset:159372:2161-vbhn-btp:excerpt"
+      },
+      "edge_id": "LAND_SECURITY_REGISTRATION_TIME:dataset:159372:2161-vbhn-btp:excerpt:block:3:0:162:dataset:147004:block:121:0:348"
+    }
+  }
+]

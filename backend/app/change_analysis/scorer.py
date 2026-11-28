@@ -27,6 +27,6 @@ def score_changes(semantic):
             reason = reason or 'Chưa đủ căn cứ chấm mức tác động theo rubric; cần kiểm tra.'
         scores.append({'change_id': change['change_id'], 'category': category, 'significance': level,
                        'is_critical': level == 'CRITICAL' if level else None,
-                       'reason': 'Chưa chấm mức tác động khi ngữ nghĩa/ngữ cảnh chưa xác nhận.' if level is None else 'Áp dụng quy tắc pilot đã hỗ trợ, không suy mức từ số chữ thay đổi.',
+                       'reason': reason if level is None else 'Áp dụng quy tắc pilot đã hỗ trợ, không suy mức từ số chữ thay đổi.',
                        'needs_review': bool(reason), 'review_reason': reason})
     return scores
