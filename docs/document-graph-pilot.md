@@ -59,4 +59,4 @@ Lệnh mở một container riêng chỉ nghe nội bộ, nạp đoạn trích, 
 2. Trong `lightrag-live.json`, kiểm tra `index_ready`, `expected_evidence_found`, `verified` và `cleanup_issues`. Kỳ vọng tìm được chỉ dẫn sửa khoản 2 Điều 2 từ `dataset:56666`, `block:22`. Dùng `indexed_documents` và `lightrag_source_map` để lần theo ID máy chủ về DOCX gốc.
 3. Khi một thành viên chạy lại, bàn giao tên máy hoặc môi trường, kết quả JSON, thời gian chạy và mã lỗi nếu có. Ghi riêng kết quả của mỗi lần chạy trong HCI.
 
-Bộ thử ưu tiên khả năng truy vết một quan hệ trên tài liệu thật. Kho hiện có 2.096 DOCX. Dựng đồ thị và lập chỉ mục toàn kho, đánh giá truy xuất và tích hợp đồ thị này vào giao diện là các bước mở rộng.
+Bộ thử ưu tiên khả năng truy vết một quan hệ trên tài liệu thật. Kho hiện có 2.669 DOCX. [Demo đồ thị toàn kho](document-relation-graph.md) dùng bộ dựng riêng. Lập chỉ mục LightRAG toàn kho và đánh giá truy xuất vẫn là phần mở rộng.

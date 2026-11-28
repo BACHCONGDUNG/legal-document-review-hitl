@@ -4,7 +4,9 @@
 
 Một máy chủ chạy web/API. Thành viên mở cùng URL; không cần clone repo, Docker hoặc nhập khóa LightRAG hoặc khóa API nhà cung cấp để dùng demo. Backend tự sinh khóa server riêng và không trả khóa cho trình duyệt. LightRAG chỉ được publish trên loopback của máy chủ, không mở Web UI quản trị trực tiếp ra LAN.
 
-Web chung có hai phần:
+Mục [Đồ thị quan hệ văn bản pháp luật](document-relation-graph.md) nằm trước form nộp S. Đồ thị dùng dữ liệu đã dựng và chạy được khi chưa cấu hình LightRAG.
+
+Các chức năng của web chung:
 - Nộp văn bản sửa đổi S để tìm từng văn bản gốc theo số hiệu trong chỉ dẫn. Hệ thống tự dùng V1 cho đúng cặp mẫu `case_02` đã kiểm chứng. Với các bản trong danh mục nguồn chưa xác minh phiên bản, người dùng chọn ứng viên. Nếu thiếu V1, web yêu cầu bổ sung theo từng đích. Các tài liệu tham chiếu là tùy chọn.
 - Từng đích có V1 được đối chiếu qua Reader/Parser → Adapter/Linker → Text Diff song song chuẩn bị chỉ mục → truy xuất Context → Semantic/Scorer quy tắc → báo cáo. Đích thiếu nguồn vẫn hiện chỉ dẫn và lý do. Trường hợp chưa đủ căn cứ phân tách một chỉ dẫn có nhiều số hiệu được giữ để kiểm tra.
 - Index/query và xem graph LightRAG thực tế trên hai bản ghi metadata Bộ luật Dân sự 2005/2015, ID `18128`, `95942`, dataset `th1nhng0/vietnamese-legal-documents`, revision `8977887f17be2defae4c5171d55562e1cde7d695`. Đây là metadata có sẵn trong main, không phải toàn văn/đáp án và chưa được xác minh tình trạng hiệu lực hiện tại. Quan hệ graph do model trích xuất chưa phải căn cứ pháp lý.
@@ -51,7 +53,7 @@ Web/API khởi động trước; LightRAG instance được tạo khi nạp kho 
 
 1. Mở web, không có hộp nhập API key.
 2. Bấm **Index metadata thật** một lần. Trạng thái đi từ IDLE → INDEXING → READY hoặc FAILED. Trang tự cập nhật, có thể dùng nút cập nhật thủ công. READY chỉ sau khi upstream xác nhận các bản ghi processed và graph hợp lệ.
-3. Khi READY, nhập câu hỏi và bấm **Truy xuất thật**. Xem quote nguyên văn cùng document_id/source_refs, ID dataset/revision và graph. Mở node/cạnh để đọc nguồn. Graph rỗng được hiển thị là rỗng; không dựng graph giả để thay thế.
+3. Khi READY, nhập câu hỏi và bấm **Truy xuất thật**. Xem quote nguyên văn cùng document_id/source_refs, ID dataset/revision. Mở mục nguồn thực thể và liên hệ LightRAG để đọc nguồn.
 4. Chọn S hoặc nạp S của mẫu Ngân hàng, rồi bấm **Tìm văn bản gốc**. Với các đích khác, chọn bản ứng viên hoặc bổ sung file V1 đúng số hiệu. Nếu đã có cả hai file, dùng **Tôi có sẵn V1**. Khi xong, báo cáo giữ nguyên và có phần **LightRAG của lượt đối chiếu**: trạng thái, context, bằng chứng và graph. Index chỉ gồm toàn bộ block được trích làm bằng chứng chỉ dẫn/đích và các block tham chiếu đã nộp. Có cảnh báo RETRIEVAL_SCOPE_LIMITED; đây chưa phải kho toàn văn hoặc chứng nhận đủ context.
 5. Khi provider lỗi/thiếu cấu hình, Text Diff vẫn được giữ nếu xử lý nguồn thành công; báo cáo PARTIAL và mã lỗi cụ thể. Không tự chuyển lỗi retrieval thành “không thay đổi”. Semantic/Scorer vẫn giữ null/review khi thiếu căn cứ.
 

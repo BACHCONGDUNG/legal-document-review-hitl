@@ -28,3 +28,5 @@ Change F1 ≥ 90% và Critical Change Recall ≥ 95% là các ngưỡng dự tí
 
 - [Đồ thị văn bản DOCX](document-graph-pilot.md)
 - [Bàn giao khảo sát xử lý văn bản](document-processing-progress.md)
+
+- [Demo đồ thị toàn kho trên web](document-relation-graph.md)
